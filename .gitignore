@@ -19,11 +19,10 @@ bin
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+**/vendor/
 
 ### Go Patch ###
-/vendor/
-/Godeps/
+**/Godeps/*
 
 ### Terraform ###
 # Local .terraform directories
@@ -55,6 +54,6 @@ override.tf.json
 # Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
 # example: *tfplan*
 
-# End of https://www.toptal.com/developers/gitignore/api/go,terraform
+
 
 

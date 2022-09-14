@@ -4,8 +4,6 @@ import (
 	"autocloud_sdk"
 	"context"
 	"fmt"
-	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,17 +12,21 @@ import (
 
 func dataSourceMe() *schema.Resource {
 	return &schema.Resource{
+		// This description is used by the documentation generator and the language server.
+		Description: "me data source, to check current user (do not publish this).",
+
 		ReadContext: dataSourceMeRead,
+
 		Schema: map[string]*schema.Schema{
-			"id": &schema.Schema{
+			"id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"email": &schema.Schema{
+			"email": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -42,16 +44,8 @@ func dataSourceMeRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 
-	// user := &autocloud_sdk.User{}
-	// user.Me.Name = "enrique"
-	// user.Me.Email = "someemail"
-	// user.Me.ID = "someID"
-
-	//me := make(map[string]interface{})
-	//b, err := json.Marshal(user)
-	//err = json.NewDecoder(user).Decode(&me)
 	tflog.Trace(ctx, "geting the user"+me.Me.Email)
-	fmt.Println(me)
+
 	err = d.Set("id", me.Me.ID)
 	if err != nil {
 		fmt.Println(err)
@@ -70,7 +64,8 @@ func dataSourceMeRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 
 	}
-	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
+	//strconv.FormatInt(time.Now().Unix(), 10)
+	d.SetId(me.Me.ID)
 
 	return diags
 }
