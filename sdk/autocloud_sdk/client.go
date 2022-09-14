@@ -1,6 +1,7 @@
 package autocloud_sdk
 
 import (
+	"fmt"
 	"net/http"
 
 	p "autocloud_sdk/properties"
@@ -52,7 +53,7 @@ func NewClient(host, username, password *string) (*Client, error) {
 
 	// If username or password not provided, return empty client
 	if username == nil || password == nil {
-		return &c, nil
+		return nil, fmt.Errorf("username and pss are empty")
 	}
 
 	c.Auth = AuthStruct{
