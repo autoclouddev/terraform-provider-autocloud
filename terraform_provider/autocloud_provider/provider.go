@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// entry point
 func New(version string) func() *schema.Provider {
 	return func() *schema.Provider {
 		p := &schema.Provider{
@@ -25,7 +26,7 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				//"autocloud_module": {
+				"autocloud_module": autocloudModule(),
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				"autocloud_me": dataSourceMe(),

@@ -64,7 +64,7 @@ func dataSourceMeRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 
 	}
-	//strconv.FormatInt(time.Now().Unix(), 10)
+	//d.SetId(strconv.FormatInt(time.Now().Unix(), 10)) // use this when you dont have a unique id
 	d.SetId(me.Me.ID)
 
 	return diags
