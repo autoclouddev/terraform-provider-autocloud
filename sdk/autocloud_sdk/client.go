@@ -2,7 +2,9 @@ package autocloud_sdk
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"time"
 
 	p "autocloud_sdk/properties"
 
@@ -16,6 +18,7 @@ type Client struct {
 	Auth        AuthStruct
 	AppClientID string
 	graphql     *graphql.Client
+	HTTPClient  *http.Client
 }
 
 /*
@@ -43,8 +46,9 @@ func NewClient(host, username, password *string) (*Client, error) {
 	var properties p.Properties = p.LoadProperties()
 
 	c := Client{
-		HostURL:     properties.ApiHost,
+		HostURL:     "http://localhost:8080/api/v.0.0.1", //properties.ApiHost,
 		AppClientID: properties.AppClientID,
+		HTTPClient:  &http.Client{Timeout: 10 * time.Second},
 	}
 
 	if host != nil {
@@ -53,7 +57,7 @@ func NewClient(host, username, password *string) (*Client, error) {
 
 	// If username or password not provided, return empty client
 	if username == nil || password == nil {
-		return nil, fmt.Errorf("username and pss are empty")
+		return nil, fmt.Errorf("username and password are empty")
 	}
 
 	c.Auth = AuthStruct{
@@ -72,6 +76,7 @@ func NewClient(host, username, password *string) (*Client, error) {
 	return &c, nil
 }
 
+//TMP hack to insert the token in the header, this is only used by the graphql client
 type transport struct {
 	underlyingTransport http.RoundTripper
 }
@@ -85,4 +90,34 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 func graphQLClient(apiHost string) *graphql.Client {
 	client := graphql.NewClient(apiHost, &http.Client{Transport: &transport{underlyingTransport: http.DefaultTransport}})
 	return client
+}
+
+func (c *Client) doRequest(req *http.Request, authToken *string) ([]byte, error) {
+	token := c.Token
+
+	if authToken != nil {
+		token = *authToken
+	}
+
+	req.Header.Set("Authorization", token)
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	statusOK := res.StatusCode >= 200 && res.StatusCode < 300
+
+	if !statusOK {
+		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
+	}
+
+	return body, err
 }
