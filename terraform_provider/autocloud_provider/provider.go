@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// entry point
 func New(version string) func() *schema.Provider {
 	return func() *schema.Provider {
 		p := &schema.Provider{
@@ -25,7 +26,7 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				//"autocloud_module": {
+				"autocloud_module": autocloudModule(),
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				"autocloud_me": dataSourceMe(),
@@ -50,23 +51,24 @@ func configure(version string, p *schema.Provider) func(ctx context.Context, d *
 		username := d.Get("username").(string)
 		password := d.Get("password").(string)
 
-		// Warning or errors can be collected in a slice type
-		var diags diag.Diagnostics
+			// Warning or errors can be collected in a slice type
+			var diags diag.Diagnostics
 
-		if (username != "") && (password != "") {
-			c, err := autocloud_sdk.NewClient(nil, &username, &password)
+			if (username != "") && (password != "") {
+				c, err := autocloud_sdk.NewClient(nil, &username, &password)
+				if err != nil {
+					return nil, diag.FromErr(err)
+				}
+
+				return c, diags
+			}
+
+			c, err := autocloud_sdk.NewClient(nil, nil, nil)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
 
 			return c, diags
-		}
-
-		c, err := autocloud_sdk.NewClient(nil, nil, nil)
-		if err != nil {
-			return nil, diag.FromErr(err)
-		}
-
-		return c, diags
+	}
 	}
 }

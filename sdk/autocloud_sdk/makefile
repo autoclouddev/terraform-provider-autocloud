@@ -21,10 +21,11 @@ dev: ## Run the entry program for dev propupuses (main.go)
 
 ## Build:
 build: ## Build your project and put the output binary in out/bin/
-	mkdir -p out/bin
-  $(GOCMD) build -o out/bin/$(BINARY_NAME) .
-#GO111MODULE=on $(GOCMD) build -o out/bin/$(BINARY_NAME) .
+  #mkdir -p out/bin
+	$(GOCMD) build -o out/bin/$(BINARY_NAME) .
 
+
+#GO111MODULE=on $(GOCMD) build -o out/bin/$(BINARY_NAME) .
 clean: ## Remove build related file
 	rm -fr ./bin
 	rm -fr ./out

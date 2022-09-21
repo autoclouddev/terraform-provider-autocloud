@@ -30,6 +30,11 @@ sso_account_id = 632941798677
 sso_role_name = universal-developer
 ```
 
+
+set up the AWS_PROFILE in your session
+`$ export AWS_PROFILE=autocloud-aws-sso-sandbox-developer`
+
+
 Then run the following:
 
 `$ aws sso login --profile autocloud-aws-sso-sandbox-developer`

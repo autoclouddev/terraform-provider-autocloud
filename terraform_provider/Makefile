@@ -10,7 +10,7 @@ default: install
 
 build:
 	go build -o ${BINARY}
-	chmod -x ${BINARY}
+	chmod +x ${BINARY}
 
 release:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
