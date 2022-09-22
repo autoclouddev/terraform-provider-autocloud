@@ -9,13 +9,13 @@ import (
 type Repository struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
-	Url         string `json:htmlUrl`
+	HtmlUrl     string `json:htmlUrl`
 	Description string `json:description`
 }
 
 func (c *Client) GetRepositories(organizationName string) ([]Repository, error) {
 	endpoint := fmt.Sprintf(organizationName + "/repositories")
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", c.HostURL, endpoint), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/iac_generators/%s", c.HostURL, endpoint), nil)
 	if err != nil {
 		return nil, err
 	}

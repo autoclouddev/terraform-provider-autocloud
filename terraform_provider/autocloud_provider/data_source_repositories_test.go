@@ -18,7 +18,7 @@ func TestAccDataSourceScaffolding2(t *testing.T) {
 				Config: testAccDataSourceScaffolding2,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(
-						"data.autocloud_github_repos", "repos", regexp.MustCompile("^enrique.enciso")),
+						"data.autocloud_github_repos", "repos", regexp.MustCompile("^terraform-generator-test")),
 				),
 			},
 		},

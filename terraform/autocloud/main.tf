@@ -23,9 +23,7 @@ output "autocloud_me_output" {
 
 }
 
-output "autocloud_github_repos" {
-  value = {
-    repos : "${length(data.autocloud_github_repos.repos)}"
-  }
 
+output "autocloud_github_repos" {
+  value = data.autocloud_github_repos.repos.data[*].name
 }
