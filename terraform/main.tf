@@ -19,3 +19,7 @@ module "test" {
 output "test" {
   value = module.test.autocloud_me_output
 }
+
+output "repos" {
+  value = module.test.autocloud_github_repos
+}

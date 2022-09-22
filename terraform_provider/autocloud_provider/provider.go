@@ -29,7 +29,8 @@ func New(version string) func() *schema.Provider {
 				"autocloud_module": autocloudModule(),
 			},
 			DataSourcesMap: map[string]*schema.Resource{
-				"autocloud_me": dataSourceMe(),
+				"autocloud_me":           dataSourceMe(),
+				"autocloud_github_repos": dataSourceRepositories(),
 			},
 			//ConfigureContextFunc: providerConfigure,
 		}
@@ -51,24 +52,23 @@ func configure(version string, p *schema.Provider) func(ctx context.Context, d *
 		username := d.Get("username").(string)
 		password := d.Get("password").(string)
 
-			// Warning or errors can be collected in a slice type
-			var diags diag.Diagnostics
+		// Warning or errors can be collected in a slice type
+		var diags diag.Diagnostics
 
-			if (username != "") && (password != "") {
-				c, err := autocloud_sdk.NewClient(nil, &username, &password)
-				if err != nil {
-					return nil, diag.FromErr(err)
-				}
-
-				return c, diags
-			}
-
-			c, err := autocloud_sdk.NewClient(nil, nil, nil)
+		if (username != "") && (password != "") {
+			c, err := autocloud_sdk.NewClient(nil, &username, &password)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
 
 			return c, diags
-	}
+		}
+
+		c, err := autocloud_sdk.NewClient(nil, nil, nil)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+
+		return c, diags
 	}
 }
