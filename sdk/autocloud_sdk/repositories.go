@@ -13,9 +13,8 @@ type Repository struct {
 	Description string `json:description`
 }
 
-func (c *Client) GetRepositories(organizationName string) ([]Repository, error) {
-	endpoint := fmt.Sprintf(organizationName + "/repositories")
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/iac_generators/%s", c.HostURL, endpoint), nil)
+func (c *Client) GetRepositories() ([]Repository, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/source_control/repositories", c.HostURL), nil)
 	if err != nil {
 		return nil, err
 	}

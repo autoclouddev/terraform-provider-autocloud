@@ -80,7 +80,7 @@ func dataSourceRepositoriesRead(ctx context.Context, d *schema.ResourceData, m i
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	repositories, err := c.GetRepositories("auto-cloud")
+	repositories, err := c.GetRepositories()
 	if err != nil {
 		return diag.FromErr(err)
 	}
