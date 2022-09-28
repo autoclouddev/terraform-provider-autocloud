@@ -7,6 +7,12 @@ terraform {
     }
   }
 }
+
+
+/*
+USE THIS FILE AS YOU NEED FIT, THIS IS JUST A PLAYGROUND
+
+*/
 provider "autocloud" {
   username = ""
   password = ""
@@ -16,8 +22,14 @@ module "test" {
   source = "./autocloud"
 }
 
+# uncomment this to test milestone1
+# module "milestone_1" {
+#   source = "./milestone1"
+# }
+
+
 resource "autocloud_module" "example" {
-  name="example"
+  name = "example"
 
   ###
   # UI Configuration
@@ -33,7 +45,7 @@ resource "autocloud_module" "example" {
   step 3: step-3-description
   EOT
 
-  labels = [ "aws" ]
+  labels = ["aws"]
 
 }
 
