@@ -31,6 +31,6 @@ func testAccPreCheck(t *testing.T) {
 	// about the appropriate environment variables being set are common to see in a pre-check
 	// function.
 	godotenv.Load("../.env")
-	fmt.Println(os.Getenv("SDK_API_URL"))
+	fmt.Printf("Sdk url: %#v\n", os.Getenv("SDK_API_URL"))
 
 }
