@@ -26,6 +26,34 @@ func autocloudModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"author": {
+				Description: "author",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"slug": {
+				Description: "slug",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"description": {
+				Description: "description",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"instructions": {
+				Description: "instructions",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"labels": {
+				Description: "labels",
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -36,9 +64,22 @@ func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any
 
 	var diags diag.Diagnostics
 
+	var labels = []string{}
+	if v, ok := d.GetOk("labels"); ok {
+		list := v.([]interface{})
+		labels = make([]string, len(list))
+		for i, v := range list {
+			labels[i] = v.(string)
+		}
+	}
 	c := meta.(*autocloud_sdk.Client)
 	generator := autocloud_sdk.IacCatalog{
-		Name: d.Get("name").(string),
+		Name:         d.Get("name").(string),
+		Author:       d.Get("author").(string),
+		Slug:         d.Get("slug").(string),
+		Description:  d.Get("description").(string),
+		Instructions: d.Get("instructions").(string),
+		Labels:       labels,
 	}
 	o, err := c.CreateGenerator(generator)
 	if err != nil {
@@ -71,6 +112,11 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	d.Set("name", generator.Name)
+	d.Set("author", generator.Author)
+	d.Set("slug", generator.Slug)
+	d.Set("description", generator.Description)
+	d.Set("instructions", generator.Instructions)
+	d.Set("labels", generator.Labels)
 
 	return diags
 }
@@ -79,9 +125,24 @@ func autocloudModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*autocloud_sdk.Client)
 	generatorID := d.Id()
+
+	var labels = []string{}
+	if v, ok := d.GetOk("labels"); ok {
+		list := v.([]interface{})
+		labels = make([]string, len(list))
+		for i, v := range list {
+			labels[i] = v.(string)
+		}
+	}
+
 	updatedGen := autocloud_sdk.IacCatalog{
-		ID:   generatorID,
-		Name: d.Get("name").(string),
+		ID:           generatorID,
+		Name:         d.Get("name").(string),
+		Author:       d.Get("author").(string),
+		Slug:         d.Get("slug").(string),
+		Description:  d.Get("description").(string),
+		Instructions: d.Get("instructions").(string),
+		Labels:       labels,
 	}
 	_, err := c.UpdateGenerator(updatedGen)
 	if err != nil {

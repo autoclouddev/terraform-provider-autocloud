@@ -10,7 +10,7 @@ type User struct {
 	Me struct {
 		ID    string `json:"ID"`
 		Name  string `json:"Name"`
-		Email string `json:Email`
+		Email string `json:"Email"`
 	}
 }
 
