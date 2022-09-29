@@ -47,6 +47,20 @@ resource "autocloud_module" "example" {
 
   labels = ["aws"]
 
+  ###
+  # File definitions
+  #
+  file {
+    action = "CREATE"
+
+    path_from_root = ""
+
+    filename_template = "eks-cluster-{{clusterName}}.tf"
+    filename_vars = {
+      clusterName = "EKSGenerator.clusterName"
+    }
+  }
+
 }
 
 output "test" {

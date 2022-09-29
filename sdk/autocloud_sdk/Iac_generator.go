@@ -50,21 +50,7 @@ func (c *Client) GetGenerator(generatorID string) (*IacCatalog, error) {
 
 func (c *Client) CreateGenerator(generator IacCatalog) (*IacCatalog, error) {
 	fmt.Printf("CreateGenerator input: %#v\n", generator)
-	reqBody := struct {
-		Name         string   `json:"name"`
-		Author       string   `json:"author"`
-		Slug         string   `json:"slug"`
-		Description  string   `json:"description"`
-		Instructions string   `json:"instructions"`
-		Labels       []string `json:"labels"`
-	}{
-		Name:         generator.Name,
-		Author:       generator.Author,
-		Slug:         generator.Slug,
-		Description:  generator.Description,
-		Instructions: generator.Instructions,
-		Labels:       generator.Labels,
-	}
+	reqBody := GetIacCatalogInput(generator)
 	rb, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err
@@ -110,21 +96,7 @@ func (c *Client) DeleteGenerator(generatorID string) error {
 }
 
 func (c *Client) UpdateGenerator(generator IacCatalog) (*IacCatalog, error) {
-	reqBody := struct {
-		Name         string   `json:"name"`
-		Author       string   `json:"author"`
-		Slug         string   `json:"slug"`
-		Description  string   `json:"description"`
-		Instructions string   `json:"instructions"`
-		Labels       []string `json:"labels"`
-	}{
-		Name:         generator.Name,
-		Author:       generator.Author,
-		Slug:         generator.Slug,
-		Description:  generator.Description,
-		Instructions: generator.Instructions,
-		Labels:       generator.Labels,
-	}
+	reqBody := GetIacCatalogInput(generator)
 	rb, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err
