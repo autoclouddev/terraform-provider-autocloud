@@ -3,6 +3,7 @@ package autocloud_provider
 import (
 	"autocloud_sdk"
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -54,6 +55,45 @@ func autocloudModule() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"file": {
+				Description: "file",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"action": {
+							Description: "action",
+							Type:        schema.TypeString,
+							Required:    true,
+							ValidateFunc: func(val any, key string) (warns []string, errs []error) {
+								isValidAction := Contains([]string{"CREATE", "EDIT", "HCLEDIT"}, val.(string))
+								if !isValidAction {
+									errs = append(errs, fmt.Errorf("%q must be a value in [CREATE, EDIT, HCLEDIT], got: %s", key, val))
+								}
+								return
+							},
+						},
+						"path_from_root": {
+							Description: "path_from_root",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"filename_template": {
+							Description: "filename_template",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"filename_vars": {
+							Description: "filename_vars",
+							Type:        schema.TypeMap,
+							Required:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -64,23 +104,8 @@ func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any
 
 	var diags diag.Diagnostics
 
-	var labels = []string{}
-	if v, ok := d.GetOk("labels"); ok {
-		list := v.([]interface{})
-		labels = make([]string, len(list))
-		for i, v := range list {
-			labels[i] = v.(string)
-		}
-	}
+	generator := GetSdkIacCatalog(d)
 	c := meta.(*autocloud_sdk.Client)
-	generator := autocloud_sdk.IacCatalog{
-		Name:         d.Get("name").(string),
-		Author:       d.Get("author").(string),
-		Slug:         d.Get("slug").(string),
-		Description:  d.Get("description").(string),
-		Instructions: d.Get("instructions").(string),
-		Labels:       labels,
-	}
 	o, err := c.CreateGenerator(generator)
 	if err != nil {
 		return diag.FromErr(err)
@@ -117,6 +142,7 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	d.Set("description", generator.Description)
 	d.Set("instructions", generator.Instructions)
 	d.Set("labels", generator.Labels)
+	d.Set("fileDefinitions", generator.FileDefinitions)
 
 	return diags
 }
@@ -124,26 +150,10 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 func autocloudModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*autocloud_sdk.Client)
-	generatorID := d.Id()
 
-	var labels = []string{}
-	if v, ok := d.GetOk("labels"); ok {
-		list := v.([]interface{})
-		labels = make([]string, len(list))
-		for i, v := range list {
-			labels[i] = v.(string)
-		}
-	}
+	updatedGen := GetSdkIacCatalog(d)
+	updatedGen.ID = d.Id()
 
-	updatedGen := autocloud_sdk.IacCatalog{
-		ID:           generatorID,
-		Name:         d.Get("name").(string),
-		Author:       d.Get("author").(string),
-		Slug:         d.Get("slug").(string),
-		Description:  d.Get("description").(string),
-		Instructions: d.Get("instructions").(string),
-		Labels:       labels,
-	}
 	_, err := c.UpdateGenerator(updatedGen)
 	if err != nil {
 		return diag.FromErr(err)
