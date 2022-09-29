@@ -55,6 +55,63 @@ func autocloudModule() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"git_config": {
+				Description: "git_config",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"destination_branch": {
+							Description: "destination_branch",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"pull_request": {
+							Description: "pull_request",
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"title": {
+										Description: "title",
+										Type:        schema.TypeString,
+										Optional:    true,
+									},
+									"commit_message_template": {
+										Description: "commit_message_template",
+										Type:        schema.TypeString,
+										Optional:    true,
+									},
+									"body": {
+										Description: "body",
+										Type:        schema.TypeString,
+										Optional:    true,
+									},
+									"variables": {
+										Description: "variables",
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"author_name": {
+													Description: "author_name",
+													Type:        schema.TypeString,
+													Optional:    true,
+												},
+												"cluster_name": {
+													Description: "cluster_name",
+													Type:        schema.TypeString,
+													Optional:    true,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"file": {
 				Description: "file",
 				Type:        schema.TypeSet,
