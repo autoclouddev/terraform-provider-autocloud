@@ -3,13 +3,13 @@ module terraform-provider-autocloud
 go 1.18
 
 require (
-	autocloud_sdk v0.0.7
+	autocloud_sdk v0.0.8
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.22.0
 	github.com/joho/godotenv v1.4.0
 )
 
-replace autocloud_sdk v0.0.7 => ../sdk/autocloud_sdk
+replace autocloud_sdk v0.0.8 => ../sdk/autocloud_sdk
 
 require (
 	github.com/agext/levenshtein v1.2.2 // indirect
