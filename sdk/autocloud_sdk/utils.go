@@ -10,5 +10,6 @@ func GetIacCatalogInput(iacCatalog IacCatalog) IacCatalogInput {
 		Instructions:    iacCatalog.Instructions,
 		Labels:          iacCatalog.Labels,
 		FileDefinitions: iacCatalog.FileDefinitions,
+		GitConfig:       iacCatalog.GitConfig,
 	}
 }

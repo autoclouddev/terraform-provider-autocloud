@@ -66,6 +66,19 @@ func autocloudModule() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
+						"git_url_options": {
+							Description: "git_url_options",
+							Type:        schema.TypeList,
+							Required:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"git_url_default": {
+							Description: "git_url_default",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
 						"pull_request": {
 							Description: "pull_request",
 							Type:        schema.TypeSet,
@@ -89,21 +102,10 @@ func autocloudModule() *schema.Resource {
 									},
 									"variables": {
 										Description: "variables",
-										Type:        schema.TypeSet,
-										Optional:    true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"author_name": {
-													Description: "author_name",
-													Type:        schema.TypeString,
-													Optional:    true,
-												},
-												"cluster_name": {
-													Description: "cluster_name",
-													Type:        schema.TypeString,
-													Optional:    true,
-												},
-											},
+										Type:        schema.TypeMap,
+										Required:    true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
 										},
 									},
 								},
