@@ -1,6 +1,7 @@
 package autocloud_sdk
 
 func GetIacCatalogInput(iacCatalog IacCatalog) IacCatalogInput {
+	tfmodule := NewModule(iacCatalog.Source, iacCatalog.Version, iacCatalog.Name)
 
 	return IacCatalogInput{
 		Name:            iacCatalog.Name,
@@ -10,5 +11,7 @@ func GetIacCatalogInput(iacCatalog IacCatalog) IacCatalogInput {
 		Instructions:    iacCatalog.Instructions,
 		Labels:          iacCatalog.Labels,
 		FileDefinitions: iacCatalog.FileDefinitions,
+		Template:        tfmodule.ToString(),
+		FormShape:       tfmodule.ToForm(),
 	}
 }
