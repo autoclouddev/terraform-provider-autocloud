@@ -43,6 +43,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloud_sdk.IacCatalog {
 
 	generator := autocloud_sdk.IacCatalog{
 		Name:            d.Get("name").(string),
+		ModuleName:      d.Get("module_name").(string),
 		Author:          d.Get("author").(string),
 		Slug:            d.Get("slug").(string),
 		Description:     d.Get("description").(string),

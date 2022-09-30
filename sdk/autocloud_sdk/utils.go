@@ -4,6 +4,7 @@ func GetIacCatalogInput(iacCatalog IacCatalog) IacCatalogInput {
 
 	return IacCatalogInput{
 		Name:            iacCatalog.Name,
+		ModuleName:      iacCatalog.ModuleName,
 		Author:          iacCatalog.Author,
 		Slug:            iacCatalog.Slug,
 		Description:     iacCatalog.Description,

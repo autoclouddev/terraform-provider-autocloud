@@ -3,6 +3,7 @@ package autocloud_sdk
 type IacCatalog struct {
 	ID              string              `json:"id"`
 	Name            string              `json:"name"`
+	ModuleName      string              `json:"moduleName"`
 	Author          string              `json:"author"`
 	Slug            string              `json:"slug"`
 	Description     string              `json:"description"`
@@ -35,6 +36,7 @@ type IacCatalogGitConfigPR struct {
 
 type IacCatalogInput struct {
 	Name            string              `json:"name"`
+	ModuleName      string              `json:"moduleName"`
 	Author          string              `json:"author"`
 	Slug            string              `json:"slug"`
 	Description     string              `json:"description"`
