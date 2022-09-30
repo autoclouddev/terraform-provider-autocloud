@@ -104,6 +104,9 @@ resource "autocloud_module" "example" {
     }
   }
 
+  generator_config_location = "local"
+  generator_config_json     = templatefile("${path.module}/form.autocloud.json.tpl", {})
+
 }
 
 output "test" {

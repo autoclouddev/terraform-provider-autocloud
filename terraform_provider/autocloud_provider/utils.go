@@ -42,18 +42,20 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloud_sdk.IacCatalog {
 	}
 
 	generator := autocloud_sdk.IacCatalog{
-		Name:            d.Get("name").(string),
-		ModuleName:      d.Get("module_name").(string),
-		Author:          d.Get("author").(string),
-		Slug:            d.Get("slug").(string),
-		Description:     d.Get("description").(string),
-		Instructions:    d.Get("instructions").(string),
-		Version:         d.Get("version").(string),
-		Source:          d.Get("source").(string),
-		Template:        d.Get("template").(string),
-		Labels:          labels,
-		FileDefinitions: GetSdkIacCatalogFileDefinitions(d),
-		GitConfig:       GetSdkIacCatalogGitConfig(d),
+		Name:                    d.Get("name").(string),
+		ModuleName:              d.Get("module_name").(string),
+		Author:                  d.Get("author").(string),
+		Slug:                    d.Get("slug").(string),
+		Description:             d.Get("description").(string),
+		Instructions:            d.Get("instructions").(string),
+		Version:                 d.Get("version").(string),
+		Source:                  d.Get("source").(string),
+		Template:                d.Get("template").(string),
+		Labels:                  labels,
+		FileDefinitions:         GetSdkIacCatalogFileDefinitions(d),
+		GitConfig:               GetSdkIacCatalogGitConfig(d),
+		GeneratorConfigLocation: d.Get("generator_config_location").(string),
+		GeneratorConfigJson:     d.Get("generator_config_json").(string),
 	}
 
 	return generator

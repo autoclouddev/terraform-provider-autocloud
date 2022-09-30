@@ -178,6 +178,23 @@ func autocloudModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"generator_config_location": {
+				Description: "generator_config_location",
+				Type:        schema.TypeString,
+				Required:    true,
+				ValidateFunc: func(val any, key string) (warns []string, errs []error) {
+					isValidAction := Contains([]string{"module", "local"}, val.(string))
+					if !isValidAction {
+						errs = append(errs, fmt.Errorf("%q must be a value in [module, local], got: %s", key, val))
+					}
+					return
+				},
+			},
+			"generator_config_json": {
+				Description: "generator_config_json",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -231,6 +248,8 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	d.Set("version", generator.Version)
 	d.Set("template", generator.Template)
 	d.Set("formShape", generator.FormShape)
+	d.Set("generatorConfigLocation", generator.GeneratorConfigLocation)
+	d.Set("generatorConfigJson", generator.GeneratorConfigJson)
 
 	return diags
 }

@@ -15,5 +15,7 @@ func GetIacCatalogInput(iacCatalog IacCatalog) IacCatalogInput {
 		Template:        tfmodule.ToString(),
 		FormShape:       tfmodule.ToForm(),
 		GitConfig:       iacCatalog.GitConfig,
+		GeneratorConfigLocation: iacCatalog.GeneratorConfigLocation,
+		GeneratorConfigJson:     iacCatalog.GeneratorConfigJson,
 	}
 }

@@ -49,8 +49,11 @@ func (c *Client) GetGenerator(generatorID string) (*IacCatalog, error) {
 }
 
 func (c *Client) CreateGenerator(generator IacCatalog) (*IacCatalog, error) {
-	fmt.Printf("CreateGenerator input: %#v\n", generator)
+	fmt.Printf("CreateGenerator IacCatalog: %#v\n\n", generator) // TODO: this is a debug line. remove it when stable
+
 	reqBody := GetIacCatalogInput(generator)
+	fmt.Printf("CreateGenerator IacCatalogInput: %#v\n\n", reqBody) // TODO: this is a debug line. remove it when stable
+
 	rb, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err
