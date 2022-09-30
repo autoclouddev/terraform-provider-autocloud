@@ -94,6 +94,26 @@ func autocloudModule() *schema.Resource {
 					},
 				},
 			},
+			"source": {
+				Description: "tf source code from registry",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"version": {
+				Description: "tf source code from registry",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"template": {
+				Description: "tf source code from registry",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"form_shape": {
+				Description: "form shape for this module",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -143,6 +163,10 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	d.Set("instructions", generator.Instructions)
 	d.Set("labels", generator.Labels)
 	d.Set("fileDefinitions", generator.FileDefinitions)
+	d.Set("source", generator.Source)
+	d.Set("version", generator.Version)
+	d.Set("template", generator.Template)
+	d.Set("formShape", generator.FormShape)
 
 	return diags
 }

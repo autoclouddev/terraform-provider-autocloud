@@ -47,6 +47,9 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloud_sdk.IacCatalog {
 		Slug:            d.Get("slug").(string),
 		Description:     d.Get("description").(string),
 		Instructions:    d.Get("instructions").(string),
+		Version:         d.Get("version").(string),
+		Source:          d.Get("source").(string),
+		Template:        d.Get("template").(string),
 		Labels:          labels,
 		FileDefinitions: GetSdkIacCatalogFileDefinitions(d),
 	}
