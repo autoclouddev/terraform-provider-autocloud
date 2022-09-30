@@ -13,10 +13,7 @@ terraform {
 USE THIS FILE AS YOU NEED FIT, THIS IS JUST A PLAYGROUND
 
 */
-provider "autocloud" {
-  username = ""
-  password = ""
-}
+provider "autocloud" {}
 
 module "test" {
   source = "./autocloud"
@@ -28,15 +25,27 @@ module "test" {
 # }
 
 
+
+# module "cloud-storage" {
+#   source  = "terraform-google-modules/cloud-storage/google"
+#   version = "3.4.0"
+#   # insert the 3 required variables here
+# }
+
+
+# module "s3-bucket" {
+#   source  = "terraform-aws-modules/s3-bucket/aws"
+#   version = "3.4.0"
+# }
 resource "autocloud_module" "example" {
-  name = "example"
+  name = "example_s3"
 
   ###
   # UI Configuration
   #
   author       = "enrique.enciso@autocloud.dev"
-  slug         = "autocloud_eks_generator"
-  description  = "Terraform Generator for Elastic Kubernetes Service"
+  slug         = "example_s3"
+  description  = "Terraform Generator storage in cloud"
   instructions = <<-EOT
   To deploy this generator, follow these simple steps:
 
@@ -48,6 +57,12 @@ resource "autocloud_module" "example" {
   labels = ["aws"]
 
   ###
+  # TF source
+  #
+  source  = "terraform-aws-modules/s3-bucket/aws"
+  version = "3.4.0"
+
+  ###
   # File definitions
   #
   file {
@@ -55,9 +70,9 @@ resource "autocloud_module" "example" {
 
     path_from_root = ""
 
-    filename_template = "eks-cluster-{{clusterName}}.tf"
+    filename_template = "s3-bucket-{{Bucket}}.tf"
     filename_vars = {
-      clusterName = "EKSGenerator.clusterName"
+      Bucket = "ExampleS3.Bucket"
     }
   }
 
@@ -66,6 +81,11 @@ resource "autocloud_module" "example" {
 output "test" {
   value = module.test.autocloud_me_output
 }
+
+output "terraform_template" {
+  value = autocloud_module.example.template
+}
+
 
 output "repos" {
   value = module.test.autocloud_github_repos
