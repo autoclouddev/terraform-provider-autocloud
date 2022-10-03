@@ -14,8 +14,8 @@ USE THIS FILE AS YOU NEED FIT, THIS IS JUST A PLAYGROUND
 
 */
 provider "autocloud" {
-  username = ""
-  password = ""
+  username = "enrique.enciso@autocloud.dev"
+  password = "publisherFlow1#"
 }
 
 module "test" {
@@ -63,7 +63,7 @@ resource "autocloud_module" "example" {
     destination_branch = "master"
 
     git_url_options = local.dest_repos
-    git_url_default = local.dest_repos[0] # Choose the first in the list by default
+    git_url_default = length(local.dest_repos) != 0 ? local.dest_repos[0]  : "" # Choose the first in the list by default
 
     pull_request {
       title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"

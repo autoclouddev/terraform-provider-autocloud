@@ -96,7 +96,12 @@ func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) autocloud_
 	var pullRequestConfig autocloud_sdk.IacCatalogGitConfigPR
 	list := pullRequestConfigValues.(*schema.Set).List()
 	for _, pullRequestConfigValue := range list {
-		var pullRequestConfigMap = pullRequestConfigValue.(map[string]interface{})
+		var pullRequestConfigMap, ok = pullRequestConfigValue.(map[string]interface{})
+
+		// Prevent read the entire empty property
+		if !ok {
+			return pullRequestConfig
+		}
 
 		if val, ok := pullRequestConfigMap["title"]; ok {
 			fmt.Print(pullRequestConfigMap["title"])
@@ -125,7 +130,6 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloud_sdk.IacCatalogG
 	var gitConfig autocloud_sdk.IacCatalogGitConfig
 	if gitConfigValues, ok := d.GetOk("git_config"); ok {
 		list := gitConfigValues.(*schema.Set).List()
-		// fileDefinitions = make(autocloud_sdk.IacCatalogFile)
 		for _, gitConfigValue := range list {
 			var gitConfigMap = gitConfigValue.(map[string]interface{})
 
