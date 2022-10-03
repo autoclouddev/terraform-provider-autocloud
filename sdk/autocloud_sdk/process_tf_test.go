@@ -2,10 +2,14 @@ package autocloud_sdk
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
 func TestCreateTemplate(t *testing.T) {
+	testDir := ".terraform"
+	os.Mkdir(testDir, os.ModePerm)
 	source := "terraform-aws-modules/s3-bucket/aws"
 	version := "3.4.0"
 	name := "s3_generator"
@@ -18,9 +22,9 @@ func TestCreateTemplate(t *testing.T) {
 	}
 	//fmt.Println(m.ToString())
 	fmt.Println(m.ToForm())
-	// if !want.MatchString(template) || err != nil {
-	// 	t.Fatalf(`"module test {"  = %q, %v, want match for %#q, nil`, template, err, want)
-	// }
+	dir, _ := os.Getwd()
+	os.Remove(filepath.Join(dir, testDir))
+
 }
 
 // func TestDownloadModules(t *testing.T) {

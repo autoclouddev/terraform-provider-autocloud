@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	p "path"
+	"path/filepath"
 
 	getter "github.com/hashicorp/go-getter"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -19,16 +21,31 @@ import (
 
 type Module struct {
 	name          string
-	variables     map[string]interface{}
+	variables     map[string]ProcVariable
 	source        string // where the module is located in the registry
 	version       string
 	fileSystemDir string // where we wil process the files
 }
 
+type ProcVariable struct {
+	name        string
+	description string
+	handlebars  string
+}
+
 func NewModule(source string, version string, name string) *Module {
 	log.Printf("initializing module %s, source:%s  version: %s\n", name, source, version)
 	// in here we should download a terraform module from a remote registry
-	fileSystemDir := fmt.Sprintf("/tmp/%s", betterguid.New())
+
+	// this is executed from /path where terraform apply is called
+	path, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	//fileSystem -> <executedPath>/.terraform/<uniqueid>
+	fileSystemDir := filepath.Join(path, ".terraform", betterguid.New())
+
+	log.Printf("new dir created: %s", fileSystemDir)
 	DownloadModulePublicRegistry(fileSystemDir, source, version)
 	variables, err := processVariables(fileSystemDir)
 	DeleteDir(fileSystemDir)
@@ -56,8 +73,8 @@ func DownloadModulePublicRegistry(fileSystemDir string, moduleSource string, ver
 	publicRegistry := "https://registry.terraform.io/v1/modules"
 	terraformRegistryModuleUrl := moduleSource //"terraform-aws-modules/s3-bucket/aws"
 	//version := m.version
-	getSourceUrl := fmt.Sprintf("%s/%s/%s/download", publicRegistry, terraformRegistryModuleUrl, version)
-
+	getSourceUrl := publicRegistry + p.Join("/", terraformRegistryModuleUrl, version, "download")
+	fmt.Println(getSourceUrl)
 	res, err := http.Get(getSourceUrl)
 	if err != nil {
 		fmt.Println(err)
@@ -95,22 +112,23 @@ func DeleteDir(fileSystemDir string) {
 	}
 }
 
-func processVariables(source string) (map[string]interface{}, error) {
+func processVariables(source string) (map[string]ProcVariable, error) {
 	module, diags := tfconfig.LoadModule(source)
 	if diags != nil {
 		fmt.Print(errors.New(diags.Error()))
 		return nil, errors.New(diags.Error())
 	}
-	variables := make(map[string]interface{})
+	variables := make(map[string]ProcVariable)
 	// in here we could insert the AST processing
 	for varName := range module.Variables {
 		if module.Variables[varName].Type == "string" || module.Variables[varName].Type == "number" {
 			// insert default value
-			content := make(map[string]interface{})
-			content["name"] = module.Variables[varName].Name
-			content["default"] = "default value"
-			content["description"] = module.Variables[varName].Description
-			content["handlebars"] = fmt.Sprintf("{{%s}}", strcase.UpperCamelCase(varName))
+
+			content := ProcVariable{
+				name:        module.Variables[varName].Name,
+				description: module.Variables[varName].Description,
+				handlebars:  fmt.Sprintf("{{%s}}", strcase.UpperCamelCase(varName)),
+			}
 			variables[varName] = content
 		}
 	}
@@ -128,9 +146,7 @@ func (m Module) ToString() string {
 	moduleBody.SetAttributeValue("source", cty.StringVal(m.source))
 	moduleBody.SetAttributeValue("version", cty.StringVal(m.version))
 	for k, v := range m.variables {
-		content := v.(map[string]interface{})
-		str := (content["handlebars"]).(string)
-		moduleBody.SetAttributeValue(k, cty.StringVal(str))
+		moduleBody.SetAttributeValue(k, cty.StringVal(v.handlebars))
 	}
 	return fmt.Sprintf("%s", hclFile.Bytes())
 }
@@ -150,9 +166,9 @@ func (m Module) ToForm() string {
 				FieldLabel: "",
 			},
 		}
-		content := v.(map[string]interface{})
-		description := (content["description"]).(string)
-		name := (content["name"]).(string)
+
+		description := v.description
+		name := v.name
 		fieldId := fmt.Sprintf("%s.%s", strcase.UpperCamelCase(m.name), strcase.UpperCamelCase(name))
 		f.Id = fieldId
 		f.FormQuestion.FieldId = fieldId

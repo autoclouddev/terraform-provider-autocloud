@@ -13,8 +13,6 @@ data "autocloud_me" "current_user" {}
 
 data "autocloud_github_repos" "repos" {}
 
-
-
 # Only returns email
 output "autocloud_me_output" {
   value = {

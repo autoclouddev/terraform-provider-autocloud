@@ -24,6 +24,14 @@ module "test" {
 #   source = "./milestone1"
 # }
 
+data "autocloud_me" "current_user" {}
+
+data "autocloud_github_repos" "repos" {}
+locals {
+  ####
+  # Destination repos
+  dest_repos = data.autocloud_github_repos.repos.data[*].url
+}
 
 
 # module "cloud-storage" {
@@ -38,7 +46,8 @@ module "test" {
 #   version = "3.4.0"
 # }
 resource "autocloud_module" "example" {
-  name = "example_s3"
+  name        = "example_s3"
+  module_name = "EKSGenerator"
 
   ###
   # UI Configuration
@@ -61,6 +70,25 @@ resource "autocloud_module" "example" {
   #
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "3.4.0"
+  # Destination repository git configuraiton
+  #
+  git_config {
+    destination_branch = "master"
+
+    git_url_options = local.dest_repos
+    git_url_default = length(local.dest_repos) != 0 ? local.dest_repos[0] : "" # Choose the first in the list by default
+
+    pull_request {
+      title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"
+      commit_message_template = "[AutoCloud] new EKS generator, created by {{authorName}}"
+      body                    = jsonencode(file("./generator/pull_request.md.tpl"))
+      variables = {
+        authorName  = "generic.authorName"
+        clusterName = "EKSGenerator.clusterName"
+      }
+    }
+  }
+
 
   ###
   # File definitions

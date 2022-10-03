@@ -43,6 +43,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloud_sdk.IacCatalog {
 
 	generator := autocloud_sdk.IacCatalog{
 		Name:            d.Get("name").(string),
+		ModuleName:      d.Get("module_name").(string),
 		Author:          d.Get("author").(string),
 		Slug:            d.Get("slug").(string),
 		Description:     d.Get("description").(string),
@@ -52,6 +53,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloud_sdk.IacCatalog {
 		Template:        d.Get("template").(string),
 		Labels:          labels,
 		FileDefinitions: GetSdkIacCatalogFileDefinitions(d),
+		GitConfig:       GetSdkIacCatalogGitConfig(d),
 	}
 
 	return generator
@@ -91,4 +93,73 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloud_sdk.Iac
 	}
 
 	return fileDefinitions
+}
+
+func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) autocloud_sdk.IacCatalogGitConfigPR {
+	var pullRequestConfig autocloud_sdk.IacCatalogGitConfigPR
+	list := pullRequestConfigValues.(*schema.Set).List()
+	for _, pullRequestConfigValue := range list {
+		var pullRequestConfigMap, ok = pullRequestConfigValue.(map[string]interface{})
+
+		// Prevent read the entire empty property
+		if !ok {
+			return pullRequestConfig
+		}
+
+		if val, ok := pullRequestConfigMap["title"]; ok {
+			fmt.Print(pullRequestConfigMap["title"])
+			pullRequestConfig.Title = val.(string)
+		}
+
+		if val, ok := pullRequestConfigMap["commit_message_template"]; ok {
+			pullRequestConfig.CommitMessageTemplate = val.(string)
+		}
+
+		if val, ok := pullRequestConfigMap["body"]; ok {
+			pullRequestConfig.Body = val.(string)
+		}
+
+		if val, ok := pullRequestConfigMap["variables"]; ok {
+			var pullRequestConfigVariablesMap = val.(map[string]interface{})
+			pullRequestConfig.Variables = ConvertMap(pullRequestConfigVariablesMap)
+		}
+	}
+
+	return pullRequestConfig
+}
+
+func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloud_sdk.IacCatalogGitConfig {
+
+	var gitConfig autocloud_sdk.IacCatalogGitConfig
+	if gitConfigValues, ok := d.GetOk("git_config"); ok {
+		list := gitConfigValues.(*schema.Set).List()
+		for _, gitConfigValue := range list {
+			var gitConfigMap = gitConfigValue.(map[string]interface{})
+
+			if val, ok := gitConfigMap["destination_branch"]; ok {
+				fmt.Print(gitConfigMap["destination_branch"])
+				gitConfig.DestinationBranch = val.(string)
+			}
+
+			if val, ok := gitConfigMap["git_url_default"]; ok {
+				gitConfig.GitUrlDefault = val.(string)
+			}
+
+			if val, ok := gitConfigMap["git_url_options"]; ok {
+				var options = []string{}
+				list := val.([]interface{})
+				options = make([]string, len(list))
+				for i, optionValue := range list {
+					options[i] = optionValue.(string)
+				}
+				gitConfig.GitUrlOptions = options
+			}
+
+			if val, ok := gitConfigMap["pull_request"]; ok {
+				gitConfig.PullRequest = GetSdkIacCatalogGitConfigPR(val)
+			}
+		}
+	}
+
+	return gitConfig
 }
