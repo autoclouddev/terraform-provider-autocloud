@@ -27,6 +27,11 @@ func autocloudModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"module_name": {
+				Description: "module_name",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"author": {
 				Description: "author",
 				Type:        schema.TypeString,
@@ -53,6 +58,65 @@ func autocloudModule() *schema.Resource {
 				Optional:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
+				},
+			},
+			"git_config": {
+				Description: "git_config",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"destination_branch": {
+							Description: "destination_branch",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"git_url_options": {
+							Description: "git_url_options",
+							Type:        schema.TypeList,
+							Required:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"git_url_default": {
+							Description: "git_url_default",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"pull_request": {
+							Description: "pull_request",
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"title": {
+										Description: "title",
+										Type:        schema.TypeString,
+										Optional:    true,
+									},
+									"commit_message_template": {
+										Description: "commit_message_template",
+										Type:        schema.TypeString,
+										Optional:    true,
+									},
+									"body": {
+										Description: "body",
+										Type:        schema.TypeString,
+										Optional:    true,
+									},
+									"variables": {
+										Description: "variables",
+										Type:        schema.TypeMap,
+										Required:    true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 			"file": {
