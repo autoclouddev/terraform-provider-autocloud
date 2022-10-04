@@ -6,12 +6,7 @@ import (
 	"net/http"
 )
 
-type Repository struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	HtmlUrl     string `json:htmlUrl`
-	Description string `json:description`
-}
+
 
 func (c *Client) GetRepositories() ([]Repository, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/source_control/repositories", c.HostURL), nil)

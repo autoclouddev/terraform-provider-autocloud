@@ -13,10 +13,7 @@ terraform {
 USE THIS FILE AS YOU NEED FIT, THIS IS JUST A PLAYGROUND
 
 */
-provider "autocloud" {
-  username = "enrique.enciso@autocloud.dev"
-  password = "publisherFlow1#"
-}
+provider "autocloud" {}
 
 module "test" {
   source = "./autocloud"
@@ -36,16 +33,28 @@ locals {
   dest_repos = data.autocloud_github_repos.repos.data[*].url
 }
 
+
+# module "cloud-storage" {
+#   source  = "terraform-google-modules/cloud-storage/google"
+#   version = "3.4.0"
+#   # insert the 3 required variables here
+# }
+
+
+# module "s3-bucket" {
+#   source  = "terraform-aws-modules/s3-bucket/aws"
+#   version = "3.4.0"
+# }
 resource "autocloud_module" "example" {
-  name = "example"
+  name        = "example_s3"
   module_name = "EKSGenerator"
 
   ###
   # UI Configuration
   #
   author       = "enrique.enciso@autocloud.dev"
-  slug         = "autocloud_eks_generator"
-  description  = "Terraform Generator for Elastic Kubernetes Service"
+  slug         = "example_s3"
+  description  = "Terraform Generator storage in cloud"
   instructions = <<-EOT
   To deploy this generator, follow these simple steps:
 
@@ -57,13 +66,17 @@ resource "autocloud_module" "example" {
   labels = ["aws"]
 
   ###
+  # TF source
+  #
+  source  = "terraform-aws-modules/s3-bucket/aws"
+  version = "3.4.0"
   # Destination repository git configuraiton
   #
   git_config {
     destination_branch = "master"
 
     git_url_options = local.dest_repos
-    git_url_default = length(local.dest_repos) != 0 ? local.dest_repos[0]  : "" # Choose the first in the list by default
+    git_url_default = length(local.dest_repos) != 0 ? local.dest_repos[0] : "" # Choose the first in the list by default
 
     pull_request {
       title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"
@@ -85,9 +98,9 @@ resource "autocloud_module" "example" {
 
     path_from_root = ""
 
-    filename_template = "eks-cluster-{{clusterName}}.tf"
+    filename_template = "s3-bucket-{{Bucket}}.tf"
     filename_vars = {
-      clusterName = "EKSGenerator.clusterName"
+      Bucket = "ExampleS3.Bucket"
     }
   }
 
@@ -96,6 +109,11 @@ resource "autocloud_module" "example" {
 output "test" {
   value = module.test.autocloud_me_output
 }
+
+output "terraform_template" {
+  value = autocloud_module.example.template
+}
+
 
 output "repos" {
   value = module.test.autocloud_github_repos
