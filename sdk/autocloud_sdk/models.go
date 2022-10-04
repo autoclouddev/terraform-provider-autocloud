@@ -15,6 +15,8 @@ type IacCatalog struct {
 	Labels          []string            `json:"labels"`
 	FileDefinitions []IacCatalogFile    `json:"fileDefinitions"`
 	GitConfig       IacCatalogGitConfig `json:"gitConfig"`
+	GeneratorConfigLocation string              `json:"generatorConfigLocation"`
+	GeneratorConfigJson     string              `json:"generatorConfigJson"`
 }
 
 type IacCatalogFile struct {
@@ -73,4 +75,6 @@ type IacCatalogInput struct {
 	Template        string              `json:"template"`
 	FormShape       string              `json:"formShape"`
 	GitConfig       IacCatalogGitConfig `json:"gitConfig"`
+	GeneratorConfigLocation string              `json:"generatorConfigLocation"`
+	GeneratorConfigJson     string              `json:"generatorConfigJson"`
 }
