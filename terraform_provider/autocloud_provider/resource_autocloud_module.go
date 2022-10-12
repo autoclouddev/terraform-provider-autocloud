@@ -27,11 +27,11 @@ func autocloudModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"module_name": {
-				Description: "module_name",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
+			// "module_name": {
+			// 	Description: "module_name",
+			// 	Type:        schema.TypeString,
+			// 	Optional:    true,
+			// },
 			"author": {
 				Description: "author",
 				Type:        schema.TypeString,
@@ -201,7 +201,6 @@ func autocloudModule() *schema.Resource {
 
 func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	// client := meta.(*apiClient)
 
 	var diags diag.Diagnostics
 

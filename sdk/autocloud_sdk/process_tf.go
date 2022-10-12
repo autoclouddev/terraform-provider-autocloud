@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	p "path"
 	"path/filepath"
+	"strings"
 
 	getter "github.com/hashicorp/go-getter"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -31,6 +32,20 @@ type ProcVariable struct {
 	name        string
 	description string
 	handlebars  string
+}
+
+const PublicRegistry = "https://registry.terraform.io/v1/modules"
+
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+var (
+	HttpClient HTTPClient
+)
+
+func init() {
+	HttpClient = &http.Client{}
 }
 
 func NewModule(source string, version string, name string) *Module {
@@ -61,6 +76,76 @@ func NewModule(source string, version string, name string) *Module {
 	}
 }
 
+func CleanSourceUrl(source string, version string) string {
+	if strings.Contains(source, "git::") && strings.Index(source, "git::") == 0 {
+		if strings.Contains(source, "?ref=") || version == "" {
+			return source
+		} else {
+			return source + "?ref=" + version
+		}
+	}
+	//
+	moduleSource := GetTFRegistryUrl(source, version)
+	fmt.Print("module_source", moduleSource, "\n")
+	if moduleSource == "" {
+		panic("eerror")
+	}
+	res, err := http.Get(moduleSource)
+	fmt.Print("res", res)
+	if err != nil {
+		fmt.Print("err", err)
+		return ""
+	}
+	source_url := res.Header.Get("x-terraform-get")
+	//if host empyt add it
+	//src_code, _ := GetModuleUrl(source_url)
+	return source_url
+}
+
+func GetTFRegistryUrl(source string, version string) string {
+	download := "/" + version + "/download"
+	host_parts := strings.Split(source, ".")
+
+	if len(host_parts) == 1 {
+		return PublicRegistry + "/" + source + download
+	}
+	if len(host_parts) > 2 { ///v1/modules/general/database/postgres
+		domain := strings.Split(source, "/")[0]
+		path := strings.Join(strings.Split(source, "/")[1:], "/")
+		return "https://" + domain + "/v1/modules/" + path + download
+	}
+	return ""
+}
+
+func GetModuleUrl(source string) (string, error) {
+	fmt.Println(source)
+	u, err := url.Parse(source)
+	fmt.Println("error:", err)
+	fmt.Println("hostname", u.Hostname())
+
+	fmt.Println("scheme", u.Scheme)
+
+	if err == nil {
+		if u.Path == "" {
+			fmt.Printf("helllo, invalid parameter")
+			return "", errors.New("invalid parameter")
+		} else {
+			if u.Host == "" {
+				host_parts := strings.Split(source, ".")
+				if len(host_parts) > 2 {
+					return "https://" + source, nil
+				}
+				return PublicRegistry + "/" + source, nil
+			}
+			fmt.Println("has valid host")
+			return source, nil
+		}
+
+	}
+
+	return "", nil
+}
+
 // supports only public registries for now
 func DownloadModulePublicRegistry(fileSystemDir string, moduleSource string, version string) {
 	//registry -> https://registry.terraform.io/v1/modules/
@@ -70,17 +155,31 @@ func DownloadModulePublicRegistry(fileSystemDir string, moduleSource string, ver
 	// download source in the tmp dir and recieve the full path as input
 	// get directory and use processVariables
 	//fileSystemDir := "/tmp/gogetter"
-	publicRegistry := "https://registry.terraform.io/v1/modules"
-	terraformRegistryModuleUrl := moduleSource //"terraform-aws-modules/s3-bucket/aws"
-	//version := m.version
-	getSourceUrl := publicRegistry + p.Join("/", terraformRegistryModuleUrl, version, "download")
-	fmt.Println(getSourceUrl)
-	res, err := http.Get(getSourceUrl)
-	if err != nil {
-		fmt.Println(err)
-		return
+
+	//https://registry.terraform.io/v1/modules/terraform-aws-modules/s3-bucket/aws/1.0.0/download
+	//https://app.terraform.io/api/registry/v1/modules/enciso/s3/aws/1.0.0/download
+
+	// terraformRegistryModuleUrl := moduleSource //"terraform-aws-modules/s3-bucket/aws"
+	// getSourceUrl, _ := GetModuleUrl(terraformRegistryModuleUrl)
+
+	// //version := m.version
+	// fmt.Println(getSourceUrl)
+	// //res, err := http.Get(getSourceUrl)
+	// request, _ := http.NewRequest(http.MethodGet, getSourceUrl, nil)
+	// request.Header.Add("Accept", "application/json")
+	// res, err := HttpClient.Do(request)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// source_url := res.Header.Get("x-terraform-get")
+	//	url, err := ComplementDownloadUrl(GetDomainFromUrl(getSourceUrl), source_url)
+	url := CleanSourceUrl(moduleSource, version)
+	if url == "" {
+		// log error somewhere
+		panic("invalid url")
 	}
-	url := res.Header.Get("x-terraform-get")
+	// validate url, see if it has a missing the registry (case citizen)
 	client := &getter.Client{
 		Ctx: context.Background(),
 		//define the destination to where the directory will be stored. This will create the directory if it doesnt exist
@@ -90,13 +189,13 @@ func DownloadModulePublicRegistry(fileSystemDir string, moduleSource string, ver
 		Src:  url, //"github.com/hashicorp/terraform/examples/cross-provider",
 		Mode: getter.ClientModeDir,
 		//define the type of detectors go getter should use, in this case only github is needed
-		Detectors: []getter.Detector{
-			&getter.GitHubDetector{},
-		},
-		//provide the getter needed to download the files
-		Getters: map[string]getter.Getter{
-			"git": &getter.GitGetter{},
-		},
+		// Detectors: []getter.Detector{
+		// 	&getter.GitHubDetector{},
+		// },
+		// //provide the getter needed to download the files
+		// Getters: map[string]getter.Getter{
+		// 	"git": &getter.GitGetter{},
+		// },
 	}
 	if err := client.Get(); err != nil {
 		log.Fatalf("Error getting path %s: %v\n", client.Src, err)
@@ -180,4 +279,33 @@ func (m Module) ToForm() string {
 	}
 	j, _ := json.MarshalIndent(formVariables, "", "  ")
 	return string(j)
+}
+
+func isUrl(str string) bool {
+	u, err := url.Parse(str)
+	fmt.Print(err)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
+func validateUrl(reg_url string, source_url string) (u string, e error) {
+	if isUrl(source_url) {
+		fmt.Println("yei")
+		return source_url, nil
+	} else if isUrl(filepath.Join(reg_url, source_url)) {
+		return filepath.Join(reg_url, source_url), nil
+	}
+	return "", errors.New("Not a valid url")
+
+}
+
+func GetDomainFromUrl(url string) string {
+	res := strings.ReplaceAll(url, "https://", "")
+	return strings.Split(res, "/")[0]
+}
+
+func ComplementDownloadUrl(host string, path string) (string, error) {
+	if host == "" {
+		return "", errors.New("invalid url")
+	}
+	return "https://" + host + path, nil
 }

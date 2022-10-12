@@ -15,9 +15,9 @@ USE THIS FILE AS YOU NEED FIT, THIS IS JUST A PLAYGROUND
 */
 provider "autocloud" {}
 
-module "test" {
-  source = "./autocloud"
-}
+# module "test" {
+#   source = "./autocloud"
+# }
 
 # uncomment this to test milestone1
 # module "milestone_1" {
@@ -46,8 +46,9 @@ locals {
 #   version = "3.4.0"
 # }
 resource "autocloud_module" "example" {
-  name        = "example_s3"
-  module_name = "EKSGenerator"
+  name        = "ExampleS3"
+  module_name = "ExampleS3"
+
 
   ###
   # UI Configuration
@@ -84,7 +85,7 @@ resource "autocloud_module" "example" {
       body                    = jsonencode(file("./generator/pull_request.md.tpl"))
       variables = {
         authorName  = "generic.authorName"
-        clusterName = "EKSGenerator.clusterName"
+        clusterName = "ExampleS3.Bucket"
       }
     }
   }
@@ -109,15 +110,15 @@ resource "autocloud_module" "example" {
 
 }
 
-output "test" {
-  value = module.test.autocloud_me_output
-}
+# output "test" {
+#   value = module.test.autocloud_me_output
+# }
 
 output "terraform_template" {
   value = autocloud_module.example.template
 }
 
 
-output "repos" {
-  value = module.test.autocloud_github_repos
-}
+# output "repos" {
+#   value = module.test.autocloud_github_repos
+# }
