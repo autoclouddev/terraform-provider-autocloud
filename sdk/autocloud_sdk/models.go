@@ -1,20 +1,19 @@
 package autocloud_sdk
 
 type IacCatalog struct {
-	ID              string              `json:"id"`
-	Name            string              `json:"name"`
-	ModuleName      string              `json:"moduleName"`
-	Author          string              `json:"author"`
-	Slug            string              `json:"slug"`
-	Source          string              `json:"source"`
-	Version         string              `json:"version"`
-	Template        string              `json:"template"`
-	FormShape       string              `json:"formShape"`
-	Description     string              `json:"description"`
-	Instructions    string              `json:"instructions"`
-	Labels          []string            `json:"labels"`
-	FileDefinitions []IacCatalogFile    `json:"fileDefinitions"`
-	GitConfig       IacCatalogGitConfig `json:"gitConfig"`
+	ID                      string              `json:"id"`
+	Name                    string              `json:"name"`
+	Author                  string              `json:"author"`
+	Slug                    string              `json:"slug"`
+	Source                  string              `json:"source"`
+	Version                 string              `json:"version"`
+	Template                string              `json:"template"`
+	FormShape               string              `json:"formShape"`
+	Description             string              `json:"description"`
+	Instructions            string              `json:"instructions"`
+	Labels                  []string            `json:"labels"`
+	FileDefinitions         []IacCatalogFile    `json:"fileDefinitions"`
+	GitConfig               IacCatalogGitConfig `json:"gitConfig"`
 	GeneratorConfigLocation string              `json:"generatorConfigLocation"`
 	GeneratorConfigJson     string              `json:"generatorConfigJson"`
 }
@@ -62,19 +61,18 @@ type IacCatalogGitConfigPR struct {
 }
 
 type IacCatalogInput struct {
-	Name            string              `json:"name"`
-	ModuleName      string              `json:"moduleName"`
-	Author          string              `json:"author"`
-	Slug            string              `json:"slug"`
-	Source          string              `json:"source"`
-	Version         string              `json:"version"`
-	Description     string              `json:"description"`
-	Instructions    string              `json:"instructions"`
-	Labels          []string            `json:"labels"`
-	FileDefinitions []IacCatalogFile    `json:"fileDefinitions"`
-	Template        string              `json:"template"`
-	FormShape       string              `json:"formShape"`
-	GitConfig       IacCatalogGitConfig `json:"gitConfig"`
+	Name                    string              `json:"name"`
+	Author                  string              `json:"author"`
+	Slug                    string              `json:"slug"`
+	Source                  string              `json:"source"`
+	Version                 string              `json:"version"`
+	Description             string              `json:"description"`
+	Instructions            string              `json:"instructions"`
+	Labels                  []string            `json:"labels"`
+	FileDefinitions         []IacCatalogFile    `json:"fileDefinitions"`
+	Template                string              `json:"template"`
+	FormShape               string              `json:"formShape"`
+	GitConfig               IacCatalogGitConfig `json:"gitConfig"`
 	GeneratorConfigLocation string              `json:"generatorConfigLocation"`
 	GeneratorConfigJson     string              `json:"generatorConfigJson"`
 }
