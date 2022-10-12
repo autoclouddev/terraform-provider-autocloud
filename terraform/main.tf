@@ -47,7 +47,6 @@ locals {
 # }
 resource "autocloud_module" "example" {
   name        = "example_s3"
-  module_name = "EKSGenerator"
 
   ###
   # UI Configuration
