@@ -46,9 +46,7 @@ locals {
 #   version = "3.4.0"
 # }
 resource "autocloud_module" "example" {
-  name        = "ExampleS3"
-  module_name = "ExampleS3"
-
+  name = "example_s3"
 
   ###
   # UI Configuration

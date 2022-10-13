@@ -52,7 +52,6 @@ func TestAccAutocloudModule(t *testing.T) {
 const testAccAutocloudModule = `
 resource "autocloud_module" "foo" {
   name        = "example_s3"
-  module_name = "EKSGenerator"
 
   author       = "enrique.enciso@autocloud.dev"
   slug         = "autocloud_eks_generator"
@@ -64,16 +63,16 @@ resource "autocloud_module" "foo" {
   step 2: step-2-description
   step 3: step-3-description
   EOT
-  labels       = [ 
+  labels       = [
 	"aws"
-  ]   
+  ]
 
   ###
   # TF source
   #
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "3.4.0"
-  
+
   ###
   # File definitions
   #

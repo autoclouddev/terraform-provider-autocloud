@@ -27,11 +27,6 @@ func autocloudModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			// "module_name": {
-			// 	Description: "module_name",
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// },
 			"author": {
 				Description: "author",
 				Type:        schema.TypeString,
