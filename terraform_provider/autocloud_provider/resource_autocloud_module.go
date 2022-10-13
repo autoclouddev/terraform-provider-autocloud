@@ -196,7 +196,6 @@ func autocloudModule() *schema.Resource {
 
 func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-
 	var diags diag.Diagnostics
 
 	generator := GetSdkIacCatalog(d)

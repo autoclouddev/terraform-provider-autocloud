@@ -1,10 +1,10 @@
 package autocloud_sdk
 
 import (
-	"log"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -52,7 +52,10 @@ func (c *Client) GetGenerator(generatorID string) (*IacCatalog, error) {
 func (c *Client) CreateGenerator(generator IacCatalog) (*IacCatalog, error) {
 	log.Printf("CreateGenerator IacCatalog: %+v\n\n", generator)
 
-	reqBody := GetIacCatalogInput(generator)
+	reqBody, err := GetIacCatalogInput(generator)
+	if err != nil {
+		return nil, err
+	}
 	log.Printf("CreateGenerator IacCatalogInput: %+v\n\n", reqBody)
 
 	rb, err := json.Marshal(reqBody)
@@ -100,7 +103,10 @@ func (c *Client) DeleteGenerator(generatorID string) error {
 }
 
 func (c *Client) UpdateGenerator(generator IacCatalog) (*IacCatalog, error) {
-	reqBody := GetIacCatalogInput(generator)
+	reqBody, err := GetIacCatalogInput(generator)
+	if err != nil {
+		return nil, err
+	}
 	rb, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err

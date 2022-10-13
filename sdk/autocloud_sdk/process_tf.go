@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -21,11 +22,11 @@ import (
 )
 
 type Module struct {
-	name          string
-	variables     map[string]ProcVariable
-	source        string // where the module is located in the registry
-	version       string
-	fileSystemDir string // where we wil process the files
+	Name          string
+	Variables     map[string]ProcVariable
+	Source        string // where the module is located in the registry
+	Version       string
+	FileSystemDir string // where we wil process the files
 }
 
 type ProcVariable struct {
@@ -48,32 +49,45 @@ func init() {
 	HttpClient = &http.Client{}
 }
 
-func NewModule(source string, version string, name string) *Module {
-	log.Printf("initializing module %s, source:%s  version: %s\n", name, source, version)
-	// in here we should download a terraform module from a remote registry
+func CreateFileDirectory() (string, error) {
 
-	// this is executed from /path where terraform apply is called
 	path, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		return "", nil
 	}
 	//fileSystem -> <executedPath>/.terraform/<uniqueid>
-	fileSystemDir := filepath.Join(path, ".terraform", betterguid.New())
+	return filepath.Join(path, ".terraform", betterguid.New()), nil
+}
+
+func NewModule(source string, version string, name string, dir string) (*Module, error) {
+	log.Printf("initializing module %s, source:%s  version: %s\n", name, source, version)
+
+	var fileSystemDir string
+	if fileSystemDir = dir; dir == "" {
+		createdDir, err := CreateFileDirectory()
+		fileSystemDir = createdDir
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	log.Printf("new dir created: %s", fileSystemDir)
-	DownloadModulePublicRegistry(fileSystemDir, source, version)
+	err := DownloadTFModule(fileSystemDir, source, version)
+	if err != nil {
+		return nil, err
+	}
 	variables, err := processVariables(fileSystemDir)
 	DeleteDir(fileSystemDir)
 	if err != nil {
-		panic("Error reading variables")
+		return nil, err
 	}
 	return &Module{
-		name:          name,
-		source:        source,
-		fileSystemDir: fileSystemDir,
-		version:       version,
-		variables:     variables,
-	}
+		Name:          name,
+		Source:        source,
+		FileSystemDir: fileSystemDir,
+		Version:       version,
+		Variables:     variables,
+	}, nil
 }
 
 func CleanSourceUrl(source string, version string) string {
@@ -86,33 +100,36 @@ func CleanSourceUrl(source string, version string) string {
 	}
 	//
 	moduleSource := GetTFRegistryUrl(source, version)
-	fmt.Print("module_source", moduleSource, "\n")
+	log.Print("module_source: ", moduleSource, "\n")
 	if moduleSource == "" {
-		panic("eerror")
+		return moduleSource
 	}
 	res, err := http.Get(moduleSource)
-	fmt.Print("res", res)
 	if err != nil {
-		fmt.Print("err", err)
+		log.Fatal("Bad tf fetching: ", moduleSource, "\n")
 		return ""
 	}
-	source_url := res.Header.Get("x-terraform-get")
+	sourceUrl := res.Header.Get("x-terraform-get")
 	//if host empyt add it
-	//src_code, _ := GetModuleUrl(source_url)
-	return source_url
+	if isUrl(sourceUrl) || strings.Contains(sourceUrl, "git::") {
+		return sourceUrl
+	} else {
+		clean_domain := strings.ReplaceAll(moduleSource, "https://", "")
+		domain := strings.Split(clean_domain, "/")[0]
+		return "https://" + path.Join(domain, sourceUrl)
+	}
 }
 
 func GetTFRegistryUrl(source string, version string) string {
-	download := "/" + version + "/download"
+	download := path.Join(version, "download")
 	host_parts := strings.Split(source, ".")
-
 	if len(host_parts) == 1 {
-		return PublicRegistry + "/" + source + download
+		return PublicRegistry + "/" + path.Join(source, download)
 	}
-	if len(host_parts) > 2 { ///v1/modules/general/database/postgres
+	if len(host_parts) > 2 {
 		domain := strings.Split(source, "/")[0]
-		path := strings.Join(strings.Split(source, "/")[1:], "/")
-		return "https://" + domain + "/v1/modules/" + path + download
+		uri := strings.Join(strings.Split(source, "/")[1:], "/")
+		return "https://" + domain + path.Join("/v1/modules/", uri, download)
 	}
 	return ""
 }
@@ -120,14 +137,8 @@ func GetTFRegistryUrl(source string, version string) string {
 func GetModuleUrl(source string) (string, error) {
 	fmt.Println(source)
 	u, err := url.Parse(source)
-	fmt.Println("error:", err)
-	fmt.Println("hostname", u.Hostname())
-
-	fmt.Println("scheme", u.Scheme)
-
 	if err == nil {
 		if u.Path == "" {
-			fmt.Printf("helllo, invalid parameter")
 			return "", errors.New("invalid parameter")
 		} else {
 			if u.Host == "" {
@@ -137,47 +148,18 @@ func GetModuleUrl(source string) (string, error) {
 				}
 				return PublicRegistry + "/" + source, nil
 			}
-			fmt.Println("has valid host")
+			log.Fatalln("has valid host")
 			return source, nil
 		}
-
 	}
-
 	return "", nil
 }
 
-// supports only public registries for now
-func DownloadModulePublicRegistry(fileSystemDir string, moduleSource string, version string) {
-	//registry -> https://registry.terraform.io/v1/modules/
-	// source-> terraform-aws-modules/s3-bucket/aws/3.4.0/download
-	// get x-terraform-get header
-	// use go-getter to fetch the source code
-	// download source in the tmp dir and recieve the full path as input
-	// get directory and use processVariables
-	//fileSystemDir := "/tmp/gogetter"
-
-	//https://registry.terraform.io/v1/modules/terraform-aws-modules/s3-bucket/aws/1.0.0/download
-	//https://app.terraform.io/api/registry/v1/modules/enciso/s3/aws/1.0.0/download
-
-	// terraformRegistryModuleUrl := moduleSource //"terraform-aws-modules/s3-bucket/aws"
-	// getSourceUrl, _ := GetModuleUrl(terraformRegistryModuleUrl)
-
-	// //version := m.version
-	// fmt.Println(getSourceUrl)
-	// //res, err := http.Get(getSourceUrl)
-	// request, _ := http.NewRequest(http.MethodGet, getSourceUrl, nil)
-	// request.Header.Add("Accept", "application/json")
-	// res, err := HttpClient.Do(request)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// source_url := res.Header.Get("x-terraform-get")
-	//	url, err := ComplementDownloadUrl(GetDomainFromUrl(getSourceUrl), source_url)
+func DownloadTFModule(fileSystemDir string, moduleSource string, version string) error {
 	url := CleanSourceUrl(moduleSource, version)
+	fmt.Println("download url ", url)
 	if url == "" {
-		// log error somewhere
-		panic("invalid url")
+		return errors.New("invalid source for terraform modules")
 	}
 	// validate url, see if it has a missing the registry (case citizen)
 	client := &getter.Client{
@@ -186,22 +168,14 @@ func DownloadModulePublicRegistry(fileSystemDir string, moduleSource string, ver
 		Dst: fileSystemDir,
 		Dir: true,
 		//the repository with a subdirectory I would like to clone only
-		Src:  url, //"github.com/hashicorp/terraform/examples/cross-provider",
+		Src:  url,
 		Mode: getter.ClientModeDir,
-		//define the type of detectors go getter should use, in this case only github is needed
-		// Detectors: []getter.Detector{
-		// 	&getter.GitHubDetector{},
-		// },
-		// //provide the getter needed to download the files
-		// Getters: map[string]getter.Getter{
-		// 	"git": &getter.GitGetter{},
-		// },
 	}
 	if err := client.Get(); err != nil {
 		log.Fatalf("Error getting path %s: %v\n", client.Src, err)
-		return
+		return err
 	}
-
+	return nil
 }
 
 func DeleteDir(fileSystemDir string) {
@@ -219,6 +193,7 @@ func processVariables(source string) (map[string]ProcVariable, error) {
 	}
 	variables := make(map[string]ProcVariable)
 	// in here we could insert the AST processing
+
 	for varName := range module.Variables {
 		if module.Variables[varName].Type == "string" || module.Variables[varName].Type == "number" {
 			// insert default value
@@ -238,13 +213,13 @@ func (m Module) ToString() string {
 	hclFile := hclwrite.NewEmptyFile()
 	rootBody := hclFile.Body()
 	moduletxt := rootBody.AppendNewBlock("module",
-		[]string{m.name})
+		[]string{m.Name})
 	moduleBody := moduletxt.Body()
 
 	// adding source and version
-	moduleBody.SetAttributeValue("source", cty.StringVal(m.source))
-	moduleBody.SetAttributeValue("version", cty.StringVal(m.version))
-	for k, v := range m.variables {
+	moduleBody.SetAttributeValue("source", cty.StringVal(m.Source))
+	moduleBody.SetAttributeValue("version", cty.StringVal(m.Version))
+	for k, v := range m.Variables {
 		moduleBody.SetAttributeValue(k, cty.StringVal(v.handlebars))
 	}
 	return fmt.Sprintf("%s", hclFile.Bytes())
@@ -254,11 +229,11 @@ func (m Module) ToForm() string {
 
 	var formVariables []FormShape
 
-	for _, v := range m.variables {
+	for _, v := range m.Variables {
 		f := FormShape{
-			Id:     m.name,
+			Id:     m.Name,
 			Type:   "string",
-			Module: strcase.UpperCamelCase(m.name),
+			Module: strcase.UpperCamelCase(m.Name),
 			FormQuestion: FormQuestion{
 				FieldId:    "",
 				FieldType:  "shortText",
@@ -268,12 +243,11 @@ func (m Module) ToForm() string {
 
 		description := v.description
 		name := v.name
-		fieldId := fmt.Sprintf("%s.%s", strcase.UpperCamelCase(m.name), strcase.UpperCamelCase(name))
+		fieldId := fmt.Sprintf("%s.%s", strcase.UpperCamelCase(m.Name), strcase.UpperCamelCase(name))
 		f.Id = fieldId
 		f.FormQuestion.FieldId = fieldId
 		f.FormQuestion.FieldLabel = name
 		f.FormQuestion.ExplainingText = description
-		//f.FormQuestion.ValidationRules = append(f.FormQuestion.ValidationRules, v) //ref for future
 		formVariables = append(formVariables, f)
 
 	}
