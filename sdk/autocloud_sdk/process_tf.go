@@ -257,13 +257,12 @@ func (m Module) ToForm() string {
 
 func isUrl(str string) bool {
 	u, err := url.Parse(str)
-	fmt.Print(err)
+	log.Fatalln(err)
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
 func validateUrl(reg_url string, source_url string) (u string, e error) {
 	if isUrl(source_url) {
-		fmt.Println("yei")
 		return source_url, nil
 	} else if isUrl(filepath.Join(reg_url, source_url)) {
 		return filepath.Join(reg_url, source_url), nil

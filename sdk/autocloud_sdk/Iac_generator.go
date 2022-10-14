@@ -52,8 +52,15 @@ func (c *Client) GetGenerator(generatorID string) (*IacCatalog, error) {
 func (c *Client) CreateGenerator(generator IacCatalog) (*IacCatalog, error) {
 	log.Printf("CreateGenerator IacCatalog: %+v\n\n", generator)
 
-	reqBody, err := GetIacCatalogInput(generator)
+	iacModule, err := c.CreateCatalogModule(generator)
 	if err != nil {
+		return nil, err
+	}
+	log.Printf("CreateGenerator IacModule: %+v\n\n", iacModule)
+
+	reqBody, err := GetIacCatalogInput(generator, iacModule.ID)
+	if err != nil {
+		log.Fatal("Error getting IacCatalogInput: %+v\n\n", err)
 		return nil, err
 	}
 	log.Printf("CreateGenerator IacCatalogInput: %+v\n\n", reqBody)
@@ -103,8 +110,27 @@ func (c *Client) DeleteGenerator(generatorID string) error {
 }
 
 func (c *Client) UpdateGenerator(generator IacCatalog) (*IacCatalog, error) {
-	reqBody, err := GetIacCatalogInput(generator)
+
+	dbGenerator, err := c.GetGenerator(generator.ID)
 	if err != nil {
+		return nil, err
+	}
+	if len(dbGenerator.IacModuleIds) < 1 {
+		return nil, nil
+	}
+
+	log.Printf("UpdateGenerator IacCatalog: %+v\n\n", generator)
+
+	generator.IacModuleIds = dbGenerator.IacModuleIds
+	iacModule, err := c.UpdateCatalogModule(generator)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("UpdateGenerator IacModule: %+v\n\n", iacModule)
+
+	reqBody, err := GetIacCatalogInput(generator, iacModule.ID)
+	if err != nil {
+		log.Fatal("Error getting IacCatalogInput: %+v\n\n", err)
 		return nil, err
 	}
 	rb, err := json.Marshal(reqBody)
