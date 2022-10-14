@@ -1,8 +1,8 @@
 package autocloud_sdk
 
-func GetIacCatalogInput(iacCatalog IacCatalog, moduleId string) IacCatalogInput {
+func GetIacCatalogInput(iacCatalog IacCatalog, moduleId string) (*IacCatalogInput, error) {
 
-	return IacCatalogInput{
+	return &IacCatalogInput{
 		Name:            iacCatalog.Name,
 		Author:          iacCatalog.Author,
 		Slug:            iacCatalog.Slug,
@@ -12,13 +12,15 @@ func GetIacCatalogInput(iacCatalog IacCatalog, moduleId string) IacCatalogInput 
 		FileDefinitions: iacCatalog.FileDefinitions,
 		GitConfig:       iacCatalog.GitConfig,
 		IacModuleIds:    []string{moduleId},
-	}
+	}, nil
 }
 
-func GetIacModule(iacCatalog IacCatalog) IacModule {
+func GetIacModule(iacCatalog IacCatalog) (*IacModule, error) {
 
-	tfmodule := NewModule(iacCatalog.Source, iacCatalog.Version, iacCatalog.Name)
-
+	tfmodule, err := NewModule(iacCatalog.Source, iacCatalog.Version, iacCatalog.Name, "")
+	if err != nil {
+		return nil, err
+	}
 	iacModule := IacModule{
 		Name:                    iacCatalog.Name,
 		Variables:               tfmodule.ToForm(),
@@ -33,10 +35,10 @@ func GetIacModule(iacCatalog IacCatalog) IacModule {
 		iacModule.ID = iacCatalog.IacModuleIds[0]
 	}
 
-	return iacModule
+	return &iacModule, nil
 }
 
-func GetIacModuleInput(iacModule IacModule) IacModuleInput {
+func GetIacModuleInput(iacModule *IacModule) IacModuleInput {
 
 	return IacModuleInput{
 		ID:                      iacModule.ID,

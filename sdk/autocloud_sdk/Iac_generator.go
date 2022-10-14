@@ -58,7 +58,11 @@ func (c *Client) CreateGenerator(generator IacCatalog) (*IacCatalog, error) {
 	}
 	log.Printf("CreateGenerator IacModule: %+v\n\n", iacModule)
 
-	reqBody := GetIacCatalogInput(generator, iacModule.ID)
+	reqBody, err := GetIacCatalogInput(generator, iacModule.ID)
+	if err != nil {
+		log.Fatal("Error getting IacCatalogInput: %+v\n\n", err)
+		return nil, err
+	}
 	log.Printf("CreateGenerator IacCatalogInput: %+v\n\n", reqBody)
 
 	rb, err := json.Marshal(reqBody)
@@ -124,7 +128,11 @@ func (c *Client) UpdateGenerator(generator IacCatalog) (*IacCatalog, error) {
 	}
 	log.Printf("UpdateGenerator IacModule: %+v\n\n", iacModule)
 
-	reqBody := GetIacCatalogInput(generator, iacModule.ID)
+	reqBody, err := GetIacCatalogInput(generator, iacModule.ID)
+	if err != nil {
+		log.Fatal("Error getting IacCatalogInput: %+v\n\n", err)
+		return nil, err
+	}
 	rb, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err

@@ -49,7 +49,7 @@ func (c *Client) GetModule(moduleId string) (*IacModule, error) {
 	return &module, nil
 }
 
-func (c *Client) CreateModule(module IacModule) (*IacModule, error) {
+func (c *Client) CreateModule(module *IacModule) (*IacModule, error) {
 	log.Printf("CreateModule IacModule: %+v\n\n", module)
 
 	reqBody := GetIacModuleInput(module)
@@ -99,7 +99,7 @@ func (c *Client) DeleteModule(moduleId string) error {
 	return nil
 }
 
-func (c *Client) UpdateModule(module IacModule) (*IacModule, error) {
+func (c *Client) UpdateModule(module *IacModule) (*IacModule, error) {
 	reqBody := GetIacModuleInput(module)
 	rb, err := json.Marshal(reqBody)
 	if err != nil {
@@ -128,14 +128,25 @@ func (c *Client) UpdateModule(module IacModule) (*IacModule, error) {
 // IAC Module CRUD from IAC Catalog
 func (c *Client) CreateCatalogModule(catalog IacCatalog) (*IacModule, error) {
 
-	iacModule := GetIacModule(catalog)
+	iacModule, err := GetIacModule(catalog)
+	if err != nil {
+		return nil, err
+	}
 
 	return c.CreateModule(iacModule)
 }
 
 func (c *Client) UpdateCatalogModule(catalog IacCatalog) (*IacModule, error) {
 
-	iacModule := GetIacModule(catalog)
-
-	return c.UpdateModule(iacModule)
+	iacModule, err := GetIacModule(catalog)
+	if err != nil {
+		log.Fatal("Error getting IacCatalogInput")
+		return nil, err
+	}
+	iacModule, err = c.UpdateModule(iacModule)
+	if err != nil {
+		log.Fatal("Error getting IacCatalogInput")
+		return nil, err
+	}
+	return iacModule, nil
 }

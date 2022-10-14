@@ -36,3 +36,11 @@ test:
 
 testacc: 
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m   
+
+download:
+	@echo Download go.mod dependencies
+	@go mod download
+
+install-tools:download
+	@echo Installing tools from tools.go
+	@cat autocloud_provider/tools/tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %
