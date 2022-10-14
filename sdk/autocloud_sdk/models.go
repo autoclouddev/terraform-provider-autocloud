@@ -16,6 +16,7 @@ type IacCatalog struct {
 	GitConfig               IacCatalogGitConfig `json:"gitConfig"`
 	GeneratorConfigLocation string              `json:"generatorConfigLocation"`
 	GeneratorConfigJson     string              `json:"generatorConfigJson"`
+	IacModuleIds            []string            `json:"iacModuleIds"`
 }
 
 type IacCatalogFile struct {
@@ -61,18 +62,37 @@ type IacCatalogGitConfigPR struct {
 }
 
 type IacCatalogInput struct {
-	Name                    string              `json:"name"`
-	Author                  string              `json:"author"`
-	Slug                    string              `json:"slug"`
-	Source                  string              `json:"source"`
-	Version                 string              `json:"version"`
-	Description             string              `json:"description"`
-	Instructions            string              `json:"instructions"`
-	Labels                  []string            `json:"labels"`
-	FileDefinitions         []IacCatalogFile    `json:"fileDefinitions"`
-	Template                string              `json:"template"`
-	FormShape               string              `json:"formShape"`
-	GitConfig               IacCatalogGitConfig `json:"gitConfig"`
-	GeneratorConfigLocation string              `json:"generatorConfigLocation"`
-	GeneratorConfigJson     string              `json:"generatorConfigJson"`
+	Name            string              `json:"name"`
+	Author          string              `json:"author"`
+	Slug            string              `json:"slug"`
+	Description     string              `json:"description"`
+	Instructions    string              `json:"instructions"`
+	Labels          []string            `json:"labels"`
+	FileDefinitions []IacCatalogFile    `json:"fileDefinitions"`
+	GitConfig       IacCatalogGitConfig `json:"gitConfig"`
+	IacModuleIds    []string            `json:"iacModuleIds"`
+}
+
+type IacModule struct {
+	ID                      string `json:"id"`
+	Name                    string `json:"name"`
+	Source                  string `json:"source"`
+	Version                 string `json:"version"`
+	Template                string `json:"template"`
+	Variables               string `json:"variables"`
+	DbDefinitions           string `json:"dbDefinitions"`
+	GeneratorConfigLocation string `json:"generatorConfigLocation"`
+	GeneratorConfigJson     string `json:"generatorConfigJson"`
+}
+
+type IacModuleInput struct {
+	ID                      string `json:"id"`
+	Name                    string `json:"name"`
+	Source                  string `json:"source"`
+	Version                 string `json:"version"`
+	Template                string `json:"template"`
+	Variables               string `json:"variables"`
+	DbDefinitions           string `json:"dbDefinitions"`
+	GeneratorConfigLocation string `json:"generatorConfigLocation"`
+	GeneratorConfigJson     string `json:"generatorConfigJson"`
 }
