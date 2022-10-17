@@ -128,3 +128,11 @@ func TestGetTFRegistryUrl(t *testing.T) {
 	fmt.Println(result)
 	assert.Equal(t, result, "https://registry.terraform.io/v1/modules/terraform-aws-modules/s3-bucket/aws/3.2.3/download")
 }
+
+func TestIsUrl(t *testing.T) {
+
+	assert.Equal(t, isUrl(""), false)
+	assert.Equal(t, isUrl("https://registry.terraform.io/v1/modules/terraform-aws-modules/s3-bucket/aws/3.2.3/download"), true)
+	assert.Equal(t, isUrl("/v1/modules/terraform-aws-modules/s3-bucket/aws/3.2.3/download"), false)
+
+}

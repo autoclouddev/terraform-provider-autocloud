@@ -110,13 +110,18 @@ func CleanSourceUrl(source string, version string) string {
 		return ""
 	}
 	sourceUrl := res.Header.Get("x-terraform-get")
+	log.Println("original terraform source code -> ", sourceUrl)
+	//return sourceUrl
 	//if host empyt add it
 	if isUrl(sourceUrl) || strings.Contains(sourceUrl, "git::") {
+		log.Println("valid terraform source code -> ", sourceUrl)
 		return sourceUrl
 	} else {
 		clean_domain := strings.ReplaceAll(moduleSource, "https://", "")
 		domain := strings.Split(clean_domain, "/")[0]
-		return "https://" + path.Join(domain, sourceUrl)
+		sourceUrl := "https://" + path.Join(domain, sourceUrl)
+		log.Println("calculated terraform source code -> ", sourceUrl)
+		return sourceUrl
 	}
 }
 
@@ -257,7 +262,10 @@ func (m Module) ToForm() string {
 
 func isUrl(str string) bool {
 	u, err := url.Parse(str)
-	log.Fatalln(err)
+	if err != nil {
+		log.Fatalln(err)
+
+	}
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
