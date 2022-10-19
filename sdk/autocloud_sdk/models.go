@@ -26,11 +26,19 @@ type IacCatalogFile struct {
 	FilenameVars     map[string]string `json:"fileNameVars"`
 }
 
+type FieldOption struct {
+	Label   string `json:"label"`
+	FieldId string `json:"fieldId"`
+	Value   string `json:"value"`
+	Checked bool   `json:"checked"`
+}
+
 type FormQuestion struct {
 	FieldId         string        `json:"fieldId"`
 	FieldType       string        `json:"fieldType"`
 	FieldLabel      string        `json:"fieldLabel"`
 	ExplainingText  string        `json:"explainingText"`
+	FieldOptions    []FieldOption `json:"fieldOptions"`
 	ValidationRules []interface{} `json:"validationRules"`
 }
 

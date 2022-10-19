@@ -1,6 +1,7 @@
 package autocloud_sdk
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	getter "github.com/hashicorp/go-getter"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -29,10 +31,25 @@ type Module struct {
 	FileSystemDir string // where we wil process the files
 }
 
+type ProcVariableType int
+
+const (
+	ShortText ProcVariableType = iota + 1 // EnumIndex = 1
+	Checkbox                              // EnumIndex = 2
+	Radio                                 // EnumIndex = 3
+	Other
+)
+
+func (w ProcVariableType) String() string {
+	return [...]string{"shortText", "checkbox", "radio", "other"}[w-1]
+}
+
 type ProcVariable struct {
-	name        string
-	description string
-	handlebars  string
+	Name             string `json:"name"`
+	Description      string `json:"description"`
+	Handlebars       string `json:"handlebars"`
+	procVariableType ProcVariableType
+	options          []string
 }
 
 const PublicRegistry = "https://registry.terraform.io/v1/modules"
@@ -76,7 +93,7 @@ func NewModule(source string, version string, name string, dir string) (*Module,
 	if err != nil {
 		return nil, err
 	}
-	variables, err := processVariables(fileSystemDir)
+	variables, err := ProcessVariables(fileSystemDir)
 	DeleteDir(fileSystemDir)
 	if err != nil {
 		return nil, err
@@ -190,7 +207,7 @@ func DeleteDir(fileSystemDir string) {
 	}
 }
 
-func processVariables(source string) (map[string]ProcVariable, error) {
+func ProcessVariables(source string) (map[string]ProcVariable, error) {
 	module, diags := tfconfig.LoadModule(source)
 	if diags != nil {
 		fmt.Print(errors.New(diags.Error()))
@@ -200,14 +217,26 @@ func processVariables(source string) (map[string]ProcVariable, error) {
 	// in here we could insert the AST processing
 
 	for varName := range module.Variables {
-		if module.Variables[varName].Type == "string" || module.Variables[varName].Type == "number" {
-			// insert default value
+		log.Printf("var name => %v\n", varName)
+		log.Printf("var type => %v\n\n", module.Variables[varName].Type)
 
-			content := ProcVariable{
-				name:        module.Variables[varName].Name,
-				description: module.Variables[varName].Description,
-				handlebars:  fmt.Sprintf("{{%s}}", strcase.UpperCamelCase(varName)),
-			}
+		content := ProcVariable{
+			Name:             module.Variables[varName].Name,
+			Description:      module.Variables[varName].Description,
+			Handlebars:       fmt.Sprintf("{{%s}}", strcase.UpperCamelCase(varName)),
+			procVariableType: Other,
+		}
+
+		if module.Variables[varName].Type == "string" || module.Variables[varName].Type == "number" {
+			content.procVariableType = ShortText
+		} else if module.Variables[varName].Type == "bool" {
+			content.procVariableType = Checkbox
+		} else if module.Variables[varName].Type == "list(string)" {
+			content.procVariableType = Radio
+			content.options = toStringArray(module.Variables[varName].Default)
+		}
+
+		if content.procVariableType != Other {
 			variables[varName] = content
 		}
 	}
@@ -225,7 +254,7 @@ func (m Module) ToString() string {
 	moduleBody.SetAttributeValue("source", cty.StringVal(m.Source))
 	moduleBody.SetAttributeValue("version", cty.StringVal(m.Version))
 	for k, v := range m.Variables {
-		moduleBody.SetAttributeValue(k, cty.StringVal(v.handlebars))
+		moduleBody.SetAttributeValue(k, cty.StringVal(v.Handlebars))
 	}
 	return fmt.Sprintf("%s", hclFile.Bytes())
 }
@@ -241,18 +270,32 @@ func (m Module) ToForm() string {
 			Module: strcase.UpperCamelCase(m.Name),
 			FormQuestion: FormQuestion{
 				FieldId:    "",
-				FieldType:  "shortText",
+				FieldType:  v.procVariableType.String(),
 				FieldLabel: "",
 			},
 		}
 
-		description := v.description
-		name := v.name
-		fieldId := fmt.Sprintf("%s.%s", strcase.UpperCamelCase(m.Name), strcase.UpperCamelCase(name))
+		description := v.Description
+		name := v.Name
+		fieldId := fmt.Sprintf("%s.%s", strings.ToLower(m.Name), strings.ToLower(name))
 		f.Id = fieldId
 		f.FormQuestion.FieldId = fieldId
 		f.FormQuestion.FieldLabel = name
 		f.FormQuestion.ExplainingText = description
+
+		if v.procVariableType == Radio {
+			f.FormQuestion.FieldOptions = make([]FieldOption, len(v.options))
+			for i, value := range v.options {
+				f.FormQuestion.FieldOptions[i] = FieldOption{
+					Label:   fmt.Sprintf("%s (%s)", addSpace(value), value),
+					FieldId: fmt.Sprintf("%s-%s", fieldId, strcase.LowerCamelCase(value)),
+					Value:   value,
+					Checked: false,
+				}
+			}
+
+		}
+
 		formVariables = append(formVariables, f)
 
 	}
@@ -289,4 +332,27 @@ func ComplementDownloadUrl(host string, path string) (string, error) {
 		return "", errors.New("invalid url")
 	}
 	return "https://" + host + path, nil
+}
+
+func toStringArray(input interface{}) []string {
+
+	arr := input.([]interface{})
+	strArr := make([]string, len(arr))
+
+	for index, value := range arr {
+		strArr[index] = value.(string)
+	}
+
+	return strArr
+}
+
+func addSpace(s string) string {
+	buf := &bytes.Buffer{}
+	for i, rune := range s {
+		if unicode.IsUpper(rune) && i > 0 {
+			buf.WriteRune(' ')
+		}
+		buf.WriteRune(rune)
+	}
+	return buf.String()
 }

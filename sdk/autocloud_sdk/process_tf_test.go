@@ -2,8 +2,12 @@ package autocloud_sdk
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
+	"regexp"
 	"testing"
 
 	getter "github.com/hashicorp/go-getter"
@@ -135,4 +139,46 @@ func TestIsUrl(t *testing.T) {
 	assert.Equal(t, isUrl("https://registry.terraform.io/v1/modules/terraform-aws-modules/s3-bucket/aws/3.2.3/download"), true)
 	assert.Equal(t, isUrl("/v1/modules/terraform-aws-modules/s3-bucket/aws/3.2.3/download"), false)
 
+}
+
+func TestProcessVariables(t *testing.T) {
+
+	abs, err := filepath.Abs(filepath.Join(".", "test", "sample-variables"))
+	assert.Nil(t, err, "Error getting absolute file path")
+
+	variables, err := ProcessVariables(abs)
+	assert.Nil(t, err, "Error processing variables file")
+
+	data, err := json.MarshalIndent(variables, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(string(data))
+
+	assert.Equal(t, variables["enabled"].Name, "enabled")                     // test a bool var
+	assert.Equal(t, variables["attributes"].Name, "attributes")               // test a list var
+	assert.Equal(t, variables["policy_statements"].Name, "policy_statements") // test a list var
+
+	_, ok := variables["cors_rules"]
+	assert.False(t, ok) // cors_rules is not a list(string)
+
+	/// build form and check options
+	sampleModule := &Module{
+		Name:          "sample-name",
+		Source:        "sample-source",
+		FileSystemDir: "sample-dir",
+		Version:       "sample-version",
+		Variables:     variables,
+	}
+	form := sampleModule.ToForm()
+
+	// it should have a field of type checkbox
+	matched, _ := regexp.MatchString(`"fieldType": "checkbox"`, form)
+	assert.Equal(t, matched, true)
+
+	// it should contain the radio fieldOptions
+	matched, _ = regexp.MatchString(`"fieldType": "radio"`, form)
+	assert.Equal(t, matched, true)
+	matched, _ = regexp.MatchString(`"sample-name.policy_statements-denyIncorrectEncryptionHeader"`, form)
+	assert.Equal(t, matched, true)
 }
