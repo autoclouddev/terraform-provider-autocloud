@@ -10,6 +10,10 @@ stages:
   - create tag
   - notify
 
+.before_script_template: &private_golang_access
+  - echo -e "machine gitlab.com\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
+  - go env -w GOPRIVATE=gitlab.com/${CI_PROJECT_NAMESPACE}
+
 golangci-lint:
   image: golangci/golangci-lint:v1.50.0
   stage: validate
@@ -25,9 +29,9 @@ golangci-lint:
       when: never
     - when: always
   before_script:
+    - *private_golang_access
     - mkdir -p .lint-cache
-    - echo -e "machine gitlab.com\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
-    - go env -w GOPRIVATE=gitlab.com/${CI_PROJECT_NAMESPACE}
+    - go mod vendor
   script:
     - golangci-lint run --color never -j $(getconf _NPROCESSORS_ONLN)
 
