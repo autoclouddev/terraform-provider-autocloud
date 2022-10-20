@@ -1,0 +1,30 @@
+---
+branches:
+  - main
+
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - - "@semantic-release/changelog"
+    - changelogFile: CHANGELOG.md
+  - - "@semantic-release/git"
+    - assets:
+        - CHANGELOG.md
+  - "@semantic-release/gitlab"
+
+verifyConditions:
+  - "@semantic-release/changelog"
+  - "@semantic-release/gitlab"
+
+prepare:
+  - "@semantic-release/changelog"
+  - - "@semantic-release/git"
+    - message: "docs(CHANGELOG): ${nextRelease.version} \n\n${nextRelease.notes}"
+
+publish:
+  - "@semantic-release/gitlab"
+
+success: false
+fail: false
+
+tagFormat: "${version}"

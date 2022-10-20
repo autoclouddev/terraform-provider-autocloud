@@ -83,6 +83,8 @@ To get started with this code, clone this repository to your local machine and r
  pre-commit install --hook-type pre-commit --hook-type commit-msg --install-hooks
  ```
 
+ The linting tools expect `gofmt` to be run with the simplify (`-s`) flag. The VSCode Go extension will need to be configured to pass this flag. To enable this, navigate to `Preferences > Settings > Extensions > Go` and scroll to `Format Flags`. Add `["-s"]` in the provided text box as per the recommendation.
+
 
 
 Setup gitlab
@@ -131,8 +133,6 @@ export $(grep -v '^#' .env | xargs)`
 Finally run `go run main.go` to test the SDK.
 
 Feel free to modify main.go to test the available commands.
-
-
 
 
 

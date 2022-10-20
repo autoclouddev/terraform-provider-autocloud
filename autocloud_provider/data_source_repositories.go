@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type RepositoriesSource struct {
-	id          int
-	name        string
-	url         string
-	description string
-}
+// type RepositoriesSource struct {
+// 	id          int
+// 	name        string
+// 	url         string
+// 	description string
+// }
 
 func dataSourceRepositories() *schema.Resource {
 	return &schema.Resource{
@@ -28,24 +28,24 @@ func dataSourceRepositories() *schema.Resource {
 		ReadContext: dataSourceRepositoriesRead,
 
 		Schema: map[string]*schema.Schema{
-			"data": &schema.Schema{
+			"data": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
+						"id": {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"url": &schema.Schema{
+						"url": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"description": &schema.Schema{
+						"description": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -58,7 +58,7 @@ func dataSourceRepositories() *schema.Resource {
 
 func flattenData(repositories *[]autocloudsdk.Repository) []interface{} {
 	if repositories != nil {
-		data := make([]interface{}, len(*repositories), len(*repositories))
+		data := make([]interface{}, len(*repositories))
 
 		for i, repository := range *repositories {
 			repo := make(map[string]interface{})
@@ -86,10 +86,10 @@ func dataSourceRepositoriesRead(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
-	tflog.Trace(ctx, "geting the repositories")
+	tflog.Trace(ctx, "getting the repositories")
 
 	data := flattenData(&repositories)
-	d.Set("data", data)
+	err = d.Set("data", data)
 	if err != nil {
 		fmt.Println(err)
 		return diag.FromErr(err)

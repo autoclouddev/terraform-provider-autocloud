@@ -45,25 +45,22 @@ func dataSourceMeRead(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 
-	tflog.Trace(ctx, "geting the user"+me.Me.Email)
+	tflog.Trace(ctx, "getting the user"+me.Me.Email)
 
 	err = d.Set("id", me.Me.ID)
 	if err != nil {
 		fmt.Println(err)
 		return diag.FromErr(err)
-
 	}
 	err = d.Set("email", me.Me.Email)
 	if err != nil {
 		fmt.Println(err)
 		return diag.FromErr(err)
-
 	}
 	err = d.Set("name", me.Me.Name)
 	if err != nil {
 		fmt.Println(err)
 		return diag.FromErr(err)
-
 	}
 	//strconv.FormatInt(time.Now().Unix(), 10)
 	d.SetId(me.Me.ID)

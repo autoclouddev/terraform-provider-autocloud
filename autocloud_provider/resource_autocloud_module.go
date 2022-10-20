@@ -231,19 +231,70 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	d.Set("name", generator.Name)
-	d.Set("author", generator.Author)
-	d.Set("slug", generator.Slug)
-	d.Set("description", generator.Description)
-	d.Set("instructions", generator.Instructions)
-	d.Set("labels", generator.Labels)
-	d.Set("fileDefinitions", generator.FileDefinitions)
-	d.Set("source", generator.Source)
-	d.Set("version", generator.Version)
-	d.Set("template", generator.Template)
-	d.Set("formShape", generator.FormShape)
-	d.Set("generatorConfigLocation", generator.GeneratorConfigLocation)
-	d.Set("generatorConfigJson", generator.GeneratorConfigJSON)
+	err = d.Set("name", generator.Name)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("author", generator.Author)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("slug", generator.Slug)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("description", generator.Description)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("instructions", generator.Instructions)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("labels", generator.Labels)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("fileDefinitions", generator.FileDefinitions)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("source", generator.Source)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("version", generator.Version)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("template", generator.Template)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("formShape", generator.FormShape)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("generatorConfigLocation", generator.GeneratorConfigLocation)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("generatorConfigJson", generator.GeneratorConfigJSON)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }
