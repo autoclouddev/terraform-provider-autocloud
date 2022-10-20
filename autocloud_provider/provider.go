@@ -3,7 +3,7 @@ package autocloud_provider
 import (
 	"context"
 
-	autocloud_sdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,6 +25,24 @@ func New(version string) func() *schema.Provider {
 					Sensitive:   true,
 					DefaultFunc: schema.EnvDefaultFunc("AUTOCLOUD_PASSWORD", nil),
 				},
+				"graphqlhost": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Sensitive:   true,
+					DefaultFunc: schema.EnvDefaultFunc("SDK_GRAPHQL_HOST", nil),
+				},
+				"apihost": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Sensitive:   true,
+					DefaultFunc: schema.EnvDefaultFunc("SDK_API_HOST", nil),
+				},
+				"appclientid": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Sensitive:   true,
+					DefaultFunc: schema.EnvDefaultFunc("SDK_COGNITO_APP_CLIENT_ID", nil),
+				},
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"autocloud_module": autocloudModule(),
@@ -33,7 +51,6 @@ func New(version string) func() *schema.Provider {
 				"autocloud_me":           dataSourceMe(),
 				"autocloud_github_repos": dataSourceRepositories(),
 			},
-			//ConfigureContextFunc: providerConfigure,
 		}
 		p.ConfigureContextFunc = configure(version, p)
 		return p
@@ -52,22 +69,25 @@ func configure(version string, p *schema.Provider) func(ctx context.Context, d *
 
 		username := d.Get("username").(string)
 		password := d.Get("password").(string)
+		graphql := d.Get("graphqlhost").(string)
+		apiHost := d.Get("apihost").(string)
+		appClientId := d.Get("appclientid").(string)
+		c, err := autocloudsdk.NewClient(&graphql, &apiHost, &appClientId)
 
 		// Warning or errors can be collected in a slice type
 		var diags diag.Diagnostics
 
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+
 		if (username != "") && (password != "") {
-			c, err := autocloud_sdk.NewClient(nil, &username, &password)
+			err := c.Login(&username, &password)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
 
 			return c, diags
-		}
-
-		c, err := autocloud_sdk.NewClient(nil, nil, nil)
-		if err != nil {
-			return nil, diag.FromErr(err)
 		}
 
 		return c, diags

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	autocloud_sdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -200,7 +200,7 @@ func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any
 	var diags diag.Diagnostics
 
 	generator := GetSdkIacCatalog(d)
-	c := meta.(*autocloud_sdk.Client)
+	c := meta.(*autocloudsdk.Client)
 	o, err := c.CreateGenerator(generator)
 	if err != nil {
 		return diag.FromErr(err)
@@ -219,7 +219,7 @@ func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any
 
 func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	c := meta.(*autocloud_sdk.Client)
+	c := meta.(*autocloudsdk.Client)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -243,14 +243,14 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	d.Set("template", generator.Template)
 	d.Set("formShape", generator.FormShape)
 	d.Set("generatorConfigLocation", generator.GeneratorConfigLocation)
-	d.Set("generatorConfigJson", generator.GeneratorConfigJson)
+	d.Set("generatorConfigJson", generator.GeneratorConfigJSON)
 
 	return diags
 }
 
 func autocloudModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	c := meta.(*autocloud_sdk.Client)
+	c := meta.(*autocloudsdk.Client)
 
 	updatedGen := GetSdkIacCatalog(d)
 	updatedGen.ID = d.Id()
@@ -264,7 +264,7 @@ func autocloudModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any
 
 func autocloudModuleDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	c := meta.(*autocloud_sdk.Client)
+	c := meta.(*autocloudsdk.Client)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics

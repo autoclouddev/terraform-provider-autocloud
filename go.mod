@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0
 	github.com/joho/godotenv v1.4.0
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221019135816-ea06f748f442
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221020191525-5e2bc4998ddb
 )
 
 //replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221019135816-ea06f748f442
