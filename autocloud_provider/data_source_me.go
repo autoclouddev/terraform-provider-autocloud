@@ -1,9 +1,11 @@
 package autocloud_provider
 
 import (
-	"autocloud_sdk"
+	//"autocloud_sdk"
 	"context"
 	"fmt"
+
+	autocloud_sdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

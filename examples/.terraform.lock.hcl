@@ -5,6 +5,6 @@ provider "autocloud.io/autocloud/autocloud" {
   version     = "0.2.0"
   constraints = "0.2.0"
   hashes = [
-    "h1:hnsrtO2PY2EaiNDAQJS0Ble27Kfr+m5EMTBaxpVSYhQ=",
+    "h1:vkvrqcAsxt9/z88FYLrRr5Zav9NRP+l7+SmUDUyG++0=",
   ]
 }

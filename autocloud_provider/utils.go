@@ -1,8 +1,9 @@
 package autocloud_provider
 
 import (
-	"autocloud_sdk"
 	"fmt"
+
+	autocloud_sdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
