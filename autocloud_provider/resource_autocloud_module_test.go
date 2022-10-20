@@ -87,6 +87,23 @@ resource "autocloud_module" "foo" {
     }
   }
 
+	git_config {
+    destination_branch = "master"
+
+    git_url_options = ["https://github.com/autoclouddev/terraform-generator-test"]
+    git_url_default = "https://github.com/autoclouddev/terraform-generator-test"
+
+    pull_request {
+      title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"
+      commit_message_template = "[AutoCloud] new EKS generator, created by {{authorName}}"
+      body                    = ""
+      variables = {
+        authorName  = "generic.authorName"
+        clusterName = "ExampleS3.Bucket"
+      }
+    }
+  }
+
   generator_config_location = "local"
   generator_config_json     = <<-EOT
   {

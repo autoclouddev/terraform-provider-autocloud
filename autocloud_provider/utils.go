@@ -3,7 +3,7 @@ package autocloud_provider
 import (
 	"fmt"
 
-	autocloud_sdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -31,7 +31,7 @@ func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 	return mapString
 }
 
-func GetSdkIacCatalog(d *schema.ResourceData) autocloud_sdk.IacCatalog {
+func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
@@ -42,7 +42,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloud_sdk.IacCatalog {
 		}
 	}
 
-	generator := autocloud_sdk.IacCatalog{
+	generator := autocloudsdk.IacCatalog{
 		Name:                    d.Get("name").(string),
 		Author:                  d.Get("author").(string),
 		Slug:                    d.Get("slug").(string),
@@ -55,23 +55,23 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloud_sdk.IacCatalog {
 		FileDefinitions:         GetSdkIacCatalogFileDefinitions(d),
 		GitConfig:               GetSdkIacCatalogGitConfig(d),
 		GeneratorConfigLocation: d.Get("generator_config_location").(string),
-		GeneratorConfigJson:     d.Get("generator_config_json").(string),
+		GeneratorConfigJSON:     d.Get("generator_config_json").(string),
 	}
 
 	return generator
 }
 
-func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloud_sdk.IacCatalogFile {
+func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacCatalogFile {
 
-	var fileDefinitions []autocloud_sdk.IacCatalogFile
+	var fileDefinitions []autocloudsdk.IacCatalogFile
 	if fileDefinitionsValues, ok := d.GetOk("file"); ok {
 
 		list := fileDefinitionsValues.(*schema.Set).List()
-		fileDefinitions = make([]autocloud_sdk.IacCatalogFile, len(list))
+		fileDefinitions = make([]autocloudsdk.IacCatalogFile, len(list))
 		for i, fileDefinitionsValue := range list {
 			var fileDefinitionMap = fileDefinitionsValue.(map[string]interface{})
 
-			var fileDefinition = autocloud_sdk.IacCatalogFile{}
+			var fileDefinition = autocloudsdk.IacCatalogFile{}
 
 			if val, ok := fileDefinitionMap["action"]; ok {
 				fileDefinition.Action = val.(string)
@@ -97,8 +97,8 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloud_sdk.Iac
 	return fileDefinitions
 }
 
-func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) autocloud_sdk.IacCatalogGitConfigPR {
-	var pullRequestConfig autocloud_sdk.IacCatalogGitConfigPR
+func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) autocloudsdk.IacCatalogGitConfigPR {
+	var pullRequestConfig autocloudsdk.IacCatalogGitConfigPR
 	list := pullRequestConfigValues.(*schema.Set).List()
 	for _, pullRequestConfigValue := range list {
 		var pullRequestConfigMap, ok = pullRequestConfigValue.(map[string]interface{})
@@ -130,9 +130,9 @@ func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) autocloud_
 	return pullRequestConfig
 }
 
-func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloud_sdk.IacCatalogGitConfig {
+func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGitConfig {
 
-	var gitConfig autocloud_sdk.IacCatalogGitConfig
+	var gitConfig autocloudsdk.IacCatalogGitConfig
 	if gitConfigValues, ok := d.GetOk("git_config"); ok {
 		list := gitConfigValues.(*schema.Set).List()
 		for _, gitConfigValue := range list {
@@ -144,7 +144,7 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloud_sdk.IacCatalogG
 			}
 
 			if val, ok := gitConfigMap["git_url_default"]; ok {
-				gitConfig.GitUrlDefault = val.(string)
+				gitConfig.GitURLDefault = val.(string)
 			}
 
 			if val, ok := gitConfigMap["git_url_options"]; ok {
@@ -154,7 +154,7 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloud_sdk.IacCatalogG
 				for i, optionValue := range list {
 					options[i] = optionValue.(string)
 				}
-				gitConfig.GitUrlOptions = options
+				gitConfig.GitURLOptions = options
 			}
 
 			if val, ok := gitConfigMap["pull_request"]; ok {

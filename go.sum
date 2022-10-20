@@ -493,8 +493,8 @@ github.com/zclconf/go-cty v1.10.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uU
 github.com/zclconf/go-cty v1.11.0 h1:726SxLdi2SDnjY+BStqB9J1hNp4+2WlzyXLuimibIe0=
 github.com/zclconf/go-cty v1.11.0/go.mod h1:s9IfD1LK5ccNMSWCVFCE2rJfHiZgi7JijgeWIMfhLvA=
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
-gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221019135816-ea06f748f442 h1:AQy6dho5BW5YgKeKwPrrT5RyWsaGUwxcsH9i/Z10SjM=
-gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221019135816-ea06f748f442/go.mod h1:Mngj65LGP2HaFfF3ginqffuyFu/4U3MkCA7bQThwIe4=
+gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221020191525-5e2bc4998ddb h1:gbb6UkKEXoixryMLG6xir7SkII6zcoiY5qc66zlhztg=
+gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221020191525-5e2bc4998ddb/go.mod h1:L0IlRuEQi+5t0vcHVqoHudgRfpAA/uL+W7bLczGn7jg=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

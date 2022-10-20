@@ -1,11 +1,10 @@
 package autocloud_provider
 
 import (
-	//"autocloud_sdk"
 	"context"
 	"fmt"
 
-	autocloud_sdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -37,7 +36,7 @@ func dataSourceMe() *schema.Resource {
 }
 
 func dataSourceMeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*autocloud_sdk.Client)
+	c := m.(*autocloudsdk.Client)
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
