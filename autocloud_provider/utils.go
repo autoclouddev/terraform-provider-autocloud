@@ -18,7 +18,6 @@ func Contains(sl []string, name string) bool {
 }
 
 func ConvertMap(mapInterface map[string]interface{}) map[string]string {
-
 	mapString := make(map[string]string)
 
 	for key, value := range mapInterface {
@@ -32,7 +31,6 @@ func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 }
 
 func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
-
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
 		list := labelValues.([]interface{})
@@ -62,10 +60,8 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 }
 
 func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacCatalogFile {
-
 	var fileDefinitions []autocloudsdk.IacCatalogFile
 	if fileDefinitionsValues, ok := d.GetOk("file"); ok {
-
 		list := fileDefinitionsValues.(*schema.Set).List()
 		fileDefinitions = make([]autocloudsdk.IacCatalogFile, len(list))
 		for i, fileDefinitionsValue := range list {
@@ -131,7 +127,6 @@ func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) autoclouds
 }
 
 func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGitConfig {
-
 	var gitConfig autocloudsdk.IacCatalogGitConfig
 	if gitConfigValues, ok := d.GetOk("git_config"); ok {
 		list := gitConfigValues.(*schema.Set).List()
@@ -148,9 +143,8 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGi
 			}
 
 			if val, ok := gitConfigMap["git_url_options"]; ok {
-				var options = []string{}
 				list := val.([]interface{})
-				options = make([]string, len(list))
+				options := make([]string, len(list))
 				for i, optionValue := range list {
 					options[i] = optionValue.(string)
 				}

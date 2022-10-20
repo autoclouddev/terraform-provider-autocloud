@@ -66,7 +66,6 @@ func configure(version string, p *schema.Provider) func(ctx context.Context, d *
 	// sentry setup, etc
 
 	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
-
 		username := d.Get("username").(string)
 		password := d.Get("password").(string)
 		graphql := d.Get("graphqlhost").(string)

@@ -7,8 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccDataSourceScaffolding(t *testing.T) {
+const testAccDataSourceScaffolding = `
+data "autocloud_me" "user" {}
+`
 
+func TestAccDataSourceScaffolding(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
@@ -24,7 +27,3 @@ func TestAccDataSourceScaffolding(t *testing.T) {
 		},
 	})
 }
-
-const testAccDataSourceScaffolding = `
-data "autocloud_me" "user" {}
-`
