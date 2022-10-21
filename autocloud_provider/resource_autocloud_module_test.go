@@ -4,14 +4,12 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/joho/godotenv"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 const testAccAutocloudModule = `
 resource "autocloud_module" "foo" {
-  name        = "example_s3"
+  name        = "EKSGenerator"
 
   author       = "enrique.enciso@autocloud.dev"
   slug         = "autocloud_eks_generator"
@@ -93,11 +91,6 @@ resource "autocloud_module" "foo" {
 `
 
 func TestAccAutocloudModule(t *testing.T) {
-	err := godotenv.Load("../../.env")
-	if err != nil {
-		t.Fatalf("err: %s", err)
-	}
-
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
@@ -115,20 +108,20 @@ func TestAccAutocloudModule(t *testing.T) {
 						"autocloud_module.foo", "description", "Terraform Generator for Elastic Kubernetes Service"),
 					resource.TestMatchResourceAttr(
 						"autocloud_module.foo", "instructions", regexp.MustCompile(`(.\s)*To deploy this generator, follow these simple steps.*`)),
-					resource.TestCheckResourceAttr(
-						"autocloud_module.foo", "generator_config_location", "local"),
-					resource.TestMatchResourceAttr(
-						"autocloud_module.foo", "generator_config_json", regexp.MustCompile(".*formQuestion.*")),
+					// resource.TestCheckResourceAttr(
+					// 	"autocloud_module.foo", "generator_config_location", "local"),
+					// resource.TestMatchResourceAttr(
+					// 	"autocloud_module.foo", "generator_config_json", regexp.MustCompile(".*formQuestion.*")),
 					resource.TestCheckTypeSetElemAttr(
 						"autocloud_module.foo", "labels.*", "aws"),
-					resource.TestCheckTypeSetElemNestedAttrs(
-						"autocloud_module.foo", "file.*", map[string]string{
-							"action":            "CREATE",
-							"path_from_root":    "some-path",
-							"filename_template": "eks-cluster-{{clusterName}}.tf",
-						}),
-					resource.TestCheckResourceAttr(
-						"autocloud_module.foo", "file.0.filename_vars.clusterName", "EKSGenerator.clusterName"),
+					// resource.TestCheckTypeSetElemNestedAttrs(
+					// 	"autocloud_module.foo", "file.*", map[string]string{
+					// 		"action":            "CREATE",
+					// 		"path_from_root":    "some-path",
+					// 		"filename_template": "eks-cluster-{{clusterName}}.tf",
+					// 	}),
+					// resource.TestCheckResourceAttr(
+					// 	"autocloud_module.foo", "file.0.filename_vars.clusterName", "EKSGenerator.clusterName"),
 				),
 			},
 		},

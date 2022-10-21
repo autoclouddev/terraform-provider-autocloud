@@ -3,8 +3,6 @@ package autocloud_provider
 // ref -> https://www.terraform.io/plugin/sdkv2/testing
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,6 +34,4 @@ func testAccPreCheck(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-
-	fmt.Printf("Sdk url: %#v\n", os.Getenv("SDK_API_URL"))
 }

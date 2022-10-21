@@ -261,10 +261,11 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("fileDefinitions", generator.FileDefinitions)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// err = d.Set("file", generator.FileDefinitions)
+	// fmt.Println("FILE DEFINITIONS->", generator.FileDefinitions)
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
 	err = d.Set("source", generator.Source)
 	if err != nil {
@@ -281,17 +282,17 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("formShape", generator.FormShape)
+	err = d.Set("form_shape", generator.FormShape)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("generatorConfigLocation", generator.GeneratorConfigLocation)
+	err = d.Set("generator_config_location", generator.GeneratorConfigLocation)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("generatorConfigJson", generator.GeneratorConfigJSON)
+	err = d.Set("generator_config_json", generator.GeneratorConfigJSON)
 	if err != nil {
 		return diag.FromErr(err)
 	}
