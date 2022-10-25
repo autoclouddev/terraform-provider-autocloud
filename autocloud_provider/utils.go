@@ -56,7 +56,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 
 func GetSdkIacCatalogModuleIDs(d *schema.ResourceData) []string {
 	var iacModulesIDs []string
-	if autocloudModules, ok := d.GetOk("autocloud_module_1"); ok {
+	if autocloudModules, ok := d.GetOk("autocloud_module"); ok {
 		list := autocloudModules.(*schema.Set).List()
 		iacModulesIDs = make([]string, len(list))
 		for i, autocloudModule := range list {
