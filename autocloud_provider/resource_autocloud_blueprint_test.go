@@ -36,6 +36,7 @@ resource "autocloud_blueprint" "bar" {
     filename_vars = {
       clusterName = "EKSGenerator.clusterName"
     }
+	modules = ["EKSGenerator"]
   }
 
 
@@ -99,6 +100,8 @@ func TestAccAutocloudBlueprint(t *testing.T) {
 						"autocloud_blueprint.bar", "file.0.filename_template", "eks-cluster-{{clusterName}}.tf"),
 					resource.TestCheckResourceAttr(
 						"autocloud_blueprint.bar", "file.0.filename_vars.clusterName", "EKSGenerator.clusterName"),
+					resource.TestCheckResourceAttr(
+						"autocloud_blueprint.bar", "file.0.modules.0", "EKSGenerator"),
 					resource.TestCheckResourceAttr(
 						"autocloud_blueprint.bar", "git_config.0.destination_branch", "main"),
 					resource.TestCheckResourceAttr(

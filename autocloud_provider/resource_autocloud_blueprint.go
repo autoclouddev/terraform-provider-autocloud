@@ -145,6 +145,14 @@ func autocloudBlueprint() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"modules": {
+							Description: "modules, array containing the names of the modules included in this file",
+							Type:        schema.TypeList,
+							Required:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
 					},
 				},
 			},
@@ -270,6 +278,7 @@ func lowercaseFileDefs(files []autocloudsdk.IacCatalogFile) []interface{} {
 		m["path_from_root"] = file.PathFromRoot
 		m["filename_template"] = file.FilenameTemplate
 		m["filename_vars"] = file.FilenameVars
+		m["modules"] = file.Modules
 		out = append(out, m)
 	}
 
