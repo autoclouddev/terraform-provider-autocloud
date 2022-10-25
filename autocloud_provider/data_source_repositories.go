@@ -82,6 +82,7 @@ func dataSourceRepositoriesRead(ctx context.Context, d *schema.ResourceData, m i
 	var diags diag.Diagnostics
 
 	repositories, err := c.GetRepositories()
+
 	if err != nil {
 		return diag.FromErr(err)
 	}

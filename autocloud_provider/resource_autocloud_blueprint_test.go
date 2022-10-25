@@ -24,22 +24,18 @@ resource "autocloud_blueprint" "bar" {
 
   ###
   # File definitions
+  # THIS HAS TO CHANGE TO SUPPORT FILE PER MODULE
   #
-  #file {
-  #  action = "CREATE"
-  #
-  #  path_from_root = "some-path"
-  #
-  #  filename_template = "blueprint-file-{{clusterName}}.tf"
-  #	config = [{
-  #		module = autocloud_module.s3_bucket.id
-  #		filename_vars = {
-  #			clusterName = "bucketName"
-  #		}
-  #
-  #	}]
-  #
-  #}
+  file {
+    action = "CREATE"
+
+    path_from_root = "some-path"
+
+    filename_template = "eks-cluster-{{clusterName}}.tf"
+    filename_vars = {
+      clusterName = "EKSGenerator.clusterName"
+    }
+  }
 
 
   ###

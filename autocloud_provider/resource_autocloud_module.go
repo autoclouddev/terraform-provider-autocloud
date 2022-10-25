@@ -2,7 +2,6 @@ package autocloud_provider
 
 import (
 	"context"
-	"fmt"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
@@ -13,8 +12,7 @@ import (
 
 func autocloudModule() *schema.Resource {
 	return &schema.Resource{
-		// This description is used by the documentation generator and the language server.
-		Description: "Create an IAC generator.",
+		Description: "Create an IAC module.",
 
 		CreateContext: autocloudModuleCreate,
 		ReadContext:   autocloudModuleRead,
@@ -23,136 +21,9 @@ func autocloudModule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				// This description is used by the documentation generator and the language server.
 				Description: "name",
 				Type:        schema.TypeString,
 				Optional:    true,
-			},
-			"author": {
-				Description: "author",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"slug": {
-				Description: "slug",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"description": {
-				Description: "description",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"instructions": {
-				Description: "instructions",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"labels": {
-				Description: "labels",
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"git_config": {
-				Description: "git_config",
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"destination_branch": {
-							Description: "destination_branch",
-							Type:        schema.TypeString,
-							Optional:    true,
-						},
-						"git_url_options": {
-							Description: "git_url_options",
-							Type:        schema.TypeList,
-							Required:    true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"git_url_default": {
-							Description: "git_url_default",
-							Type:        schema.TypeString,
-							Optional:    true,
-						},
-						"pull_request": {
-							Description: "pull_request",
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"title": {
-										Description: "title",
-										Type:        schema.TypeString,
-										Optional:    true,
-									},
-									"commit_message_template": {
-										Description: "commit_message_template",
-										Type:        schema.TypeString,
-										Optional:    true,
-									},
-									"body": {
-										Description: "body",
-										Type:        schema.TypeString,
-										Optional:    true,
-									},
-									"variables": {
-										Description: "variables",
-										Type:        schema.TypeMap,
-										Required:    true,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			"file": {
-				Description: "file",
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"action": {
-							Description: "action",
-							Type:        schema.TypeString,
-							Required:    true,
-							ValidateFunc: func(val any, key string) (warns []string, errs []error) {
-								isValidAction := Contains([]string{"CREATE", "EDIT", "HCLEDIT"}, val.(string))
-								if !isValidAction {
-									errs = append(errs, fmt.Errorf("%q must be a value in [CREATE, EDIT, HCLEDIT], got: %s", key, val))
-								}
-								return
-							},
-						},
-						"path_from_root": {
-							Description: "path_from_root",
-							Type:        schema.TypeString,
-							Optional:    true,
-						},
-						"filename_template": {
-							Description: "filename_template",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"filename_vars": {
-							Description: "filename_vars",
-							Type:        schema.TypeMap,
-							Required:    true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
-				},
 			},
 			"source": {
 				Description: "terraform module source url from registry",
@@ -169,41 +40,10 @@ func autocloudModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"form_shape": {
-				Description: "form shape for this module",
+			"variables": {
+				Description: "variables form shape for this module",
 				Type:        schema.TypeString,
 				Computed:    true,
-			},
-			"generator_config_location": {
-				Description: "generator_config_location",
-				Type:        schema.TypeString,
-				Required:    true,
-				ValidateFunc: func(val any, key string) (warns []string, errs []error) {
-					isValidAction := Contains([]string{"module", "local"}, val.(string))
-					if !isValidAction {
-						errs = append(errs, fmt.Errorf("%q must be a value in [module, local], got: %s", key, val))
-					}
-					return
-				},
-			},
-			"generator_config_json": {
-				Description: "generator_config_json",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"autocloud_module_1": {
-				Description: "autocloud_module",
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Description: "autocloud module id",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-					},
-				},
 			},
 		},
 	}
@@ -213,9 +53,9 @@ func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any
 	// use the meta value to retrieve your client from the provider configure method
 	var diags diag.Diagnostics
 
-	generator := GetSdkIacCatalog(d)
+	iacModule := GetSdkIacModule(d)
 	c := meta.(*autocloudsdk.Client)
-	o, err := c.CreateGenerator(generator)
+	o, err := c.CreateModule(&iacModule)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -238,69 +78,34 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	generatorID := d.Id()
+	iacModuleID := d.Id()
 
-	generator, err := c.GetGenerator(generatorID)
+	iacModule, err := c.GetModule(iacModuleID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("name", generator.Name)
+	err = d.Set("name", iacModule.Name)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("author", generator.Author)
+	err = d.Set("source", iacModule.Source)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("slug", generator.Slug)
+	err = d.Set("version", iacModule.Version)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("description", generator.Description)
+	err = d.Set("template", iacModule.Template)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("instructions", generator.Instructions)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = d.Set("labels", generator.Labels)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = d.Set("source", generator.Source)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = d.Set("version", generator.Version)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = d.Set("template", generator.Template)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = d.Set("form_shape", generator.FormShape)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = d.Set("generator_config_location", generator.GeneratorConfigLocation)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = d.Set("generator_config_json", generator.GeneratorConfigJSON)
+	err = d.Set("variables", iacModule.Variables)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -312,10 +117,10 @@ func autocloudModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*autocloudsdk.Client)
 
-	updatedGen := GetSdkIacCatalog(d)
-	updatedGen.ID = d.Id()
+	updatedIacModule := GetSdkIacModule(d)
+	updatedIacModule.ID = d.Id()
 
-	_, err := c.UpdateGenerator(updatedGen)
+	_, err := c.UpdateModule(&updatedIacModule)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -329,9 +134,9 @@ func autocloudModuleDelete(ctx context.Context, d *schema.ResourceData, meta any
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	generatorID := d.Id()
+	iacModuleID := d.Id()
 
-	err := c.DeleteGenerator(generatorID)
+	err := c.DeleteModule(iacModuleID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

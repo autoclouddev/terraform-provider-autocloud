@@ -1,7 +1,6 @@
 package autocloud_provider
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -10,90 +9,28 @@ import (
 )
 
 const testAccAutocloudModule = `
-resource "autocloud_module" "foo" {
-  name        = "example_s3"
+resource "autocloud_module" "s3_bucket" {
 
-  author       = "enrique.enciso@autocloud.dev"
-  slug         = "autocloud_eks_generator"
-  description  = "Terraform Generator for Elastic Kubernetes Service"
-  instructions = <<-EOT
-  To deploy this generator, follow these simple steps:
+	####
+	# Name of the generator
+	name = "S3Bucket"
 
-  step 1: step-1-description
-  step 2: step-2-description
-  step 3: step-3-description
-  EOT
-  labels       = [
-	"aws"
-  ]
+	####
+	# Can be any supported terraform source reference, must optionaly take version
+	#
+	#   source = "app.terraform.io/autocloud/aws/s3_bucket"
+	#   version = "0.24.0"
+	#
+	# See docs: https://developer.hashicorp.com/terraform/language/modules/sources
 
-  ###
-  # TF source
-  #
-  source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "3.4.0"
+	version = "3.4.0"
+	source = "terraform-aws-modules/s3-bucket/aws"
 
-  ###
-  # File definitions
-  #
-  file {
-    action = "CREATE"
-
-    path_from_root = "some-path"
-
-    filename_template = "eks-cluster-{{clusterName}}.tf"
-    filename_vars = {
-      clusterName = "EKSGenerator.clusterName"
-    }
   }
-
-	git_config {
-    destination_branch = "master"
-
-    git_url_options = ["https://github.com/autoclouddev/terraform-generator-test"]
-    git_url_default = "https://github.com/autoclouddev/terraform-generator-test"
-
-    pull_request {
-      title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"
-      commit_message_template = "[AutoCloud] new EKS generator, created by {{authorName}}"
-      body                    = ""
-      variables = {
-        authorName  = "generic.authorName"
-        clusterName = "ExampleS3.Bucket"
-      }
-    }
-  }
-
-  generator_config_location = "local"
-  generator_config_json     = <<-EOT
-  {
-	"terraformModules": {
-	  "EKSGenerator": [
-		{
-		  "id": "EKSGenerator.clusterName",
-		  "module": "EKSGenerator",
-		  "type": "string",
-		  "formQuestion": {
-			"fieldId": "EKSGenerator.clusterName",
-			"fieldType": "shortText",
-			"fieldLabel": "Cluster name",
-			"validationRules": [
-			  {
-				"errorMessage": "This field is required",
-				"rule": "isRequired"
-			  }
-			]
-		  }
-		}
-	  ]
-	}
-  }
-  EOT
-}
 `
 
 func TestAccAutocloudModule(t *testing.T) {
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load("../.env")
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
@@ -106,29 +43,15 @@ func TestAccAutocloudModule(t *testing.T) {
 				Config: testAccAutocloudModule,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"autocloud_module.foo", "name", "EKSGenerator"),
+						"autocloud_module.s3_bucket", "name", "S3Bucket"),
 					resource.TestCheckResourceAttr(
-						"autocloud_module.foo", "author", "enrique.enciso@autocloud.dev"),
+						"autocloud_module.s3_bucket", "version", "3.4.0"),
 					resource.TestCheckResourceAttr(
-						"autocloud_module.foo", "slug", "autocloud_eks_generator"),
-					resource.TestCheckResourceAttr(
-						"autocloud_module.foo", "description", "Terraform Generator for Elastic Kubernetes Service"),
-					resource.TestMatchResourceAttr(
-						"autocloud_module.foo", "instructions", regexp.MustCompile(`(.\s)*To deploy this generator, follow these simple steps.*`)),
-					resource.TestCheckResourceAttr(
-						"autocloud_module.foo", "generator_config_location", "local"),
-					resource.TestMatchResourceAttr(
-						"autocloud_module.foo", "generator_config_json", regexp.MustCompile(".*formQuestion.*")),
-					resource.TestCheckTypeSetElemAttr(
-						"autocloud_module.foo", "labels.*", "aws"),
-					resource.TestCheckTypeSetElemNestedAttrs(
-						"autocloud_module.foo", "file.*", map[string]string{
-							"action":            "CREATE",
-							"path_from_root":    "some-path",
-							"filename_template": "eks-cluster-{{clusterName}}.tf",
-						}),
-					resource.TestCheckResourceAttr(
-						"autocloud_module.foo", "file.0.filename_vars.clusterName", "EKSGenerator.clusterName"),
+						"autocloud_module.s3_bucket", "source", "terraform-aws-modules/s3-bucket/aws"),
+					resource.TestCheckResourceAttrSet(
+						"autocloud_module.s3_bucket", "template"),
+					resource.TestCheckResourceAttrSet(
+						"autocloud_module.s3_bucket", "variables"),
 				),
 			},
 		},
