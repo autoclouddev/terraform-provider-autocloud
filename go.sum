@@ -80,6 +80,7 @@ github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 h1:YoJbenK9C6
 github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7/go.mod h1:z4/9nQmJSSwwds7ejkxaJwO37dru3geImFUdJlaLzQo=
 github.com/acomagu/bufpipe v1.0.3 h1:fxAGrHZTgQ9w5QqVItgzwj235/uYZYgbXitB+dLupOk=
 github.com/acomagu/bufpipe v1.0.3/go.mod h1:mxdxdup/WdsKVreO5GpW4+M/1CE2sMG4jeGJ2sYmHc4=
+github.com/ad2games/vcr-go v0.0.0-20180813145912-faa03fdbd7ac h1:vT9zSFd7VbivxBmCpwiPHVGQ4+EvDWcHv9o1rN0IWoI=
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/agext/levenshtein v1.2.2/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
@@ -493,8 +494,8 @@ github.com/zclconf/go-cty v1.10.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uU
 github.com/zclconf/go-cty v1.11.0 h1:726SxLdi2SDnjY+BStqB9J1hNp4+2WlzyXLuimibIe0=
 github.com/zclconf/go-cty v1.11.0/go.mod h1:s9IfD1LK5ccNMSWCVFCE2rJfHiZgi7JijgeWIMfhLvA=
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
-gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221020191525-5e2bc4998ddb h1:gbb6UkKEXoixryMLG6xir7SkII6zcoiY5qc66zlhztg=
-gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221020191525-5e2bc4998ddb/go.mod h1:L0IlRuEQi+5t0vcHVqoHudgRfpAA/uL+W7bLczGn7jg=
+gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221025122917-26d37a754230 h1:ZRkr3MzOW9FkyXm4F/qYuei95dsho2sxSkIV3JNSMgE=
+gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221025122917-26d37a754230/go.mod h1:W4+NG7lUGKFu0zlh1Ob4NlvZke4l8n3lrVyq9zoa904=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

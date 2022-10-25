@@ -7,10 +7,11 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0
 	github.com/joho/godotenv v1.4.0
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221020191525-5e2bc4998ddb
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221025122917-26d37a754230
 )
 
-//replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221019135816-ea06f748f442
+//uncomment the following line when working with local setup
+//replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../terraform-provider-sdk/
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect

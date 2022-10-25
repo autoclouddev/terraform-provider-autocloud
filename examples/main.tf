@@ -40,6 +40,43 @@ locals {
 #   # insert the 3 required variables here
 # }
 
+resource "autocloud_module_1" "s3_bucket" {
+
+	####
+	# Name of the generator
+	name = "S3Bucket"
+
+	####
+	# Can be any supported terraform source reference, must optionaly take version
+	#
+	#   source = "app.terraform.io/autocloud/aws/s3_bucket"
+	#   version = "0.24.0"
+	#
+	# See docs: https://developer.hashicorp.com/terraform/language/modules/sources
+
+	version = "3.4.0"
+	source = "terraform-aws-modules/s3-bucket/aws"
+
+}
+
+resource "autocloud_module_1" "eks" {
+
+	####
+	# Name of the generator
+	name = "EKS"
+
+	####
+	# Can be any supported terraform source reference, must optionaly take version
+	#
+	#   source = "app.terraform.io/autocloud/aws/s3_bucket"
+	#   version = "0.24.0"
+	#
+	# See docs: https://developer.hashicorp.com/terraform/language/modules/sources
+
+	version = "2.0.2"
+	source = "howdio/eks/aws"
+
+}
 
 # module "s3-bucket" {
 #   source  = "terraform-aws-modules/s3-bucket/aws"
@@ -106,6 +143,13 @@ resource "autocloud_module" "example" {
   generator_config_location = "local"
   generator_config_json     = templatefile("${path.module}/form.autocloud.json.tpl", {})
 
+  autocloud_module_1 {
+    id = autocloud_module_1.s3_bucket.id
+  }
+
+  autocloud_module_1 {
+    id = autocloud_module_1.eks.id
+  }
 }
 
 # output "test" {
