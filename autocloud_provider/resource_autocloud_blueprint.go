@@ -148,6 +148,20 @@ func autocloudBlueprint() *schema.Resource {
 					},
 				},
 			},
+			"autocloud_module": {
+				Description: "autocloud_module",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Description: "autocloud module id",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 }

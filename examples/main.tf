@@ -40,7 +40,7 @@ locals {
 #   # insert the 3 required variables here
 # }
 
-resource "autocloud_module_1" "s3_bucket" {
+resource "autocloud_module" "s3_bucket" {
 
 	####
 	# Name of the generator
@@ -59,7 +59,7 @@ resource "autocloud_module_1" "s3_bucket" {
 
 }
 
-resource "autocloud_module_1" "eks" {
+resource "autocloud_module" "eks" {
 
 	####
 	# Name of the generator
@@ -82,14 +82,13 @@ resource "autocloud_module_1" "eks" {
 #   source  = "terraform-aws-modules/s3-bucket/aws"
 #   version = "3.4.0"
 # }
-resource "autocloud_module" "example" {
+resource "autocloud_blueprint" "example" {
   name = "example_s3"
 
   ###
   # UI Configuration
   #
   author       = "enrique.enciso@autocloud.dev"
-  slug         = "example_s3"
   description  = "Terraform Generator storage in cloud"
   instructions = <<-EOT
   To deploy this generator, follow these simple steps:
@@ -101,11 +100,6 @@ resource "autocloud_module" "example" {
 
   labels = ["aws"]
 
-  ###
-  # TF source
-  #
-  source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "3.4.0"
   # Destination repository git configuraiton
   #
   git_config {
@@ -140,15 +134,13 @@ resource "autocloud_module" "example" {
     }
   }
 
-  generator_config_location = "local"
-  generator_config_json     = templatefile("${path.module}/form.autocloud.json.tpl", {})
 
-  autocloud_module_1 {
-    id = autocloud_module_1.s3_bucket.id
+  autocloud_module {
+    id = autocloud_module.s3_bucket.id
   }
 
-  autocloud_module_1 {
-    id = autocloud_module_1.eks.id
+  autocloud_module {
+    id = autocloud_module.eks.id
   }
 }
 
@@ -156,9 +148,9 @@ resource "autocloud_module" "example" {
 #   value = module.test.autocloud_me_output
 # }
 
-output "terraform_template" {
-  value = autocloud_module.example.template
-}
+# output "terraform_template" {
+#   value = autocloud_blueprint.example.template
+# }
 
 
 # output "repos" {
