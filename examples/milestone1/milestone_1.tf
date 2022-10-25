@@ -79,4 +79,3 @@ resource "autocloud_module" "eks_generator_local" {
   generator_config_location = "local"
   generator_config_path     = "./form_config.json"
 }
-

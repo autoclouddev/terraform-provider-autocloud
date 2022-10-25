@@ -37,5 +37,5 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatalf("err: %s", err)
 	}
 
-	fmt.Printf("Sdk url: %#v\n", os.Getenv("SDK_API_URL"))
+	fmt.Printf("Sdk url: %#v\n", os.Getenv("SDK_API_HOST"))
 }
