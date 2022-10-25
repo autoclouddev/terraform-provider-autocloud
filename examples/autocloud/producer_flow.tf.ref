@@ -62,7 +62,7 @@ resource "autocloud_module" "eks_generator_remote" {
 
   ###
   # Can be any supported terraform source reference, must optionaly take version
-  # 
+  #
   #   source = "app.terraform.io/autocloud/aws/compute/eks/control_plane"
   #   version = "0.24.0"
   #
@@ -246,7 +246,3 @@ resource "autocloud_module" "eks_generator_local" {
 }
 
 */
-
-
-
-

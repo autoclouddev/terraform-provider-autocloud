@@ -47,6 +47,7 @@ func New(version string) func() *schema.Provider {
 			ResourcesMap: map[string]*schema.Resource{
 				"autocloud_module":    autocloudModule(),
 				"autocloud_blueprint": autocloudBlueprint(),
+				"autocloud_module_1":  autocloudModule1(), // TODO: rename it when done with the blueprint changes
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				"autocloud_me":           dataSourceMe(),
