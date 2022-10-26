@@ -30,6 +30,14 @@ func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 	return mapString
 }
 
+func convertSlice(sliceInterface []interface{}) []string {
+	values := make([]string, len(sliceInterface))
+	for idx, value := range sliceInterface {
+		values[idx] = value.(string)
+	}
+	return values
+}
+
 func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
@@ -96,6 +104,10 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacC
 			if val, ok := fileDefinitionMap["filename_vars"]; ok {
 				var filenamesValueMap = val.(map[string]interface{})
 				fileDefinition.FilenameVars = ConvertMap(filenamesValueMap)
+			}
+			if val, ok := fileDefinitionMap["modules"]; ok {
+				var data = val.([]interface{})
+				fileDefinition.Modules = convertSlice(data)
 			}
 
 			fileDefinitions[i] = fileDefinition
