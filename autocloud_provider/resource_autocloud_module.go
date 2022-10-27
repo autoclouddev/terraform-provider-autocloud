@@ -89,6 +89,13 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	iacModule, err := c.GetModule(iacModuleID)
 	if err != nil {
+		resp := autocloudsdk.GetSdkHttpError(err)
+		if resp != nil {
+			if resp.Status == 400 {
+				return diag.Errorf(resp.Message)
+			}
+		}
+
 		return diag.FromErr(err)
 	}
 
@@ -129,6 +136,13 @@ func autocloudModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any
 
 	_, err := c.UpdateModule(&updatedIacModule)
 	if err != nil {
+		resp := autocloudsdk.GetSdkHttpError(err)
+		if resp != nil {
+			if resp.Status == 400 {
+				return diag.Errorf(resp.Message)
+			}
+		}
+
 		return diag.FromErr(err)
 	}
 	return autocloudModuleRead(ctx, d, meta)
@@ -145,6 +159,12 @@ func autocloudModuleDelete(ctx context.Context, d *schema.ResourceData, meta any
 
 	err := c.DeleteModule(iacModuleID)
 	if err != nil {
+		resp := autocloudsdk.GetSdkHttpError(err)
+		if resp != nil {
+			if resp.Status == 400 {
+				return diag.Errorf(resp.Message)
+			}
+		}
 		return diag.FromErr(err)
 	}
 
