@@ -62,3 +62,6 @@ override.tf.json
 
 # Ignore VSCode settings
 .vscode
+examples/.terraform.lock.hcl
+examples/*.tfstate.*
+examples/*.tfstate

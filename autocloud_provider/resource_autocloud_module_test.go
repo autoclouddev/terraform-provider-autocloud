@@ -23,8 +23,8 @@ resource "autocloud_module" "s3_bucket" {
 	#
 	# See docs: https://developer.hashicorp.com/terraform/language/modules/sources
 
-	version = "3.4.0"
-	source = "terraform-aws-modules/s3-bucket/aws"
+	version = "3.0.0"
+	source = "terraform-aws-modules/cloudfront/aws"
 
   }
 `
@@ -45,9 +45,9 @@ func TestAccAutocloudModule(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"autocloud_module.s3_bucket", "name", "S3Bucket"),
 					resource.TestCheckResourceAttr(
-						"autocloud_module.s3_bucket", "version", "3.4.0"),
+						"autocloud_module.s3_bucket", "version", "3.0.0"),
 					resource.TestCheckResourceAttr(
-						"autocloud_module.s3_bucket", "source", "terraform-aws-modules/s3-bucket/aws"),
+						"autocloud_module.s3_bucket", "source", "terraform-aws-modules/cloudfront/aws"),
 					resource.TestCheckResourceAttrSet(
 						"autocloud_module.s3_bucket", "template"),
 					resource.TestCheckResourceAttrSet(

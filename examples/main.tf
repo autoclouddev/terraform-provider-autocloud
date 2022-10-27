@@ -15,15 +15,6 @@ USE THIS FILE AS YOU NEED FIT, THIS IS JUST A PLAYGROUND
 */
 provider "autocloud" {}
 
-# module "test" {
-#   source = "./autocloud"
-# }
-
-# uncomment this to test milestone1
-# module "milestone_1" {
-#   source = "./milestone1"
-# }
-
 data "autocloud_me" "current_user" {}
 
 data "autocloud_github_repos" "repos" {}
@@ -34,56 +25,49 @@ locals {
 }
 
 
-# module "cloud-storage" {
-#   source  = "terraform-google-modules/cloud-storage/google"
-#   version = "3.4.0"
-#   # insert the 3 required variables here
-# }
 
 resource "autocloud_module" "s3_bucket" {
 
-	####
-	# Name of the generator
-	name = "S3Bucket"
+  ####
+  # Name of the generator
+  name = "S3Bucket"
 
-	####
-	# Can be any supported terraform source reference, must optionaly take version
-	#
-	#   source = "app.terraform.io/autocloud/aws/s3_bucket"
-	#   version = "0.24.0"
-	#
-	# See docs: https://developer.hashicorp.com/terraform/language/modules/sources
+  ####
+  # Can be any supported terraform source reference, must optionaly take version
+  #
+  #   source = "app.terraform.io/autocloud/aws/s3_bucket"
+  #   version = "0.24.0"
+  #
+  # See docs: https://developer.hashicorp.com/terraform/language/modules/sources
 
-	version = "3.4.0"
-	source = "terraform-aws-modules/s3-bucket/aws"
-
-}
-
-resource "autocloud_module" "eks" {
-
-	####
-	# Name of the generator
-	name = "EKS"
-
-	####
-	# Can be any supported terraform source reference, must optionaly take version
-	#
-	#   source = "app.terraform.io/autocloud/aws/s3_bucket"
-	#   version = "0.24.0"
-	#
-	# See docs: https://developer.hashicorp.com/terraform/language/modules/sources
-
-	version = "2.0.2"
-	source = "howdio/eks/aws"
+  version = "3.4.0"
+  source  = "terraform-aws-modules/s3-bucket/aws"
 
 }
 
-# module "s3-bucket" {
-#   source  = "terraform-aws-modules/s3-bucket/aws"
-#   version = "3.4.0"
-# }
+
+
+resource "autocloud_module" "cloudfront" {
+
+  ####
+  # Name of the generator
+  name = "Cloudfront"
+
+  ####
+  # Can be any supported terraform source reference, must optionaly take version
+  #
+  #   source = "app.terraform.io/autocloud/aws/s3_bucket"
+  #   version = "0.24.0"
+  #
+  # See docs: https://developer.hashicorp.com/terraform/language/modules/sources
+
+  version = "3.0.0"
+  source  = "terraform-aws-modules/cloudfront/aws"
+
+}
+
 resource "autocloud_blueprint" "example" {
-  name = "example_s3"
+  name = "S3andEKS"
 
   ###
   # UI Configuration
@@ -111,10 +95,10 @@ resource "autocloud_blueprint" "example" {
     pull_request {
       title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"
       commit_message_template = "[AutoCloud] new EKS generator, created by {{authorName}}"
-      body                    = jsonencode(file("./generator/pull_request.md.tpl"))
+      body                    = jsonencode(file("./files/pull_request.md.tpl"))
       variables = {
         authorName  = "generic.authorName"
-        clusterName = "ExampleS3.Bucket"
+        clusterName = "S3Bucket.Bucket"
       }
     }
   }
@@ -130,8 +114,9 @@ resource "autocloud_blueprint" "example" {
 
     filename_template = "s3-bucket-{{Bucket}}.tf"
     filename_vars = {
-      Bucket = "ExampleS3.Bucket"
+      Bucket = "S3Bucket.Bucket"
     }
+    modules = ["S3Bucket", "Cloudfront"]
   }
 
 
@@ -140,19 +125,6 @@ resource "autocloud_blueprint" "example" {
   }
 
   autocloud_module {
-    id = autocloud_module.eks.id
+    id = autocloud_module.cloudfront.id
   }
 }
-
-# output "test" {
-#   value = module.test.autocloud_me_output
-# }
-
-# output "terraform_template" {
-#   value = autocloud_blueprint.example.template
-# }
-
-
-# output "repos" {
-#   value = module.test.autocloud_github_repos
-# }
