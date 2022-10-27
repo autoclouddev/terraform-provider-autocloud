@@ -52,6 +52,7 @@ func New(version string) func() *schema.Provider {
 			DataSourcesMap: map[string]*schema.Resource{
 				"autocloud_me":           dataSourceMe(),
 				"autocloud_github_repos": dataSourceRepositories(),
+				"autocloud_module":       dataSourceAutocloudModule(),
 			},
 		}
 		p.ConfigureContextFunc = configure(version, p)

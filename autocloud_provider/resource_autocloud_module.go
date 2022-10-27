@@ -10,6 +10,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var autocloudModuleSchema = map[string]*schema.Schema{
+	"id": {
+		Description: "id",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
+	"name": {
+		Description: "name",
+		Type:        schema.TypeString,
+		Optional:    true,
+	},
+	"source": {
+		Description: "terraform module source url from registry",
+		Type:        schema.TypeString,
+		Optional:    true,
+	},
+	"version": {
+		Description: "terraform module source url version from registry",
+		Type:        schema.TypeString,
+		Optional:    true,
+	},
+	"template": {
+		Description: "tf source code from registry",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
+	"variables": {
+		Description: "variables form shape for this module",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
+}
+
 func autocloudModule() *schema.Resource {
 	return &schema.Resource{
 		Description: "Create an IAC module.",
@@ -19,33 +52,7 @@ func autocloudModule() *schema.Resource {
 		UpdateContext: autocloudModuleUpdate,
 		DeleteContext: autocloudModuleDelete,
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Description: "name",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"source": {
-				Description: "terraform module source url from registry",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"version": {
-				Description: "terraform module source url version from registry",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"template": {
-				Description: "tf source code from registry",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"variables": {
-				Description: "variables form shape for this module",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-		},
+		Schema: autocloudModuleSchema,
 	}
 }
 
