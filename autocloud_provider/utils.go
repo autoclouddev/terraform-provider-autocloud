@@ -1,7 +1,10 @@
 package autocloud_provider
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
@@ -204,4 +207,33 @@ func mergeSchemas(a, b map[string]*schema.Schema) map[string]*schema.Schema {
 		merged[k] = v
 	}
 	return merged
+}
+
+func ParseVariables(str string) ([]autocloudsdk.FormShape, error) {
+	vars := []autocloudsdk.FormShape{}
+	err := json.Unmarshal([]byte(str), &vars)
+	if err != nil {
+		return nil, err
+	}
+
+	return vars, nil
+}
+
+func GetVariablesIdMap(str string) (map[string]string, error) {
+	vars, err := ParseVariables(str)
+	if err != nil {
+		return nil, err
+	}
+
+	varsMap := make(map[string]string)
+	for _, v := range vars {
+		log.Println(v)
+		keyValue := strings.Split(v.ID, ".")
+		log.Println(keyValue)
+		if len(keyValue) == 2 {
+			varsMap[keyValue[1]] = v.ID
+		}
+	}
+
+	return varsMap, nil
 }

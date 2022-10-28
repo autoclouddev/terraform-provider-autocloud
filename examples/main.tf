@@ -99,6 +99,7 @@ resource "autocloud_blueprint" "example" {
       variables = {
         authorName  = "generic.authorName"
         clusterName = "S3Bucket.Bucket"
+        dummyParam = autocloud_module.s3_bucket.variables["restrict_public_buckets"]
       }
     }
   }

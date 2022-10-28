@@ -37,9 +37,11 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"variables": {
-		Description: "variables form shape for this module",
-		Type:        schema.TypeString,
-		Computed:    true,
+		Type:     schema.TypeMap,
+		Computed: true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
 	},
 }
 
@@ -119,7 +121,11 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("variables", iacModule.Variables)
+	varsMap, err := GetVariablesIdMap(iacModule.Variables)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("variables", varsMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
