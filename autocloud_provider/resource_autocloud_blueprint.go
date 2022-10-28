@@ -159,7 +159,7 @@ func autocloudBlueprint() *schema.Resource {
 			"autocloud_module": {
 				Description: "autocloud_module",
 				Type:        schema.TypeSet,
-				Optional:    true,
+				Required:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -180,6 +180,12 @@ func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta 
 	c := meta.(*autocloudsdk.Client)
 	o, err := c.CreateGenerator(generator)
 	if err != nil {
+		resp := autocloudsdk.GetSdkHttpError(err)
+		if resp != nil {
+			if resp.Status == 400 {
+				return diag.Errorf(resp.Message)
+			}
+		}
 		return diag.FromErr(err)
 	}
 
@@ -245,6 +251,13 @@ func autocloudBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	_, err := c.UpdateGenerator(updatedGen)
 	if err != nil {
+		resp := autocloudsdk.GetSdkHttpError(err)
+		if resp != nil {
+			if resp.Status == 400 {
+				return diag.Errorf(resp.Message)
+			}
+		}
+
 		return diag.FromErr(err)
 	}
 	return autocloudBlueprintRead(ctx, d, meta)

@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0
 	github.com/joho/godotenv v1.4.0
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221027130528-27651d4972bd
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221027183148-a01399b6998b
 )
 
 //uncomment the following line when working with local setup
