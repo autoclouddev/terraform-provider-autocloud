@@ -78,6 +78,7 @@ create tag:
     - semantic-release
   only:
     - main
+    - develop
 
 .build:
   image: golang:1.19-alpine
