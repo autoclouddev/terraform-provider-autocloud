@@ -40,7 +40,7 @@ Contents <!-- omit in toc -->
 Overview
 --------
 
-This code is intended to represent the developer ergonimics for Terraform users deploying the AutoCloud Terraform provider in their IaC codebases. It can serve as a design guide and a reference for test cases. This is a work in progress, and should not be considered definitive until noted in this README and matched with a 1.x tag.
+This code is intended to represent the developer ergonomics for Terraform users deploying the AutoCloud Terraform provider in their IaC codebases. It can serve as a design guide and a reference for test cases. This is a work in progress, and should not be considered definitive until noted in this README and matched with a 1.x tag.
 
 
 
@@ -79,11 +79,11 @@ go install github.com/securego/gosec/v2/cmd/gosec@latest
 
 To get started with this code, clone this repository to your local machine and run:
 
- ```bash
- pre-commit install --hook-type pre-commit --hook-type commit-msg --install-hooks
- ```
+```bash
+pre-commit install --hook-type pre-commit --hook-type commit-msg --install-hooks
+```
 
- The linting tools expect `gofmt` to be run with the simplify (`-s`) flag. The VSCode Go extension will need to be configured to pass this flag. To enable this, navigate to `Preferences > Settings > Extensions > Go` and scroll to `Format Flags`. Add `["-s"]` in the provided text box as per the recommendation.
+The linting tools expect `gofmt` to be run with the simplify (`-s`) flag. The VSCode Go extension will need to be configured to pass this flag. To enable this, navigate to `Preferences > Settings > Extensions > Go` and scroll to `Format Flags`. Add `["-s"]` in the provided text box as per the recommendation.
 
 
 
@@ -92,14 +92,14 @@ Setup gitlab
 
 You need to set your machine to communicate with private gitlab repositories
 
-1. setup a GOPRIVATE env 
+1. setup a GOPRIVATE env
 ```bash
 go env -w GOPRIVATE=gitlab.com/auto-cloud
 ```
 
 2. Then you need to force git to use ssh instead of gitlab (assuming you already are in autoclouds gitlab org)
 ```bash
-git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"   
+git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
 ```
 
 3. Finally you have to create a [personal token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html) in gitlab with the following scopes `read_api` and `read_repository` and paste it in you ~/.netrc file
@@ -109,7 +109,7 @@ login <your user name>
 password <your token>
 ```
 
-4. you should be able to run `go mod tidy` successfuly 
+4. you should be able to run `go mod tidy` successfully
 
 
 Testing

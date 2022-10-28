@@ -65,3 +65,7 @@ override.tf.json
 examples/.terraform.lock.hcl
 examples/*.tfstate.*
 examples/*.tfstate
+
+# Ignore binary outputs
+binaries/**
+!binaries/.gitkeep
