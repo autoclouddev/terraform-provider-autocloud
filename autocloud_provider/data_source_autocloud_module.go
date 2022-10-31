@@ -73,7 +73,11 @@ func dataSourceAutocloudModuleRead(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		err = d.Set("variables", module.Variables)
+		varsMap, err := GetVariablesIdMap(module.Variables)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		err = d.Set("variables", varsMap)
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -7,6 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0
 	github.com/joho/godotenv v1.4.0
+	github.com/stretchr/testify v1.8.1
 	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221027183148-a01399b6998b
 )
 
@@ -89,6 +90,7 @@ require (
 	github.com/klauspost/compress v1.11.2 // indirect
 	github.com/mitchellh/cli v1.1.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/russross/blackfriday v1.6.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
@@ -99,5 +101,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	google.golang.org/api v0.97.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
