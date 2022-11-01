@@ -167,6 +167,16 @@ func autocloudBlueprint() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 						},
+						"form_config": {
+							Description: "form config",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"template_config": {
+							Description: "template config",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
 					},
 				},
 			},

@@ -43,6 +43,16 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 			Type: schema.TypeString,
 		},
 	},
+	"template_config": {
+		Description: "Template config",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
+	"form_config": {
+		Description: "Form config",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
 }
 
 func autocloudModule() *schema.Resource {
@@ -120,12 +130,20 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	err = d.Set("template_config", iacModule.Template)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	varsMap, err := GetVariablesIdMap(iacModule.Variables)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	err = d.Set("variables", varsMap)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("form_config", iacModule.Variables)
 	if err != nil {
 		return diag.FromErr(err)
 	}

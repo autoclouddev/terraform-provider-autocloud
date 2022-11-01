@@ -3,7 +3,7 @@ terraform {
   required_providers {
     autocloud = {
       version = "0.2.0"
-      source  = "autocloud.io/autocloud/autocloud"
+      source  = "autocloud.io/autoclouddev/autocloud"
     }
   }
 }
@@ -123,6 +123,12 @@ resource "autocloud_blueprint" "example" {
 
   autocloud_module {
     id = autocloud_module.s3_bucket.id
+
+    form_config     = templatefile("${path.module}/files/s3bucket.vars.tpl", {})  # example from file
+    # form_config     = autocloud_module.s3_bucket.form_config                    # example from resource
+    # form_config     = data.autocloud_form_config.s3_bucket.form_config          # example from data
+
+    template_config = file("${path.module}/files/s3bucket.tf.tpl")
   }
 
   autocloud_module {
