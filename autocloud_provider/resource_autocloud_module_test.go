@@ -53,7 +53,7 @@ func TestAccAutocloudModule(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"autocloud_module.s3_bucket", "variables.%"),
 					resource.TestCheckResourceAttr(
-						"autocloud_module.s3_bucket", "variables.is_ipv6_enabled", "s3bucket.is_ipv6_enabled"),
+						"autocloud_module.s3_bucket", "variables.is_ipv6_enabled", "S3Bucket.is_ipv6_enabled"),
 				),
 			},
 		},

@@ -59,27 +59,36 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 		Labels:          labels,
 		FileDefinitions: GetSdkIacCatalogFileDefinitions(d),
 		GitConfig:       GetSdkIacCatalogGitConfig(d),
-		IacModuleIds:    GetSdkIacCatalogModuleIDs(d),
+		IacModules:      GetSdkIacCatalogModules(d),
 	}
 
 	return generator
 }
 
-func GetSdkIacCatalogModuleIDs(d *schema.ResourceData) []string {
-	var iacModulesIDs []string
+func GetSdkIacCatalogModules(d *schema.ResourceData) []autocloudsdk.IacCatalogModule {
+	var iacModules []autocloudsdk.IacCatalogModule
 	if autocloudModules, ok := d.GetOk("autocloud_module"); ok {
 		list := autocloudModules.(*schema.Set).List()
-		iacModulesIDs = make([]string, len(list))
-		for i, autocloudModule := range list {
-			var autocloudModuleMap = autocloudModule.(map[string]interface{})
+		iacModules = make([]autocloudsdk.IacCatalogModule, len(list))
+		for i, autocloudModuleData := range list {
+			var autocloudModuleMap = autocloudModuleData.(map[string]interface{})
 
+			autocloudModule := autocloudsdk.IacCatalogModule{}
 			if val, ok := autocloudModuleMap["id"]; ok {
-				iacModulesIDs[i] = val.(string)
+				autocloudModule.ID = val.(string)
 			}
+			if val, ok := autocloudModuleMap["form_config"]; ok {
+				autocloudModule.Variables = val.(string)
+			}
+			if val, ok := autocloudModuleMap["template_config"]; ok {
+				autocloudModule.Template = val.(string)
+			}
+
+			iacModules[i] = autocloudModule
 		}
 	}
 
-	return iacModulesIDs
+	return iacModules
 }
 
 func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacCatalogFile {

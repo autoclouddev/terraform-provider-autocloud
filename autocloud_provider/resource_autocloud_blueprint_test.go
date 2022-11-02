@@ -8,6 +8,26 @@ import (
 )
 
 const testAccAutocloudBluePrint = `
+
+resource "autocloud_module" "s3_bucket" {
+
+	####
+	# Name of the generator
+	name = "S3Bucket"
+
+	####
+	# Can be any supported terraform source reference, must optionaly take version
+	#
+	#   source = "app.terraform.io/autocloud/aws/s3_bucket"
+	#   version = "0.24.0"
+	#
+	# See docs: https://developer.hashicorp.com/terraform/language/modules/sources
+
+	version = "3.0.0"
+	source = "terraform-aws-modules/cloudfront/aws"
+
+  }
+
 resource "autocloud_blueprint" "bar" {
   name = "FirstBluePrint"
   author = "enrique.enciso@autocloud.dev"
@@ -60,16 +80,14 @@ resource "autocloud_blueprint" "bar" {
     }
   }
 
-
   ###
   # Modules
   #
-  #autocloud_module {
-  #  id              = autocloud_module.s3_bucket.id
-  #  template_config = autocloud_module.s3_bucket.template
-  #  form_config     = data.autocloud_form_config.s3_bucket
-  #}
-
+  autocloud_module {
+    id = autocloud_module.s3_bucket.id
+	form_config = "form-config"
+	template_config = "template-config"
+  }
 
 }
 `
@@ -118,6 +136,16 @@ func TestAccAutocloudBlueprint(t *testing.T) {
 						"autocloud_blueprint.bar", "git_config.0.pull_request.0.variables.authorName", "generic.authorName"),
 					resource.TestCheckResourceAttr(
 						"autocloud_blueprint.bar", "git_config.0.pull_request.0.variables.siteName", "generic.SiteName"),
+					resource.TestCheckResourceAttrSet(
+						"autocloud_blueprint.bar", "autocloud_module.0.id"),
+					resource.TestCheckResourceAttrSet(
+						"autocloud_blueprint.bar", "autocloud_module.0.template_config"),
+					resource.TestCheckResourceAttr(
+						"autocloud_blueprint.bar", "autocloud_module.0.template_config", "template-config"),
+					resource.TestCheckResourceAttrSet(
+						"autocloud_blueprint.bar", "autocloud_module.0.form_config"),
+					resource.TestCheckResourceAttr(
+						"autocloud_blueprint.bar", "autocloud_module.0.form_config", "form-config"),
 				),
 			},
 		},
