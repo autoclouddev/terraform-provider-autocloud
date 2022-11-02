@@ -1,3 +1,15 @@
+# [0.3.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.1...0.3.0-pre.2) (2022-11-02)
+
+
+### Bug Fixes
+
+* **ep-2499:** fixing tests ([501d21a](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/501d21aebf8178c2c588592aa7a90bd18fb2c840))
+
+
+### Features
+
+* **EP-2499:** iac blueprint module override ([2c998a3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/2c998a342145efb9ac564206413576d531167de5))
+
 # [0.3.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.2.1-pre.1...0.3.0-pre.1) (2022-10-31)
 
 
