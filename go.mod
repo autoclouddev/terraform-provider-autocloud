@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0
 	github.com/joho/godotenv v1.4.0
 	github.com/stretchr/testify v1.8.1
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221028175039-ff287ee838af
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221101210518-a7119367be1f
 )
 
 //uncomment the following line when working with local setup
