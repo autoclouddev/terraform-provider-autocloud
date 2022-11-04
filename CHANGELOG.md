@@ -1,3 +1,10 @@
+# [0.3.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.2...0.3.0-pre.3) (2022-11-04)
+
+
+### Features
+
+* **EP-2503:** IAC token auth ([7058241](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/7058241d6758c66c88fb24f481a07d12995b4654))
+
 # [0.3.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.1...0.3.0-pre.2) (2022-11-02)
 
 
