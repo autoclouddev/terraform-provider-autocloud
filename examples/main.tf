@@ -15,8 +15,6 @@ USE THIS FILE AS YOU NEED FIT, THIS IS JUST A PLAYGROUND
 */
 provider "autocloud" {}
 
-data "autocloud_me" "current_user" {}
-
 data "autocloud_github_repos" "repos" {}
 locals {
   ####
