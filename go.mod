@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0
 	github.com/joho/godotenv v1.4.0
 	github.com/stretchr/testify v1.8.1
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221101210518-a7119367be1f
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221104160608-f7532c9c4ed4
 )
 
 //uncomment the following line when working with local setup
@@ -82,7 +82,6 @@ require (
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/hcl v0.0.0-20170504190234-a4b07c25de5f // indirect
 	github.com/hashicorp/terraform-config-inspect v0.0.0-20211115214459-90acf1ca460f // indirect
-	github.com/hasura/go-graphql-client v0.8.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -101,5 +100,4 @@ require (
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	google.golang.org/api v0.97.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	nhooyr.io/websocket v1.8.7 // indirect
 )

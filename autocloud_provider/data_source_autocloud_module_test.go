@@ -26,18 +26,11 @@ data "autocloud_module" "cloudfront" {
 `
 
 func setupSdk() *autocloudsdk.Client {
-	graphql := os.Getenv("SDK_GRAPHQL_HOST")
-	appClient := os.Getenv("SDK_COGNITO_APP_CLIENT_ID")
 	host := os.Getenv("SDK_API_HOST")
-	username := os.Getenv("AUTOCLOUD_USERNAME")
-	password := os.Getenv("AUTOCLOUD_PASSWORD")
-	c, err := autocloudsdk.NewClient(&graphql, &host, &appClient)
+	token := os.Getenv("AUTOCLOUD_TOKEN")
+	c, err := autocloudsdk.NewClient(&host, &token)
 	if err != nil {
 		panic("sdk not initialized")
-	}
-	err = c.Login(&username, &password)
-	if err != nil {
-		panic("sdk not authentificated")
 	}
 	return c
 }
