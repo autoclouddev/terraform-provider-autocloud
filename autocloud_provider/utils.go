@@ -1,9 +1,10 @@
 package autocloud_provider
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
@@ -236,13 +237,44 @@ func GetVariablesIdMap(str string) (map[string]string, error) {
 
 	varsMap := make(map[string]string)
 	for _, v := range vars {
-		log.Println(v)
-		keyValue := strings.Split(v.ID, ".")
-		log.Println(keyValue)
-		if len(keyValue) == 2 {
-			varsMap[keyValue[1]] = v.ID
+		varName, err := getVariableID(v.ID)
+		if err == nil {
+			varsMap[varName] = v.ID
 		}
 	}
 
 	return varsMap, nil
+}
+
+// variables id follow the pattern "<source module>.<variable name>""
+func getVariableID(variableKey string) (string, error) {
+	keyValue := strings.Split(variableKey, ".")
+	if len(keyValue) == 2 {
+		return keyValue[1], nil
+	}
+
+	return "", errors.New("Invalid Key")
+}
+
+// marshals and converts an object into a compacted JSON string
+func toJsonString(obj any) (string, error) {
+	jsonDoc, err := json.Marshal(obj)
+	if err != nil {
+		return "", err
+	}
+
+	jsonBuffer := &bytes.Buffer{}
+	if err := json.Compact(jsonBuffer, jsonDoc); err != nil {
+		return "", err
+	}
+	return jsonBuffer.String(), nil
+}
+
+// remove empty spaces from a JSON string
+func compactJson(jsonStr string) string {
+	jsonBuffer := &bytes.Buffer{}
+	if err := json.Compact(jsonBuffer, []byte(jsonStr)); err != nil {
+		panic(err)
+	}
+	return jsonBuffer.String()
 }

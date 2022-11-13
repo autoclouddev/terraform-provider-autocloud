@@ -64,6 +64,86 @@ resource "autocloud_module" "cloudfront" {
 
 }
 
+
+data "autocloud_terraform_processor" "s3_processor" {
+  source_module_id = autocloud_module.s3_bucket.id
+  omit_variables   = ["request_payer", "attach_deny_insecure_transport_policy", "putin_khuylo", "attach_policy", "control_object_ownership", "attach_lb_log_delivery_policy", "create_bucket", "attach_elb_log_delivery_policy", "object_ownership", "attach_require_latest_tls_policy", "policy", "block_public_acls", "bucket", "acl", "block_public_policy", "object_lock_enabled", "force_destroy", "ignore_public_acls"]
+
+  # bucket_prefix, acceleration_status, expected_bucket_owner => these vars are of 'shortText' type
+  # attach_public_policy is of 'radio' type ('checkbox' types are similar to 'radio' types)
+
+  # OVERRIDE VARIABLE EXAMPLES
+  # - overriding bucket_prefix 'shortText' into 'radio'
+  override_variable {
+    variable_name = "bucket_prefix"
+    form_config {
+      type = "radio"
+      field_options {
+        option {
+          label   = "dev"
+          value   = "some-dev-prefix"
+          checked = false
+        }
+        option {
+          label   = "nonprod"
+          value   = "some-nonprod-prefix"
+          checked = true
+        }
+        option {
+          label = "prod"
+          value = "some-prod-prefix"
+        }
+      }
+      validation_rule {
+        rule          = "isRequired"
+        error_message = "invalid"
+      }
+    }
+  }
+
+  # - overriding acceleration_status 'shortText' into 'checkbox'
+  override_variable {
+    variable_name = "acceleration_status"
+    form_config {
+      type = "checkbox"
+      field_options {
+        option {
+          label = "Option 1"
+          value = "acceleration_status_1"
+
+        }
+        option {
+          label   = "Option 2"
+          value   = "acceleration_status_2"
+          checked = true
+        }
+        option {
+          label   = "Option 3"
+          value   = "acceleration_status_3"
+          checked = true
+        }
+      }
+    }
+  }
+
+  # - NOT overriding expected_bucket_owner 'shortText' (it should be displayed as shortText)
+  # ...
+
+  # - overriding attach_public_policy 'radio' into 'shortText'
+
+  override_variable {
+    variable_name = "attach_public_policy"
+    form_config {
+      type = "shortText"
+      validation_rule {
+        rule          = "regex"
+        value         = "^(yes|no)$"
+        error_message = "invalid. you should choose between 'yes' or 'no'"
+      }
+    }
+  }
+}
+
 resource "autocloud_blueprint" "example" {
   name = "S3andEKS"
 
@@ -97,7 +177,7 @@ resource "autocloud_blueprint" "example" {
       variables = {
         authorName  = "generic.authorName"
         clusterName = "S3Bucket.Bucket"
-        dummyParam = autocloud_module.s3_bucket.variables["restrict_public_buckets"]
+        dummyParam  = autocloud_module.s3_bucket.variables["restrict_public_buckets"]
       }
     }
   }
@@ -122,9 +202,10 @@ resource "autocloud_blueprint" "example" {
   autocloud_module {
     id = autocloud_module.s3_bucket.id
 
-    form_config     = templatefile("${path.module}/files/s3bucket.vars.tpl", {})  # example from file
-    # form_config     = autocloud_module.s3_bucket.form_config                    # example from resource
-    # form_config     = data.autocloud_form_config.s3_bucket.form_config          # example from data
+    form_config = data.autocloud_terraform_processor.s3_processor.form_config # config from data source
+    # form_config     = templatefile("${path.module}/files/s3bucket.vars.tpl", {})  # example from file
+    # form_config     = autocloud_module.s3_bucket.form_config                      # example from resource
+    # form_config     = data.autocloud_form_config.s3_bucket.form_config            # example from data
 
     template_config = file("${path.module}/files/s3bucket.tf.tpl")
   }
