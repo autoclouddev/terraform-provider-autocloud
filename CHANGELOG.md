@@ -1,3 +1,10 @@
+# [0.3.0-pre.4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.3...0.3.0-pre.4) (2022-11-15)
+
+
+### Features
+
+* **ep-2502:** form builder ([d0c7100](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/d0c71005bba0a007155ab45dbbeb218e300d3b71))
+
 # [0.3.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.2...0.3.0-pre.3) (2022-11-04)
 
 
