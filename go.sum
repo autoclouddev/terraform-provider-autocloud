@@ -303,8 +303,8 @@ github.com/hashicorp/terraform-plugin-go v0.14.0 h1:ttnSlS8bz3ZPYbMb84DpcPhY4F5D
 github.com/hashicorp/terraform-plugin-go v0.14.0/go.mod h1:2nNCBeRLaenyQEi78xrGrs9hMbulveqG/zDMQSvVJTE=
 github.com/hashicorp/terraform-plugin-log v0.7.0 h1:SDxJUyT8TwN4l5b5/VkiTIaQgY6R+Y2BQ0sRZftGKQs=
 github.com/hashicorp/terraform-plugin-log v0.7.0/go.mod h1:p4R1jWBXRTvL4odmEkFfDdhUjHf9zcs/BCoNHAc7IK4=
-github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0 h1:D4EeQm0piYXIHp6ZH3zjyP2Elq6voC64x3GZptaiefA=
-github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0/go.mod h1:xkJGavPvP9kYS/VbiW8o7JuTNgPwm7Tiw/Ie/b46r4c=
+github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0 h1:FtCLTiTcykdsURXPt/ku7fYXm3y19nbzbZcUxHx9RbI=
+github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0/go.mod h1:80wf5oad1tW+oLnbXS4UTYmDCrl7BuN1Q+IA91X1a4Y=
 github.com/hashicorp/terraform-registry-address v0.0.0-20220623143253-7d51757b572c h1:D8aRO6+mTqHfLsK/BC3j5OAoogv1WLRWzY1AaTo3rBg=
 github.com/hashicorp/terraform-registry-address v0.0.0-20220623143253-7d51757b572c/go.mod h1:Wn3Na71knbXc1G8Lh+yu/dQWWJeFQEpDeJMtWMtlmNI=
 github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 h1:HKLsbzeOsfXmKNpr3GiT18XAblV0BjCbzL8KQAMZGa0=
@@ -453,8 +453,8 @@ github.com/zclconf/go-cty v1.10.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uU
 github.com/zclconf/go-cty v1.11.0 h1:726SxLdi2SDnjY+BStqB9J1hNp4+2WlzyXLuimibIe0=
 github.com/zclconf/go-cty v1.11.0/go.mod h1:s9IfD1LK5ccNMSWCVFCE2rJfHiZgi7JijgeWIMfhLvA=
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
-gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221104160608-f7532c9c4ed4 h1:UWkT02wUe5NvsYuVBBnc8klSu6JA85UsWL6c9Qp7+oA=
-gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221104160608-f7532c9c4ed4/go.mod h1:qQuX29zcXqaMEesR5/c38Bf2nftM3iSjmeZoHd4360E=
+gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221113233856-7fd1b1b2e094 h1:5bF6s/WXSCfvIejtif9Ls9Nwrd8CB39tAsDqXAUKL2c=
+gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221113233856-7fd1b1b2e094/go.mod h1:qQuX29zcXqaMEesR5/c38Bf2nftM3iSjmeZoHd4360E=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=
