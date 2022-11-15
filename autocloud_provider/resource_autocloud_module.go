@@ -53,6 +53,12 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 	},
+	"tags_variable": {
+		Description: "Tags variable name",
+		Type:        schema.TypeString,
+		Optional:    true,
+		Default:     "tags",
+	},
 }
 
 func autocloudModule() *schema.Resource {
@@ -144,6 +150,10 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 	err = d.Set("form_config", iacModule.Variables)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("tags_variable", iacModule.TagsVariable)
 	if err != nil {
 		return diag.FromErr(err)
 	}
