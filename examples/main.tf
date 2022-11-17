@@ -38,8 +38,9 @@ resource "autocloud_module" "s3_bucket" {
   #
   # See docs: https://developer.hashicorp.com/terraform/language/modules/sources
 
-  version = "3.4.0"
-  source  = "terraform-aws-modules/s3-bucket/aws"
+  version       = "3.4.0"
+  source        = "terraform-aws-modules/s3-bucket/aws"
+  tags_variable = "custom_tags"
 
 }
 
@@ -61,7 +62,6 @@ resource "autocloud_module" "cloudfront" {
 
   version = "3.0.0"
   source  = "terraform-aws-modules/cloudfront/aws"
-
 }
 
 
@@ -197,7 +197,6 @@ resource "autocloud_blueprint" "example" {
     }
     modules = ["S3Bucket", "Cloudfront"]
   }
-
 
   autocloud_module {
     id = autocloud_module.s3_bucket.id
