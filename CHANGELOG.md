@@ -1,3 +1,10 @@
+# [0.3.0-pre.5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.4...0.3.0-pre.5) (2022-11-17)
+
+
+### Features
+
+* Added tags_variables field to module ([f2c6d6b](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f2c6d6b1a7a36da2ea1e3c905c3d9a4d28c85500))
+
 # [0.3.0-pre.4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.3...0.3.0-pre.4) (2022-11-15)
 
 
