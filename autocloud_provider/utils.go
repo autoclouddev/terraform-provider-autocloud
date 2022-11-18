@@ -179,10 +179,6 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGi
 				gitConfig.DestinationBranch = val.(string)
 			}
 
-			if val, ok := gitConfigMap["git_url_default"]; ok {
-				gitConfig.GitURLDefault = val.(string)
-			}
-
 			if val, ok := gitConfigMap["git_url_options"]; ok {
 				list := val.([]interface{})
 				options := make([]string, len(list))
@@ -190,6 +186,14 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGi
 					options[i] = optionValue.(string)
 				}
 				gitConfig.GitURLOptions = options
+				if len(options) == 1 {
+					gitConfig.GitURLDefault = options[0]
+				}
+			}
+
+			// if there is only one option, the default repo shouldn't be available
+			if val, ok := gitConfigMap["git_url_default"]; ok && len(gitConfig.GitURLDefault) == 0 {
+				gitConfig.GitURLDefault = val.(string)
 			}
 
 			if val, ok := gitConfigMap["pull_request"]; ok {
