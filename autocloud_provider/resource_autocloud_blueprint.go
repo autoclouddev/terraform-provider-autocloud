@@ -59,7 +59,7 @@ func autocloudBlueprint() *schema.Resource {
 						"destination_branch": {
 							Description: "destination_branch",
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 						},
 						"git_url_options": {
 							Description: "git_url_options",
