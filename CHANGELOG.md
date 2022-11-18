@@ -1,3 +1,10 @@
+# [0.3.0-pre.6](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.5...0.3.0-pre.6) (2022-11-18)
+
+
+### Features
+
+* **gitconfig:** avoid configuration errors with git default repo ([b5c3c9f](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b5c3c9fc335ac9b5b4395b83b14b26645a0ec5f3))
+
 # [0.3.0-pre.5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.4...0.3.0-pre.5) (2022-11-17)
 
 
