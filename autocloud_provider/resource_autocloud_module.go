@@ -2,6 +2,8 @@ package autocloud_provider
 
 import (
 	"context"
+	"fmt"
+	"regexp"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 
@@ -19,7 +21,17 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 	"name": {
 		Description: "name",
 		Type:        schema.TypeString,
-		Optional:    true,
+		Required:    true,
+		ValidateFunc: func(val any, key string) (warns []string, errs []error) {
+			if len(val.(string)) == 0 {
+				errs = append(errs, fmt.Errorf("name should not be empty"))
+			}
+			is_alphanumeric := regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(val.(string))
+			if !is_alphanumeric {
+				errs = append(errs, fmt.Errorf("name should only contain alphanumeric characters, got: %s", val))
+			}
+			return
+		},
 	},
 	"source": {
 		Description: "terraform module source url from registry",
