@@ -1,3 +1,10 @@
+# [0.3.0-pre.7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.6...0.3.0-pre.7) (2022-11-22)
+
+
+### Features
+
+* **validation:** add validation to autocloud_module name ([4f3a18a](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/4f3a18addf03f6499060ffea044dafcaf4ed341d))
+
 # [0.3.0-pre.6](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.5...0.3.0-pre.6) (2022-11-18)
 
 
