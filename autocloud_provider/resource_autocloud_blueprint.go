@@ -112,7 +112,7 @@ func autocloudBlueprint() *schema.Resource {
 			"file": {
 				Description: "file",
 				Type:        schema.TypeSet,
-				Optional:    true,
+				Required:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action": {
@@ -188,6 +188,8 @@ func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta 
 	var diags diag.Diagnostics
 	generator := GetSdkIacCatalog(d)
 	c := meta.(*autocloudsdk.Client)
+	fmt.Println("SENDING DATA, CREATE")
+	fmt.Println(generator)
 	o, err := c.CreateGenerator(generator)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
@@ -258,7 +260,8 @@ func autocloudBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	updatedGen := GetSdkIacCatalog(d)
 	updatedGen.ID = d.Id()
-
+	fmt.Println("UPDATING GENERATOR REQUEST")
+	fmt.Println(updatedGen)
 	_, err := c.UpdateGenerator(updatedGen)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
