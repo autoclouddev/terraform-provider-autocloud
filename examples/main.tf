@@ -41,7 +41,7 @@ resource "autocloud_module" "s3_bucket" {
   version       = "3.4.0"
   source        = "terraform-aws-modules/s3-bucket/aws"
   tags_variable = "custom_tags"
-
+  display_order = ["name", "procotol"]
 }
 
 

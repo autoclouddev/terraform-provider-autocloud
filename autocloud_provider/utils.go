@@ -89,6 +89,16 @@ func GetSdkIacCatalogModules(d *schema.ResourceData) []autocloudsdk.IacCatalogMo
 				autocloudModule.TagsVariable = val.(string)
 			}
 
+			var displayOrder = []string{}
+			if orderValues, isorderValuesOk := d.GetOk("display_order"); isorderValuesOk {
+				list := orderValues.([]interface{})
+				displayOrder = make([]string, len(list))
+				for i, orderValues := range list {
+					displayOrder[i] = orderValues.(string)
+				}
+				autocloudModule.DisplayOrder = displayOrder
+			}
+
 			iacModules[i] = autocloudModule
 		}
 	}
@@ -202,12 +212,22 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGi
 }
 
 func GetSdkIacModule(d *schema.ResourceData) autocloudsdk.IacModule {
+	var displayOrder = []string{}
+	if orderValues, isorderValuesOk := d.GetOk("display_order"); isorderValuesOk {
+		list := orderValues.([]interface{})
+		displayOrder = make([]string, len(list))
+		for i, orderValues := range list {
+			displayOrder[i] = orderValues.(string)
+		}
+	}
+
 	// note: the Template and Variables fields are calculated by the SDK
 	iacModule := autocloudsdk.IacModule{
 		Name:         d.Get("name").(string),
 		Source:       d.Get("source").(string),
 		Version:      d.Get("version").(string),
 		TagsVariable: d.Get("tags_variable").(string),
+		DisplayOrder: displayOrder,
 	}
 
 	return iacModule

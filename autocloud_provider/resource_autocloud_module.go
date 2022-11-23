@@ -57,7 +57,14 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Description: "Tags variable name",
 		Type:        schema.TypeString,
 		Optional:    true,
-		Default:     "tags",
+	},
+	"display_order": {
+		Description: "Display order variables",
+		Type:        schema.TypeList,
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
 	},
 }
 
@@ -154,6 +161,10 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 	err = d.Set("tags_variable", iacModule.TagsVariable)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("display_order", iacModule.DisplayOrder)
 	if err != nil {
 		return diag.FromErr(err)
 	}
