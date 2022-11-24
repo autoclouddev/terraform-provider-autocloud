@@ -34,7 +34,7 @@ func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 	return mapString
 }
 
-func convertSlice(sliceInterface []interface{}) []string {
+func toStringSlice(sliceInterface []interface{}) []string {
 	values := make([]string, len(sliceInterface))
 	for idx, value := range sliceInterface {
 		values[idx] = value.(string)
@@ -46,10 +46,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
 		list := labelValues.([]interface{})
-		labels = make([]string, len(list))
-		for i, labelValues := range list {
-			labels[i] = labelValues.(string)
-		}
+		labels = toStringSlice(list)
 	}
 
 	generator := autocloudsdk.IacCatalog{
@@ -89,6 +86,11 @@ func GetSdkIacCatalogModules(d *schema.ResourceData) []autocloudsdk.IacCatalogMo
 				autocloudModule.TagsVariable = val.(string)
 			}
 
+			if orderValues, isorderValuesOk := d.GetOk("display_order"); isorderValuesOk {
+				list := orderValues.([]interface{})
+				autocloudModule.DisplayOrder = toStringSlice(list)
+			}
+
 			iacModules[i] = autocloudModule
 		}
 	}
@@ -124,7 +126,7 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacC
 			}
 			if val, ok := fileDefinitionMap["modules"]; ok {
 				var data = val.([]interface{})
-				fileDefinition.Modules = convertSlice(data)
+				fileDefinition.Modules = toStringSlice(data)
 			}
 
 			fileDefinitions[i] = fileDefinition
@@ -206,12 +208,19 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGi
 }
 
 func GetSdkIacModule(d *schema.ResourceData) autocloudsdk.IacModule {
+	var displayOrder = []string{}
+	if orderValues, isorderValuesOk := d.GetOk("display_order"); isorderValuesOk {
+		list := orderValues.([]interface{})
+		displayOrder = toStringSlice(list)
+	}
+
 	// note: the Template and Variables fields are calculated by the SDK
 	iacModule := autocloudsdk.IacModule{
 		Name:         d.Get("name").(string),
 		Source:       d.Get("source").(string),
 		Version:      d.Get("version").(string),
 		TagsVariable: d.Get("tags_variable").(string),
+		DisplayOrder: displayOrder,
 	}
 
 	return iacModule

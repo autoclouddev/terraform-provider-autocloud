@@ -41,7 +41,6 @@ resource "autocloud_module" "s3_bucket" {
   version       = "3.4.0"
   source        = "terraform-aws-modules/s3-bucket/aws"
   tags_variable = "custom_tags"
-
 }
 
 
@@ -62,6 +61,7 @@ resource "autocloud_module" "cloudfront" {
 
   version = "3.0.0"
   source  = "terraform-aws-modules/cloudfront/aws"
+  display_order = ["web_acl_id", "price_class", "http_version"]
 }
 
 
