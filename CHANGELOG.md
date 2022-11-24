@@ -1,3 +1,10 @@
+# [0.3.0-pre.8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.7...0.3.0-pre.8) (2022-11-24)
+
+
+### Features
+
+* Added display_order field to module schema ([e1cf88c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e1cf88c6eab6ebc25f3ee16e824fa45606307ef1))
+
 # [0.3.0-pre.7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.6...0.3.0-pre.7) (2022-11-22)
 
 
