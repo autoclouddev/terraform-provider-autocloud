@@ -59,15 +59,15 @@ resource "autocloud_module" "cloudfront" {
   #
   # See docs: https://developer.hashicorp.com/terraform/language/modules/sources
 
-  version = "3.0.0"
-  source  = "terraform-aws-modules/cloudfront/aws"
+  version       = "3.0.0"
+  source        = "terraform-aws-modules/cloudfront/aws"
   display_order = ["web_acl_id", "price_class", "http_version"]
 }
 
 
 data "autocloud_terraform_processor" "s3_processor" {
   source_module_id = autocloud_module.s3_bucket.id
-  omit_variables   = ["request_payer", "attach_deny_insecure_transport_policy", "putin_khuylo", "attach_policy", "control_object_ownership", "attach_lb_log_delivery_policy", "create_bucket", "attach_elb_log_delivery_policy", "object_ownership", "attach_require_latest_tls_policy", "policy", "block_public_acls", "bucket", "acl", "block_public_policy", "object_lock_enabled", "force_destroy", "ignore_public_acls"]
+  omit_variables   = ["request_payer", "attach_deny_insecure_transport_policy", "putin_khuylo", "attach_policy", "control_object_ownership", "attach_lb_log_delivery_policy", "create_bucket", "attach_elb_log_delivery_policy", "object_ownership", "attach_require_latest_tls_policy", "policy", "block_public_acls", "bucket", "acl", "block_public_policy", "object_lock_enabled", "force_destroy", "ignore_public_acls", "attach_public_policy"]
 
   # bucket_prefix, acceleration_status, expected_bucket_owner => these vars are of 'shortText' type
   # attach_public_policy is of 'radio' type ('checkbox' types are similar to 'radio' types)
@@ -76,6 +76,8 @@ data "autocloud_terraform_processor" "s3_processor" {
   # - overriding bucket_prefix 'shortText' into 'radio'
   override_variable {
     variable_name = "bucket_prefix"
+    display_name  = "bucket prefix (from override block)"
+    helper_text   = "bucket prefix helper text (from override block)"
     form_config {
       type = "radio"
       field_options {
@@ -129,19 +131,6 @@ data "autocloud_terraform_processor" "s3_processor" {
   # - NOT overriding expected_bucket_owner 'shortText' (it should be displayed as shortText)
   # ...
 
-  # - overriding attach_public_policy 'radio' into 'shortText'
-
-  override_variable {
-    variable_name = "attach_public_policy"
-    form_config {
-      type = "shortText"
-      validation_rule {
-        rule          = "regex"
-        value         = "^(yes|no)$"
-        error_message = "invalid. you should choose between 'yes' or 'no'"
-      }
-    }
-  }
 }
 
 resource "autocloud_blueprint" "example" {
