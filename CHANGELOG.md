@@ -1,3 +1,10 @@
+# [0.3.0-pre.10](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.9...0.3.0-pre.10) (2022-11-25)
+
+
+### Features
+
+* **ep-2559:** blueprint: limit git_config to 1 block ([73a282d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/73a282deaa5da328d6c0d6c7287caa8ff24bd425))
+
 # [0.3.0-pre.9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.8...0.3.0-pre.9) (2022-11-25)
 
 
