@@ -151,3 +151,12 @@ func TestAccAutocloudBlueprint(t *testing.T) {
 		},
 	})
 }
+
+func TestAutocloudBlueprintHasAtMostOneGitConfigError(t *testing.T) {
+	expectedError := `No more than 1 "git_config" blocks are allowed`
+	terraform := `resource "autocloud_blueprint" "bar" {
+		git_config {}
+		git_config {}
+	  }`
+	validateErrors(t, expectedError, terraform)
+}
