@@ -1,3 +1,10 @@
+# [0.3.0-pre.9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.8...0.3.0-pre.9) (2022-11-25)
+
+
+### Features
+
+* **ep-2562:** override variable: display name and helper text ([3943b28](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/3943b28b6a4e98acd43b1b78ee0ddba2e5a4772c))
+
 # [0.3.0-pre.8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.7...0.3.0-pre.8) (2022-11-24)
 
 
