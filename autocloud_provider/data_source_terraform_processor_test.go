@@ -28,6 +28,8 @@ resource "autocloud_module" "s3_bucket" {
 	# - overriding bucket_prefix 'shortText' into 'radio'
 	override_variable {
 	  variable_name = "bucket_prefix"
+	  display_name  = "bucket prefix (from override block)"
+      helper_text   = "bucket prefix helper text (from override block)"
 	  form_config {
 		type = "radio"
 		field_options {
@@ -123,6 +125,8 @@ var builderJson = compactJson(`{
 	"overrideVariable": {
 	  "acceleration_status": {
 		"variableName": "acceleration_status",
+		"displayName": "",
+        "helperText": "",
 		"formConfig": {
 		  "type": "checkbox",
 		  "fieldOptions": [
@@ -147,6 +151,8 @@ var builderJson = compactJson(`{
 	  },
 	  "attach_public_policy": {
 		"variableName": "attach_public_policy",
+		"displayName": "",
+        "helperText": "",
 		"formConfig": {
 		  "type": "shortText",
 		  "fieldOptions": null,
@@ -161,6 +167,8 @@ var builderJson = compactJson(`{
 	  },
 	  "bucket_prefix": {
 		"variableName": "bucket_prefix",
+		"displayName": "bucket prefix (from override block)",
+        "helperText": "bucket prefix helper text (from override block)",
 		"formConfig": {
 		  "type": "radio",
 		  "fieldOptions": [
@@ -224,7 +232,10 @@ var formJson = compactJson(`[
 		  }
 		],
 		"validationRules": []
-	  }
+	  },
+	  "fieldDataType": "string",
+	  "fieldDefaultValue": "null",
+	  "fieldValue": "null"
 	},
 	{
 	  "id": "S3Bucket.attach_public_policy",
@@ -243,7 +254,10 @@ var formJson = compactJson(`[
 			"errorMessage": "invalid. you should choose between 'yes' or 'no'"
 		  }
 		]
-	  }
+	  },
+	  "fieldDataType": "bool",
+	  "fieldDefaultValue": "true",
+	  "fieldValue": "true"
 	},
 	{
 	  "id": "S3Bucket.bucket_prefix",
@@ -252,8 +266,8 @@ var formJson = compactJson(`[
 	  "formQuestion": {
 		"fieldId": "S3Bucket.bucket_prefix",
 		"fieldType": "radio",
-		"fieldLabel": "bucket_prefix",
-		"explainingText": "(Optional, Forces new resource) Creates a unique bucket name beginning with the specified prefix. Conflicts with bucket.",
+		"fieldLabel": "bucket prefix (from override block)",
+		"explainingText": "bucket prefix helper text (from override block)",
 		"fieldOptions": [
 		  {
 			"label": "dev",
@@ -281,7 +295,10 @@ var formJson = compactJson(`[
 			"errorMessage": "invalid"
 		  }
 		]
-	  }
+	  },
+	  "fieldDataType": "string",
+	  "fieldDefaultValue": "null",
+	  "fieldValue": "null"
 	},
 	{
 	  "id": "S3Bucket.expected_bucket_owner",
@@ -294,7 +311,10 @@ var formJson = compactJson(`[
 		"explainingText": "The account ID of the expected bucket owner",
 		"fieldOptions": null,
 		"validationRules": null
-	  }
+	  },
+	  "fieldDataType": "string",
+	  "fieldDefaultValue": "null",
+	  "fieldValue": "null"
 	}
   ]`)
 

@@ -23,6 +23,8 @@ type FormBuilder struct {
 
 type OverrideVariable struct {
 	VariableName string     `json:"variableName"`
+	DisplayName  string     `json:"displayName"`
+	HelperText   string     `json:"helperText"`
 	FormConfig   FormConfig `json:"formConfig"`
 }
 
@@ -148,6 +150,14 @@ func dataSourceTerraformProcessor() *schema.Resource {
 							Required: true,
 						},
 						"form_config": formConfigSchema,
+						"display_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"helper_text": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -316,6 +326,8 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 			varName := varOverrideMap["variable_name"].(string)
 			overrideVariables[varName] = OverrideVariable{
 				VariableName: varName,
+				DisplayName:  varOverrideMap["display_name"].(string),
+				HelperText:   varOverrideMap["helper_text"].(string),
 				FormConfig:   formConfig,
 			}
 		}
@@ -382,6 +394,16 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		}
 	}
 
+	fieldLabel := overrideData.VariableName
+	if overrideData.DisplayName != "" {
+		fieldLabel = overrideData.DisplayName
+	}
+
+	explainingText := iacModuleVar.FormQuestion.ExplainingText
+	if overrideData.HelperText != "" {
+		explainingText = overrideData.HelperText
+	}
+
 	newIacModuleVar := autocloudsdk.FormShape{
 		ID:     iacModuleVar.ID,
 		Type:   overrideData.FormConfig.Type,
@@ -389,10 +411,13 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		FormQuestion: autocloudsdk.FormQuestion{
 			FieldID:         fieldID,
 			FieldType:       overrideData.FormConfig.Type,
-			FieldLabel:      overrideData.VariableName,
-			ExplainingText:  iacModuleVar.FormQuestion.ExplainingText,
+			FieldLabel:      fieldLabel,
+			ExplainingText:  explainingText,
 			ValidationRules: validationRules,
 		},
+		FieldDataType:     iacModuleVar.FieldDataType,
+		FieldDefaultValue: iacModuleVar.FieldDefaultValue,
+		FieldValue:        iacModuleVar.FieldValue,
 	}
 
 	if overrideData.FormConfig.Type == "radio" || overrideData.FormConfig.Type == "checkbox" {
