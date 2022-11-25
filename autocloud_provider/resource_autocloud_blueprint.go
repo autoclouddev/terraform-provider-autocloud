@@ -53,6 +53,7 @@ func autocloudBlueprint() *schema.Resource {
 			"git_config": {
 				Description: "git_config",
 				Type:        schema.TypeSet,
+				MaxItems:    1,
 				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

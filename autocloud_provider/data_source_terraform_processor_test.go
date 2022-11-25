@@ -1,7 +1,6 @@
 package autocloud_provider
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -424,26 +423,4 @@ func TestTerraformProcessorIsRequiredValidationsCanNotHaveAValueError(t *testing
 		}
 	  }`
 	validateErrors(t, expectedError, terraform)
-}
-
-// test function wrapper
-func validateErrors(t *testing.T, expectedError string, terraform string) {
-	resource.UnitTest(t, resource.TestCase{
-		ProviderFactories: providerFactories,
-		ErrorCheck: func(err error) error {
-			// if regex matches, do t.Skip instead of just passing the error through or something...
-			re := regexp.MustCompile(expectedError)
-
-			if re.MatchString(err.Error()) {
-				t.Skipf("skipping test - The error was catched")
-			}
-
-			return err
-		},
-		Steps: []resource.TestStep{
-			{
-				Config: terraform,
-			},
-		},
-	})
 }
