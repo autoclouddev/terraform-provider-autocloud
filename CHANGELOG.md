@@ -1,3 +1,10 @@
+# [0.3.0-pre.11](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.10...0.3.0-pre.11) (2022-11-29)
+
+
+### Features
+
+* **ep-2577:** autocloud provider endpoint ([84ccd11](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/84ccd111f8cc0a306c2ef92068ef7b80e653a425))
+
 # [0.3.0-pre.10](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.9...0.3.0-pre.10) (2022-11-25)
 
 
