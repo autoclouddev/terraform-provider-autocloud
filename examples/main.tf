@@ -13,7 +13,9 @@ terraform {
 USE THIS FILE AS YOU NEED FIT, THIS IS JUST A PLAYGROUND
 
 */
-provider "autocloud" {}
+provider "autocloud" {
+  # endpoint = "https://api.autocloud.domain.com/api/v.0.0.1"
+}
 
 data "autocloud_github_repos" "repos" {}
 locals {
