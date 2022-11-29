@@ -20,11 +20,11 @@ func New(version string) func() *schema.Provider {
 					Sensitive:   true,
 					DefaultFunc: schema.EnvDefaultFunc("AUTOCLOUD_TOKEN", nil),
 				},
-				"apihost": {
+				"endpoint": {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Sensitive:   true,
-					DefaultFunc: schema.EnvDefaultFunc("SDK_API_HOST", nil),
+					DefaultFunc: schema.EnvDefaultFunc("AUTOCLOUD_API", nil),
 				},
 			},
 			ResourcesMap: map[string]*schema.Resource{
@@ -51,7 +51,11 @@ func configure(version string, p *schema.Provider) func(ctx context.Context, d *
 	// sentry setup, etc
 
 	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
-		apiHost := d.Get("apihost").(string)
+		apiHost := d.Get("endpoint").(string)
+		if apiHost == "" {
+			return nil, diag.Errorf("Autocloud API Endpoint is empty")
+		}
+
 		token := d.Get("token").(string)
 		c, err := autocloudsdk.NewClient(&apiHost, &token)
 
