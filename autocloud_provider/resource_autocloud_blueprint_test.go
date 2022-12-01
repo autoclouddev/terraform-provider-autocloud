@@ -50,10 +50,8 @@ resource "autocloud_blueprint" "bar" {
   file {
     action = "CREATE"
 
-    path_from_root = "some-path"
-
-    filename_template = "eks-cluster-{{clusterName}}.tf"
-    filename_vars = {
+    destination = "eks-cluster-{{clusterName}}.tf"
+    variables = {
       clusterName = "EKSGenerator.clusterName"
     }
 	modules = ["EKSGenerator"]
@@ -113,11 +111,9 @@ func TestAccAutocloudBlueprint(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"autocloud_blueprint.bar", "file.0.action", "CREATE"),
 					resource.TestCheckResourceAttr(
-						"autocloud_blueprint.bar", "file.0.path_from_root", "some-path"),
+						"autocloud_blueprint.bar", "file.0.destination", "eks-cluster-{{clusterName}}.tf"),
 					resource.TestCheckResourceAttr(
-						"autocloud_blueprint.bar", "file.0.filename_template", "eks-cluster-{{clusterName}}.tf"),
-					resource.TestCheckResourceAttr(
-						"autocloud_blueprint.bar", "file.0.filename_vars.clusterName", "EKSGenerator.clusterName"),
+						"autocloud_blueprint.bar", "file.0.variables.clusterName", "EKSGenerator.clusterName"),
 					resource.TestCheckResourceAttr(
 						"autocloud_blueprint.bar", "file.0.modules.0", "EKSGenerator"),
 					resource.TestCheckResourceAttr(

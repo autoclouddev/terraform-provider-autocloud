@@ -17,6 +17,7 @@ const version = "3.0.0"
 
 const testAccDataSourceAutocloudModule = `
 data "autocloud_module" "cloudfront" {
+	name = "cloudfrontExample"
 	filter  {
 		name ="` + moduleName + `"
 		source ="` + source + `"
@@ -26,7 +27,7 @@ data "autocloud_module" "cloudfront" {
 `
 
 func setupSdk() *autocloudsdk.Client {
-	host := os.Getenv("SDK_API_HOST")
+	host := os.Getenv("AUTOCLOUD_API")
 	token := os.Getenv("AUTOCLOUD_TOKEN")
 	c, err := autocloudsdk.NewClient(&host, &token)
 	if err != nil {
