@@ -1,3 +1,10 @@
+# [0.3.0-pre.12](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.11...0.3.0-pre.12) (2022-12-01)
+
+
+### Features
+
+* **ep-2578:** blueprint file block update ([9e20850](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9e20850031b477c570f79e7b1413981396f4c004))
+
 # [0.3.0-pre.11](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.10...0.3.0-pre.11) (2022-11-29)
 
 
