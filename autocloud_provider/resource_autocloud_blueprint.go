@@ -128,18 +128,13 @@ func autocloudBlueprint() *schema.Resource {
 								return
 							},
 						},
-						"path_from_root": {
-							Description: "path_from_root",
+						"destination": {
+							Description: "destination",
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
-						"filename_template": {
-							Description: "filename_template",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"filename_vars": {
-							Description: "filename_vars",
+						"variables": {
+							Description: "variables",
 							Type:        schema.TypeMap,
 							Required:    true,
 							Elem: &schema.Schema{
@@ -302,9 +297,8 @@ func lowercaseFileDefs(files []autocloudsdk.IacCatalogFile) []interface{} {
 	for _, file := range files {
 		m := make(map[string]interface{})
 		m["action"] = file.Action
-		m["path_from_root"] = file.PathFromRoot
-		m["filename_template"] = file.FilenameTemplate
-		m["filename_vars"] = file.FilenameVars
+		m["destination"] = file.Destination
+		m["variables"] = file.Variables
 		m["modules"] = file.Modules
 		out = append(out, m)
 	}

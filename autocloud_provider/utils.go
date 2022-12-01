@@ -112,17 +112,13 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacC
 				fileDefinition.Action = val.(string)
 			}
 
-			if val, ok := fileDefinitionMap["path_from_root"]; ok {
-				fileDefinition.PathFromRoot = val.(string)
+			if val, ok := fileDefinitionMap["destination"]; ok {
+				fileDefinition.Destination = val.(string)
 			}
 
-			if val, ok := fileDefinitionMap["filename_template"]; ok {
-				fileDefinition.FilenameTemplate = val.(string)
-			}
-
-			if val, ok := fileDefinitionMap["filename_vars"]; ok {
-				var filenamesValueMap = val.(map[string]interface{})
-				fileDefinition.FilenameVars = ConvertMap(filenamesValueMap)
+			if val, ok := fileDefinitionMap["variables"]; ok {
+				var variablesMap = val.(map[string]interface{})
+				fileDefinition.Variables = ConvertMap(variablesMap)
 			}
 			if val, ok := fileDefinitionMap["modules"]; ok {
 				var data = val.([]interface{})
