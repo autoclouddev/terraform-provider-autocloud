@@ -69,6 +69,7 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Description: "Tags variable name",
 		Type:        schema.TypeString,
 		Optional:    true,
+		Default:     "tags",
 	},
 	"display_order": {
 		Description: "Display order variables",
