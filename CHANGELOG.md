@@ -1,3 +1,10 @@
+# [0.3.0-pre.13](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.12...0.3.0-pre.13) (2022-12-02)
+
+
+### Bug Fixes
+
+* Added default value for tags field ([ab3c5a7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/ab3c5a7389a9bd6d89e69522349f13f421a7309b))
+
 # [0.3.0-pre.12](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.11...0.3.0-pre.12) (2022-12-01)
 
 
