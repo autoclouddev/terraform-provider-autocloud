@@ -51,8 +51,9 @@ resource "autocloud_module" "s3_bucket" {
   # See docs: https://developer.hashicorp.com/terraform/language/modules/sources
 
   version       = "3.4.0"
-  source        = "terraform-aws-modules/s3-bucket/aws"
+  source        = "terraform-aws-modules/s3-bucket/aws" // https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest
   tags_variable = "custom_tags"
+  display_order = ["bucket"]
 }
 
 
@@ -72,16 +73,36 @@ resource "autocloud_module" "cloudfront" {
   # See docs: https://developer.hashicorp.com/terraform/language/modules/sources
 
   version       = "3.0.0"
-  source        = "terraform-aws-modules/cloudfront/aws"
+  source        = "terraform-aws-modules/cloudfront/aws" // https://registry.terraform.io/modules/terraform-aws-modules/cloudfront/aws/latest
   display_order = ["web_acl_id", "price_class", "http_version"]
 }
 
 
 data "autocloud_terraform_processor" "s3_processor" {
   source_module_id = autocloud_module.s3_bucket.id
-  omit_variables   = ["request_payer", "attach_deny_insecure_transport_policy", "putin_khuylo", "attach_policy", "control_object_ownership", "attach_lb_log_delivery_policy", "create_bucket", "attach_elb_log_delivery_policy", "object_ownership", "attach_require_latest_tls_policy", "policy", "block_public_acls", "acl", "block_public_policy", "object_lock_enabled", "force_destroy", "ignore_public_acls", "attach_public_policy"]
+  omit_variables = [
+    "acl",
+    "attach_deny_insecure_transport_policy",
+    "attach_elb_log_delivery_policy",
+    "attach_lb_log_delivery_policy",
+    "attach_policy",
+    "attach_public_policy",
+    "attach_require_latest_tls_policy",
+    "block_public_acls",
+    "block_public_policy",
+    "control_object_ownership",
+    "create_bucket",
+    "expected_bucket_owner",
+    "force_destroy",
+    "ignore_public_acls",
+    "object_lock_enabled",
+    "object_ownership",
+    "policy",
+    "putin_khuylo",
+    "request_payer",
+  ]
 
-  # bucket_prefix, acceleration_status, expected_bucket_owner => these vars are of 'shortText' type
+  # bucket_prefix, acceleration_status => these vars are of 'shortText' type
   # attach_public_policy is of 'radio' type ('checkbox' types are similar to 'radio' types)
 
   # OVERRIDE VARIABLE EXAMPLES
@@ -140,13 +161,63 @@ data "autocloud_terraform_processor" "s3_processor" {
     }
   }
 
-  # - NOT overriding expected_bucket_owner 'shortText' (it should be displayed as shortText)
-  # ...
+  # - overriding bucket to make it mandatory
+  override_variable {
+    variable_name = "bucket"
+    display_name  = "Bucket name"
+    helper_text   = "Set the bucket name"
 
+    form_config {
+      type = "shortText"
+
+      validation_rule {
+        rule          = "isRequired"
+        error_message = "invalid"
+      }
+    }
+  }
+}
+data "autocloud_terraform_processor" "cf_processor" {
+  source_module_id = autocloud_module.cloudfront.id
+
+  # omitting most of the variables to simplify the form
+  omit_variables = [
+    "aliases",
+    // "comment", // we'll take the value from s3 bucket name
+    "create_distribution",
+    "create_monitoring_subscription",
+    "create_origin_access_identity",
+    "custom_error_response",
+    "default_cache_behavior",
+    "default_root_object",
+    // "enabled", // we'll let the user select this value in the form
+    "geo_restriction",
+    "http_version",
+    "is_ipv6_enabled",
+    "logging_config",
+    "ordered_cache_behavior",
+    "origin",
+    "origin_access_identities",
+    "origin_group",
+    "price_class",
+    "realtime_metrics_subscription_status",
+    "retain_on_delete",
+    "tags",
+    "viewer_certificate",
+    "wait_for_deployment",
+    "web_acl_id",
+  ]
+
+  # OVERRIDE VARIABLE EXAMPLES
+  # - set values from other modules outputs
+  override_variable {
+    variable_name = "comment"
+    value         = autocloud_module.s3_bucket.outputs["s3_bucket_id"]
+  }
 }
 
 resource "autocloud_blueprint" "example" {
-  name = "S3andEKS"
+  name = "S3andCloudfront"
 
   ###
   # UI Configuration
@@ -215,5 +286,7 @@ resource "autocloud_blueprint" "example" {
 
   autocloud_module {
     id = autocloud_module.cloudfront.id
+
+    form_config = data.autocloud_terraform_processor.cf_processor.form_config
   }
 }
