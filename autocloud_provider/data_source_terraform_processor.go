@@ -291,6 +291,7 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 					return nil, fmt.Errorf("A form_config must be defined for variable [%s]", varName)
 				}
 				if formConfigListLen > 1 {
+					// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
 					return nil, errors.New("Exactly one form_config must be defined")
 				}
 
@@ -363,8 +364,6 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 					HelperText:   varOverrideMap["helper_text"].(string),
 					FormConfig:   formConfig,
 				}
-			} else {
-				return nil, errors.New("A form_config block must be defined")
 			}
 		}
 

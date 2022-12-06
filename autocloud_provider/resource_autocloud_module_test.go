@@ -25,7 +25,7 @@ resource "autocloud_module" "s3_bucket" {
 
 	version = "3.0.0"
 	source = "terraform-aws-modules/cloudfront/aws"
-  tags_variable = "custom_tags"
+    tags_variable = "custom_tags"
 	display_order = ["name", "protocol"]
 
   }
