@@ -1,3 +1,11 @@
+# [0.3.0-pre.14](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.13...0.3.0-pre.14) (2022-12-06)
+
+
+### Features
+
+* **ep-2575:** IAC Module composability - updating tests ([64ee6a8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/64ee6a84a8d330d39ef1206887ab45d933dac004))
+* **ep-2575:** IAC Module composability through the outputs of another module ([acb071d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/acb071d43c5b4d91392e1ec6389dddadf456e8f7))
+
 # [0.3.0-pre.13](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.12...0.3.0-pre.13) (2022-12-02)
 
 
