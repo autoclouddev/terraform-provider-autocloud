@@ -11,6 +11,7 @@ import (
 // if the error is shown, the test is skipped. Otherwise, if the error is not shown, the test will fail
 func validateErrors(t *testing.T, expectedError string, terraform string) {
 	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		ErrorCheck: func(err error) error {
 			// if regex matches, do t.Skip instead of just passing the error through or something...

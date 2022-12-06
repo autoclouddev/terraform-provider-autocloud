@@ -42,6 +42,16 @@ func toStringSlice(sliceInterface []interface{}) []string {
 	return values
 }
 
+func toStringMap(str string) (map[string]string, error) {
+	outputMap := map[string]string{}
+	err := json.Unmarshal([]byte(str), &outputMap)
+	if err != nil {
+		return nil, err
+	}
+
+	return outputMap, nil
+}
+
 func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {

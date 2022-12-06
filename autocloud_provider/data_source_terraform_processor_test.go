@@ -6,100 +6,104 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testDataSourceTerraformProcessor = `
+func TestTerraformProcessorOverrideVariables(t *testing.T) {
+	dataKey := "data.autocloud_terraform_processor.s3_processor"
 
-resource "autocloud_module" "s3_bucket" {
+	testDataSourceTerraformProcessor := `
 
-	name = "S3Bucket"
-	version = "3.4.0"
-	source  = "terraform-aws-modules/s3-bucket/aws"
+	resource "autocloud_module" "s3_bucket" {
 
-  }
+		name = "S3Bucket"
+		version = "3.4.0"
+		source  = "terraform-aws-modules/s3-bucket/aws"
 
-  data "autocloud_terraform_processor" "s3_processor" {
-	source_module_id = autocloud_module.s3_bucket.id
-	omit_variables   = ["request_payer", "attach_deny_insecure_transport_policy", "putin_khuylo", "attach_policy", "control_object_ownership", "attach_lb_log_delivery_policy", "create_bucket", "restrict_public_buckets", "attach_elb_log_delivery_policy", "object_ownership", "attach_require_latest_tls_policy", "policy", "block_public_acls", "bucket", "acl", "block_public_policy", "object_lock_enabled", "force_destroy", "ignore_public_acls"]
-
-	# bucket_prefix, acceleration_status, expected_bucket_owner => these vars are of 'shortText' type
-	# attach_public_policy is of 'radio' type ('checkbox' types are similar to 'radio' types)
-
-	# OVERRIDE VARIABLE EXAMPLES
-	# - overriding bucket_prefix 'shortText' into 'radio'
-	override_variable {
-	  variable_name = "bucket_prefix"
-	  display_name  = "bucket prefix (from override block)"
-      helper_text   = "bucket prefix helper text (from override block)"
-	  form_config {
-		type = "radio"
-		field_options {
-		  option {
-			label   = "dev"
-			value   = "some-dev-prefix"
-			checked = false
-		  }
-		  option {
-			label   = "nonprod"
-			value   = "some-nonprod-prefix"
-			checked = true
-		  }
-		  option {
-			label = "prod"
-			value = "some-prod-prefix"
-		  }
-		}
-		validation_rule {
-		  rule          = "isRequired"
-		  error_message = "invalid"
-		}
-	  }
 	}
 
-	# - overriding acceleration_status 'shortText' into 'checkbox'
-	override_variable {
-	  variable_name = "acceleration_status"
-	  form_config {
-		type = "checkbox"
-		field_options {
-		  option {
-			label = "Option 1"
-			value = "acceleration_status_1"
+	data "autocloud_terraform_processor" "s3_processor" {
+		source_module_id = autocloud_module.s3_bucket.id
+		omit_variables   = ["request_payer", "attach_deny_insecure_transport_policy", "putin_khuylo", "attach_policy", "control_object_ownership", "attach_lb_log_delivery_policy", "create_bucket", "restrict_public_buckets", "attach_elb_log_delivery_policy", "object_ownership", "attach_require_latest_tls_policy", "policy", "block_public_acls", "bucket", "acl", "block_public_policy", "object_lock_enabled", "force_destroy", "ignore_public_acls"]
 
-		  }
-		  option {
-			label   = "Option 2"
-			value   = "acceleration_status_2"
-			checked = true
-		  }
-		  option {
-			label   = "Option 3"
-			value   = "acceleration_status_3"
-			checked = true
-		  }
+		# bucket_prefix, acceleration_status, expected_bucket_owner => these vars are of 'shortText' type
+		# attach_public_policy is of 'radio' type ('checkbox' types are similar to 'radio' types)
+
+		# OVERRIDE VARIABLE EXAMPLES
+		# - overriding bucket_prefix 'shortText' into 'radio'
+		override_variable {
+		variable_name = "bucket_prefix"
+		display_name  = "bucket prefix (from override block)"
+		helper_text   = "bucket prefix helper text (from override block)"
+		form_config {
+			type = "radio"
+			field_options {
+			option {
+				label   = "dev"
+				value   = "some-dev-prefix"
+				checked = false
+			}
+			option {
+				label   = "nonprod"
+				value   = "some-nonprod-prefix"
+				checked = true
+			}
+			option {
+				label = "prod"
+				value = "some-prod-prefix"
+			}
+			}
+			validation_rule {
+			rule          = "isRequired"
+			error_message = "invalid"
+			}
 		}
-	  }
+		}
+
+		# - overriding acceleration_status 'shortText' into 'checkbox'
+		override_variable {
+		variable_name = "acceleration_status"
+		form_config {
+			type = "checkbox"
+			field_options {
+			option {
+				label = "Option 1"
+				value = "acceleration_status_1"
+
+			}
+			option {
+				label   = "Option 2"
+				value   = "acceleration_status_2"
+				checked = true
+			}
+			option {
+				label   = "Option 3"
+				value   = "acceleration_status_3"
+				checked = true
+			}
+			}
+		}
+		}
+
+		# - NOT overriding expected_bucket_owner 'shortText' (it should be displayed as shortText)
+		# ...
+
+		# - overriding attach_public_policy 'radio' into 'shortText'
+
+		override_variable {
+		variable_name = "attach_public_policy"
+		form_config {
+			type = "shortText"
+			validation_rule {
+			rule          = "regex"
+			value         = "^(yes|no)$"
+			error_message = "invalid. you should choose between 'yes' or 'no'"
+			}
+		}
+		}
 	}
 
-	# - NOT overriding expected_bucket_owner 'shortText' (it should be displayed as shortText)
-	# ...
+	`
 
-	# - overriding attach_public_policy 'radio' into 'shortText'
-
-	override_variable {
-	  variable_name = "attach_public_policy"
-	  form_config {
-		type = "shortText"
-		validation_rule {
-		  rule          = "regex"
-		  value         = "^(yes|no)$"
-		  error_message = "invalid. you should choose between 'yes' or 'no'"
-		}
-	  }
-	}
-  }
-`
-
-// how to omit and override variables (as JSON)
-var builderJson = compactJson(`{
+	// how to omit and override variables (as JSON)
+	var builderJsonOverrideVariables = compactJson(`{
 	"omitVariables": [
 	  "attach_require_latest_tls_policy",
 	  "ignore_public_acls",
@@ -124,6 +128,7 @@ var builderJson = compactJson(`{
 	"overrideVariable": {
 	  "acceleration_status": {
 		"variableName": "acceleration_status",
+		"value": null,
 		"displayName": "",
         "helperText": "",
 		"formConfig": {
@@ -150,6 +155,7 @@ var builderJson = compactJson(`{
 	  },
 	  "attach_public_policy": {
 		"variableName": "attach_public_policy",
+		"value": null,
 		"displayName": "",
         "helperText": "",
 		"formConfig": {
@@ -166,6 +172,7 @@ var builderJson = compactJson(`{
 	  },
 	  "bucket_prefix": {
 		"variableName": "bucket_prefix",
+		"value": null,
 		"displayName": "bucket prefix (from override block)",
         "helperText": "bucket prefix helper text (from override block)",
 		"formConfig": {
@@ -199,8 +206,8 @@ var builderJson = compactJson(`{
 	}
   }`)
 
-// the form with omitted and overridden variables (as JSON string)
-var formJson = compactJson(`[
+	// the form with omitted and overridden variables (as JSON string)
+	var formJsonOverrideVariables = compactJson(`[
 	{
 	  "id": "S3Bucket.acceleration_status",
 	  "type": "checkbox",
@@ -317,9 +324,6 @@ var formJson = compactJson(`[
 	}
   ]`)
 
-func TestTerraformProcessor(t *testing.T) {
-	dataKey := "data.autocloud_terraform_processor.s3_processor"
-
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
@@ -330,9 +334,179 @@ func TestTerraformProcessor(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						dataKey, "source_module_id"),
 					resource.TestCheckResourceAttr(
-						dataKey, "builder", builderJson),
+						dataKey, "builder", builderJsonOverrideVariables),
 					resource.TestCheckResourceAttr(
-						dataKey, "form_config", formJson),
+						dataKey, "form_config", formJsonOverrideVariables),
+				),
+			},
+		},
+	})
+}
+
+func TestTerraformProcessorComposability(t *testing.T) {
+	dataKey := "data.autocloud_terraform_processor.cf_processor"
+
+	testDataSourceTerraformProcessorComposability := `
+
+	resource "autocloud_module" "s3_bucket" {
+
+		name = "S3Bucket"
+		version = "3.4.0"
+		source  = "terraform-aws-modules/s3-bucket/aws"
+
+	}
+
+	resource "autocloud_module" "cloudfront" {
+
+		name = "Cloudfront"
+		version = "3.0.0"
+		source = "terraform-aws-modules/cloudfront/aws"
+
+	}
+
+	data "autocloud_terraform_processor" "s3_processor" {
+		source_module_id = autocloud_module.s3_bucket.id
+		omit_variables = [
+			"acceleration_status",
+			"acl",
+			"attach_deny_insecure_transport_policy",
+			"attach_elb_log_delivery_policy",
+			"attach_lb_log_delivery_policy",
+			"attach_policy",
+			"attach_public_policy",
+			"attach_require_latest_tls_policy",
+			"block_public_acls",
+			"block_public_policy",
+			"bucket_prefix",
+			"control_object_ownership",
+			"create_bucket",
+			"expected_bucket_owner",
+			"force_destroy",
+			"ignore_public_acls",
+			"object_lock_enabled",
+			"object_ownership",
+			"policy",
+			"putin_khuylo",
+			"request_payer",
+		]
+	}
+
+	data "autocloud_terraform_processor" "cf_processor" {
+		source_module_id = autocloud_module.cloudfront.id
+
+		# omitting most of the variables to simplify the form
+		omit_variables = [
+		"aliases",
+		// "comment", // we'll take the value from s3 bucket name
+		"create_distribution",
+		"create_monitoring_subscription",
+		"create_origin_access_identity",
+		"custom_error_response",
+		"default_cache_behavior",
+		"default_root_object",
+		"enabled",
+		"geo_restriction",
+		"http_version",
+		"is_ipv6_enabled",
+		"logging_config",
+		"ordered_cache_behavior",
+		"origin",
+		"origin_access_identities",
+		"origin_group",
+		"price_class",
+		"realtime_metrics_subscription_status",
+		"retain_on_delete",
+		"tags",
+		"viewer_certificate",
+		"wait_for_deployment",
+		"web_acl_id",
+		]
+
+		# OVERRIDE VARIABLE EXAMPLES
+		# - set values from other modules outputs
+		override_variable {
+		variable_name = "comment"
+		value         = autocloud_module.s3_bucket.outputs["s3_bucket_id"]
+		}
+	}
+
+	`
+
+	// how to omit and override variables (as JSON)
+	var builderJsonComposability = compactJson(`{
+	"omitVariables": [
+	  "aliases",
+	  "origin_access_identities",
+	  "price_class",
+	  "viewer_certificate",
+	  "custom_error_response",
+	  "http_version",
+	  "create_origin_access_identity",
+	  "create_distribution",
+	  "enabled",
+	  "origin",
+	  "create_monitoring_subscription",
+	  "retain_on_delete",
+	  "tags",
+	  "default_cache_behavior",
+	  "geo_restriction",
+	  "logging_config",
+	  "wait_for_deployment",
+	  "web_acl_id",
+	  "is_ipv6_enabled",
+	  "ordered_cache_behavior",
+	  "realtime_metrics_subscription_status",
+	  "default_root_object",
+	  "origin_group"
+	],
+	"overrideVariable": {
+	  "comment": {
+		"variableName": "comment",
+		"value": "module.S3Bucket.outputs.s3_bucket_id",
+		"displayName": "",
+		"helperText": "",
+		"formConfig": {
+		  "type": "",
+		  "fieldOptions": null,
+		  "validationRules": null
+		}
+	  }
+	}
+  }`)
+
+	// the form with omitted and overridden variables (as JSON string)
+	var formJsonComposability = compactJson(`[
+	{
+	  "id": "Cloudfront.comment",
+	  "type": "",
+	  "module": "Cloudfront",
+	  "formQuestion": {
+		"fieldId": "Cloudfront.comment",
+		"fieldType": "",
+		"fieldLabel": "comment",
+		"explainingText": "Any comments you want to include about the distribution.",
+		"fieldOptions": null,
+		"validationRules": []
+	  },
+	  "fieldDataType": "hcl-expression",
+	  "fieldDefaultValue": "module.S3Bucket.outputs.s3_bucket_id",
+	  "fieldValue": "module.S3Bucket.outputs.s3_bucket_id"
+	}
+  ]`)
+
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testDataSourceTerraformProcessorComposability,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						dataKey, "source_module_id"),
+					resource.TestCheckResourceAttr(
+						dataKey, "builder", builderJsonComposability),
+					resource.TestCheckResourceAttr(
+						dataKey, "form_config", formJsonComposability),
 				),
 			},
 		},
@@ -340,9 +514,11 @@ func TestTerraformProcessor(t *testing.T) {
 }
 
 func TestTerraformProcessorAtLeastOneConfigBlocksValidationError(t *testing.T) {
-	expectedError := `At least 1 "form_config" blocks are required`
+	expectedError := `A form_config must be defined for variable`
 	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+		source_module_id = "dummy"
 		override_variable {
+			variable_name = "bucket_prefix"
 		}
 	  }`
 	validateErrors(t, expectedError, terraform)
@@ -412,6 +588,26 @@ func TestTerraformProcessorIsRequiredValidationsCanNotHaveAValueError(t *testing
 		source_module_id = "dummy"
 		override_variable {
 			variable_name = "bucket_prefix"
+			form_config {
+				type = "shortText"
+				validation_rule {
+					rule          = "isRequired"
+					error_message = "invalid"
+					value		  = "some value"
+				  }
+			}
+		}
+	  }`
+	validateErrors(t, expectedError, terraform)
+}
+
+func TestTerraformProcessorWhenValueIsSetAFormConfigCanNotBeSet(t *testing.T) {
+	expectedError := "A form_config can not be added when setting the variable's value."
+	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+		source_module_id = "dummy"
+		override_variable {
+			variable_name = "bucket_prefix"
+			value = "some dummy value"
 			form_config {
 				type = "shortText"
 				validation_rule {

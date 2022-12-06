@@ -23,6 +23,7 @@ type FormBuilder struct {
 
 type OverrideVariable struct {
 	VariableName string     `json:"variableName"`
+	Value        *string    `json:"value"`
 	DisplayName  string     `json:"displayName"`
 	HelperText   string     `json:"helperText"`
 	FormConfig   FormConfig `json:"formConfig"`
@@ -115,8 +116,7 @@ func dataSourceTerraformProcessor() *schema.Resource {
 	formConfigSchema :=
 		&schema.Schema{
 			Type:     schema.TypeSet,
-			Required: true,
-			MinItems: 1,
+			Optional: true,
 			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -155,6 +155,10 @@ func dataSourceTerraformProcessor() *schema.Resource {
 							Optional: true,
 						},
 						"helper_text": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"value": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -248,87 +252,118 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 		// override vars loop
 		for _, f := range varsList {
 			varOverrideMap := f.(map[string]interface{})
+			varName := varOverrideMap["variable_name"].(string)
+
+			// Note: if it has a value, then it can NOT have a form_config
+			isValueDefined := false
+			value, ok := varOverrideMap["value"]
+			if ok {
+				valueStr, ok := value.(string)
+				if ok {
+					isValueDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
+					if isValueDefined {
+						overrideVariables[varName] = OverrideVariable{
+							VariableName: varName,
+							DisplayName:  varOverrideMap["display_name"].(string),
+							HelperText:   varOverrideMap["helper_text"].(string),
+							Value:        &valueStr,
+						}
+					}
+				}
+			}
 
 			// for config (we should only have 1 form_config by var)
-			formConfigList := varOverrideMap["form_config"].(*schema.Set).List()
-			formConfigListLen := len(formConfigList)
+			if formConfigInput, ok := varOverrideMap["form_config"]; ok {
+				formConfigList := formConfigInput.(*schema.Set).List()
 
-			// these checks should have been caught by the schema definition constraints
-			if formConfigListLen == 0 {
-				return nil, errors.New("A form_config must be defined")
-			}
-			if formConfigListLen > 1 {
-				return nil, errors.New("Exactly one form_config must be defined")
-			}
+				formConfigListLen := len(formConfigList)
 
-			formConfigMap := formConfigList[0].(map[string]interface{})
-			variableType := formConfigMap["type"].(string)
-
-			// field options
-			var fieldOptions []FieldOption
-
-			fieldOptionList := formConfigMap["field_options"].([]interface{})
-			if variableType == "radio" || variableType == "checkbox" {
-				if len(fieldOptionList) != 1 {
-					return nil, errors.New("One field_options block is required")
-				}
-
-				options := fieldOptionList[0].(map[string]interface{})["option"].([]interface{})
-				fieldOptions = make([]FieldOption, len(options))
-				optionCount := 0
-				for _, vOption := range options {
-					optionMap := vOption.(map[string]interface{})
-
-					fieldOptions[optionCount] = FieldOption{
-						Label:   optionMap["label"].(string),
-						Value:   optionMap["value"].(string),
-						Checked: optionMap["checked"].(bool),
+				if isValueDefined {
+					if formConfigListLen != 0 {
+						return nil, fmt.Errorf("A form_config can not be added when setting the variable's value. Var name: [%s], var value [%v]", varName, value)
 					}
-					optionCount++
-				}
-			} else if variableType == "shortText" {
-				if len(fieldOptionList) > 0 {
-					return nil, errors.New("ShortText variables can not have options")
+
+					// if the value is set and there's no form_config, then we're ok to continue processing the next variable override
+					continue
 				}
 
-				// nothing should be done here.
-			}
-
-			// validation rules
-			validationRulesList := formConfigMap["validation_rule"].(*schema.Set).List()
-			validationRules := make([]ValidationRule, len(validationRulesList))
-
-			for iValidationRule, validationRule := range validationRulesList {
-				validationRuleMap := validationRule.(map[string]interface{})
-
-				rule := validationRuleMap["rule"].(string)
-				ruleValue := validationRuleMap["value"].(string)
-
-				if rule == "isRequired" && ruleValue != "" {
-					return nil, errors.New("'isRequired' validation rule can not have a value")
+				if formConfigListLen == 0 {
+					return nil, fmt.Errorf("A form_config must be defined for variable [%s]", varName)
+				}
+				if formConfigListLen > 1 {
+					// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
+					return nil, errors.New("Exactly one form_config must be defined")
 				}
 
-				validationRules[iValidationRule] = ValidationRule{
-					Rule:         rule,
-					Value:        ruleValue,
-					ErrorMessage: validationRuleMap["error_message"].(string),
+				formConfigMap := formConfigList[0].(map[string]interface{})
+				variableType := formConfigMap["type"].(string)
+
+				// field options
+				var fieldOptions []FieldOption
+
+				fieldOptionList := formConfigMap["field_options"].([]interface{})
+				if variableType == "radio" || variableType == "checkbox" {
+					if len(fieldOptionList) != 1 {
+						return nil, errors.New("One field_options block is required")
+					}
+
+					options := fieldOptionList[0].(map[string]interface{})["option"].([]interface{})
+					fieldOptions = make([]FieldOption, len(options))
+					optionCount := 0
+					for _, vOption := range options {
+						optionMap := vOption.(map[string]interface{})
+
+						fieldOptions[optionCount] = FieldOption{
+							Label:   optionMap["label"].(string),
+							Value:   optionMap["value"].(string),
+							Checked: optionMap["checked"].(bool),
+						}
+						optionCount++
+					}
+				} else if variableType == "shortText" {
+					if len(fieldOptionList) > 0 {
+						return nil, errors.New("ShortText variables can not have options")
+					}
+
+					// nothing should be done here.
 				}
-			}
 
-			// build var config
-			formConfig := FormConfig{
-				Type:            variableType,
-				FieldOptions:    fieldOptions,
-				ValidationRules: validationRules,
-			}
+				// validation rules
+				validationRulesList := formConfigMap["validation_rule"].(*schema.Set).List()
+				validationRules := make([]ValidationRule, len(validationRulesList))
 
-			// build the override variable wrapper object
-			varName := varOverrideMap["variable_name"].(string)
-			overrideVariables[varName] = OverrideVariable{
-				VariableName: varName,
-				DisplayName:  varOverrideMap["display_name"].(string),
-				HelperText:   varOverrideMap["helper_text"].(string),
-				FormConfig:   formConfig,
+				for iValidationRule, validationRule := range validationRulesList {
+					validationRuleMap := validationRule.(map[string]interface{})
+
+					rule := validationRuleMap["rule"].(string)
+					ruleValue := validationRuleMap["value"].(string)
+
+					if rule == "isRequired" && ruleValue != "" {
+						return nil, errors.New("'isRequired' validation rule can not have a value")
+					}
+
+					validationRules[iValidationRule] = ValidationRule{
+						Rule:         rule,
+						Value:        ruleValue,
+						ErrorMessage: validationRuleMap["error_message"].(string),
+					}
+				}
+
+				// build var config
+				formConfig := FormConfig{
+					Type:            variableType,
+					FieldOptions:    fieldOptions,
+					ValidationRules: validationRules,
+				}
+
+				// build the override variable wrapper object
+
+				overrideVariables[varName] = OverrideVariable{
+					VariableName: varName,
+					DisplayName:  varOverrideMap["display_name"].(string),
+					HelperText:   varOverrideMap["helper_text"].(string),
+					FormConfig:   formConfig,
+				}
 			}
 		}
 
@@ -418,6 +453,12 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		FieldDataType:     iacModuleVar.FieldDataType,
 		FieldDefaultValue: iacModuleVar.FieldDefaultValue,
 		FieldValue:        iacModuleVar.FieldValue,
+	}
+
+	if overrideData.Value != nil {
+		newIacModuleVar.FieldValue = *overrideData.Value
+		newIacModuleVar.FieldDefaultValue = *overrideData.Value
+		newIacModuleVar.FieldDataType = "hcl-expression"
 	}
 
 	if overrideData.FormConfig.Type == "radio" || overrideData.FormConfig.Type == "checkbox" {

@@ -79,6 +79,13 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 			Type: schema.TypeString,
 		},
 	},
+	"outputs": {
+		Type:     schema.TypeMap,
+		Computed: true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	},
 }
 
 func autocloudModule() *schema.Resource {
@@ -178,6 +185,15 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 	err = d.Set("display_order", iacModule.DisplayOrder)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	outputsMap, err := toStringMap(iacModule.Outputs)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("outputs", outputsMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
