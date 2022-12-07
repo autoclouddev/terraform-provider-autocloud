@@ -84,6 +84,13 @@ func dataSourceRepositoriesRead(ctx context.Context, d *schema.ResourceData, m i
 	repositories, err := c.GetRepositories()
 
 	if err != nil {
+		resp := autocloudsdk.GetSdkHttpError(err)
+		if resp != nil {
+			if resp.Status == 400 {
+				return diag.Errorf(resp.Message)
+			}
+		}
+
 		return diag.FromErr(err)
 	}
 
