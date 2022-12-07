@@ -32,9 +32,9 @@ func New(version string) func() *schema.Provider {
 				"autocloud_module":    autocloudModule(),
 			},
 			DataSourcesMap: map[string]*schema.Resource{
-				"autocloud_github_repos":        dataSourceRepositories(),
-				"autocloud_module":              dataSourceAutocloudModule(),
-				"autocloud_terraform_processor": dataSourceTerraformProcessor(),
+				"autocloud_github_repos":     dataSourceRepositories(),
+				"autocloud_module":           dataSourceAutocloudModule(),
+				"autocloud_blueprint_config": dataSourceBlueprintConfig(),
 			},
 		}
 		p.ConfigureContextFunc = configure(version, p)

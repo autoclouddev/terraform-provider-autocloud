@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestTerraformProcessorOverrideVariables(t *testing.T) {
-	dataKey := "data.autocloud_terraform_processor.s3_processor"
+func TestBlueprintConfigOverrideVariables(t *testing.T) {
+	dataKey := "data.autocloud_blueprint_config.s3_processor"
 
-	testDataSourceTerraformProcessor := `
+	testDataSourceBluenprintConfig := `
 
 	resource "autocloud_module" "s3_bucket" {
 
@@ -19,7 +19,7 @@ func TestTerraformProcessorOverrideVariables(t *testing.T) {
 
 	}
 
-	data "autocloud_terraform_processor" "s3_processor" {
+	data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = autocloud_module.s3_bucket.id
 		omit_variables   = ["request_payer", "attach_deny_insecure_transport_policy", "putin_khuylo", "attach_policy", "control_object_ownership", "attach_lb_log_delivery_policy", "create_bucket", "restrict_public_buckets", "attach_elb_log_delivery_policy", "object_ownership", "attach_require_latest_tls_policy", "policy", "block_public_acls", "bucket", "acl", "block_public_policy", "object_lock_enabled", "force_destroy", "ignore_public_acls"]
 
@@ -329,7 +329,7 @@ func TestTerraformProcessorOverrideVariables(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceTerraformProcessor,
+				Config: testDataSourceBluenprintConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						dataKey, "source_module_id"),
@@ -343,10 +343,10 @@ func TestTerraformProcessorOverrideVariables(t *testing.T) {
 	})
 }
 
-func TestTerraformProcessorComposability(t *testing.T) {
-	dataKey := "data.autocloud_terraform_processor.cf_processor"
+func TestBlueprintConfigComposability(t *testing.T) {
+	dataKey := "data.autocloud_blueprint_config.cf_processor"
 
-	testDataSourceTerraformProcessorComposability := `
+	testDataSourceBluenprintConfigComposability := `
 
 	resource "autocloud_module" "s3_bucket" {
 
@@ -364,7 +364,7 @@ func TestTerraformProcessorComposability(t *testing.T) {
 
 	}
 
-	data "autocloud_terraform_processor" "s3_processor" {
+	data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = autocloud_module.s3_bucket.id
 		omit_variables = [
 			"acceleration_status",
@@ -391,7 +391,7 @@ func TestTerraformProcessorComposability(t *testing.T) {
 		]
 	}
 
-	data "autocloud_terraform_processor" "cf_processor" {
+	data "autocloud_blueprint_config" "cf_processor" {
 		source_module_id = autocloud_module.cloudfront.id
 
 		# omitting most of the variables to simplify the form
@@ -499,7 +499,7 @@ func TestTerraformProcessorComposability(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testDataSourceTerraformProcessorComposability,
+				Config: testDataSourceBluenprintConfigComposability,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
 						dataKey, "source_module_id"),
@@ -513,9 +513,9 @@ func TestTerraformProcessorComposability(t *testing.T) {
 	})
 }
 
-func TestTerraformProcessorAtLeastOneConfigBlocksValidationError(t *testing.T) {
+func TestBlueprintConfigAtLeastOneConfigBlocksValidationError(t *testing.T) {
 	expectedError := `A form_config must be defined for variable`
-	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
 		override_variable {
 			variable_name = "bucket_prefix"
@@ -524,9 +524,9 @@ func TestTerraformProcessorAtLeastOneConfigBlocksValidationError(t *testing.T) {
 	validateErrors(t, expectedError, terraform)
 }
 
-func TestTerraformProcessorTooManyFormConfigBlocksValidationError(t *testing.T) {
+func TestBlueprintConfigTooManyFormConfigBlocksValidationError(t *testing.T) {
 	expectedError := "Too many form_config blocks"
-	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		override_variable {
 			form_config {
 			}
@@ -537,9 +537,9 @@ func TestTerraformProcessorTooManyFormConfigBlocksValidationError(t *testing.T) 
 	validateErrors(t, expectedError, terraform)
 }
 
-func TestTerraformProcessorFieldOptionsIsRequiredForRadiosError(t *testing.T) {
+func TestBlueprintConfigFieldOptionsIsRequiredForRadiosError(t *testing.T) {
 	expectedError := "One field_options block is required"
-	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
 		override_variable {
 			variable_name = "bucket_prefix"
@@ -551,9 +551,9 @@ func TestTerraformProcessorFieldOptionsIsRequiredForRadiosError(t *testing.T) {
 	validateErrors(t, expectedError, terraform)
 }
 
-func TestTerraformProcessorFieldOptionsIsRequiredForCheckboxesError(t *testing.T) {
+func TestBlueprintConfigFieldOptionsIsRequiredForCheckboxesError(t *testing.T) {
 	expectedError := "One field_options block is required"
-	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
 		override_variable {
 			variable_name = "bucket_prefix"
@@ -565,9 +565,9 @@ func TestTerraformProcessorFieldOptionsIsRequiredForCheckboxesError(t *testing.T
 	validateErrors(t, expectedError, terraform)
 }
 
-func TestTerraformProcessorShortTextCanNotHaveOptionsError(t *testing.T) {
+func TestBlueprintConfigShortTextCanNotHaveOptionsError(t *testing.T) {
 	expectedError := "ShortText variables can not have options"
-	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
 		override_variable {
 			variable_name = "bucket_prefix"
@@ -582,9 +582,9 @@ func TestTerraformProcessorShortTextCanNotHaveOptionsError(t *testing.T) {
 	validateErrors(t, expectedError, terraform)
 }
 
-func TestTerraformProcessorIsRequiredValidationsCanNotHaveAValueError(t *testing.T) {
+func TestBlueprintConfigIsRequiredValidationsCanNotHaveAValueError(t *testing.T) {
 	expectedError := "'isRequired' validation rule can not have a value"
-	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
 		override_variable {
 			variable_name = "bucket_prefix"
@@ -601,9 +601,9 @@ func TestTerraformProcessorIsRequiredValidationsCanNotHaveAValueError(t *testing
 	validateErrors(t, expectedError, terraform)
 }
 
-func TestTerraformProcessorWhenValueIsSetAFormConfigCanNotBeSet(t *testing.T) {
+func TestBlueprintConfigWhenValueIsSetAFormConfigCanNotBeSet(t *testing.T) {
 	expectedError := "A form_config can not be added when setting the variable's value."
-	terraform := `data "autocloud_terraform_processor" "s3_processor" {
+	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
 		override_variable {
 			variable_name = "bucket_prefix"

@@ -25,7 +25,7 @@ locals {
 }
 
 locals {
-  s3_vars_from_form_config = jsondecode(data.autocloud_terraform_processor.s3_processor.form_config)
+  s3_vars_from_form_config = jsondecode(data.autocloud_blueprint_config.s3_processor.form_config)
   s3_vars_extend           = jsondecode(templatefile("${path.module}/files/s3bucket.vars.tpl", {}))
   # iterate over lists
   s3_vars_from_form_config_dict = { for item in local.s3_vars_from_form_config : item.id => item }
@@ -78,7 +78,7 @@ resource "autocloud_module" "cloudfront" {
 }
 
 
-data "autocloud_terraform_processor" "s3_processor" {
+data "autocloud_blueprint_config" "s3_processor" {
   source_module_id = autocloud_module.s3_bucket.id
   omit_variables = [
     "acl",
@@ -177,7 +177,7 @@ data "autocloud_terraform_processor" "s3_processor" {
     }
   }
 }
-data "autocloud_terraform_processor" "cf_processor" {
+data "autocloud_blueprint_config" "cf_processor" {
   source_module_id = autocloud_module.cloudfront.id
 
   # omitting most of the variables to simplify the form
@@ -276,7 +276,7 @@ resource "autocloud_blueprint" "example" {
     id = autocloud_module.s3_bucket.id
 
     form_config = local.s3_form_config # example to append questions using locals
-    # form_config = data.autocloud_terraform_processor.s3_processor.form_config # config from data source
+    # form_config = data.autocloud_blueprint_config.s3_processor.form_config # config from data source
     # form_config     = templatefile("${path.module}/files/s3bucket.vars.tpl", {})  # example from file
     # form_config     = autocloud_module.s3_bucket.form_config                      # example from resource
     # form_config     = data.autocloud_form_config.s3_bucket.form_config            # example from data
@@ -287,6 +287,6 @@ resource "autocloud_blueprint" "example" {
   autocloud_module {
     id = autocloud_module.cloudfront.id
 
-    form_config = data.autocloud_terraform_processor.cf_processor.form_config
+    form_config = data.autocloud_blueprint_config.cf_processor.form_config
   }
 }

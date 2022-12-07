@@ -47,7 +47,7 @@ type FieldOption struct {
 	Checked bool   `json:"checked"`
 }
 
-func dataSourceTerraformProcessor() *schema.Resource {
+func dataSourceBlueprintConfig() *schema.Resource {
 	setOfStringSchema := &schema.Schema{
 		Type:     schema.TypeSet,
 		Optional: true,
@@ -133,7 +133,7 @@ func dataSourceTerraformProcessor() *schema.Resource {
 
 	return &schema.Resource{
 		Description: "terraform form processor (form builder)",
-		ReadContext: dataTerraformProcessorRead,
+		ReadContext: dataSourceBlueprintConfigRead,
 		Schema: map[string]*schema.Schema{
 			"source_module_id": {
 				Type:     schema.TypeString,
@@ -179,7 +179,7 @@ func dataSourceTerraformProcessor() *schema.Resource {
 	}
 }
 
-func dataTerraformProcessorRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// map the resource to a FormBuilder object
