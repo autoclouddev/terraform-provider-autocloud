@@ -1,3 +1,10 @@
+# [0.3.0-pre.15](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.14...0.3.0-pre.15) (2022-12-07)
+
+
+### Bug Fixes
+
+* Added better response for http error fetching repositories ([6609a73](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/6609a73eb85bcb86407fd6c7e19f04f31780b144))
+
 # [0.3.0-pre.14](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.13...0.3.0-pre.14) (2022-12-06)
 
 
