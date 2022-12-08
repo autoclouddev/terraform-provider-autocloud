@@ -1,3 +1,10 @@
+# [0.3.0-pre.16](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.15...0.3.0-pre.16) (2022-12-08)
+
+
+### Bug Fixes
+
+* Renamed terraform_processor to blueprint_config ([8905154](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/8905154165f4110f3019092c4001f2345ea89269))
+
 # [0.3.0-pre.15](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.14...0.3.0-pre.15) (2022-12-07)
 
 
