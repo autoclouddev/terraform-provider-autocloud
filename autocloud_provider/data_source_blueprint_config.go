@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"sort"
 	"strconv"
 	"time"
@@ -450,15 +451,23 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 			ExplainingText:  explainingText,
 			ValidationRules: validationRules,
 		},
-		FieldDataType:     iacModuleVar.FieldDataType,
-		FieldDefaultValue: iacModuleVar.FieldDefaultValue,
-		FieldValue:        iacModuleVar.FieldValue,
+		FieldDataType:       iacModuleVar.FieldDataType,
+		FieldDefaultValue:   iacModuleVar.FieldDefaultValue,
+		AllowConsumerToEdit: true,
 	}
 
 	if overrideData.Value != nil {
+		// starting with the naive approach to see if an string is a module
+		// we will replace this introducing the notion of all outputs involved at the API process
+		r := regexp.MustCompile("module[.]([A-Za-z0-9_]+)[.]outputs[.]([A-Za-z0-9_]+)")
 		newIacModuleVar.FieldValue = *overrideData.Value
 		newIacModuleVar.FieldDefaultValue = *overrideData.Value
-		newIacModuleVar.FieldDataType = "hcl-expression"
+		newIacModuleVar.AllowConsumerToEdit = false
+		if r.MatchString(*overrideData.Value) {
+			newIacModuleVar.FieldDataType = "hcl-expression"
+		} else {
+			newIacModuleVar.FieldDataType = "string"
+		}
 	}
 
 	if overrideData.FormConfig.Type == "radio" || overrideData.FormConfig.Type == "checkbox" {
