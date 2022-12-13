@@ -34,7 +34,7 @@ func TestBlueprintConfigOverrideVariables(t *testing.T) {
 		helper_text   = "bucket prefix helper text (from override block)"
 		form_config {
 			type = "radio"
-			field_options {
+			options {
 			option {
 				label   = "dev"
 				value   = "some-dev-prefix"
@@ -62,7 +62,7 @@ func TestBlueprintConfigOverrideVariables(t *testing.T) {
 		name = "acceleration_status"
 		form_config {
 			type = "checkbox"
-			field_options {
+			options {
 			option {
 				label = "Option 1"
 				value = "acceleration_status_1"
@@ -538,7 +538,7 @@ func TestBlueprintConfigTooManyFormConfigBlocksValidationError(t *testing.T) {
 }
 
 func TestBlueprintConfigFieldOptionsIsRequiredForRadiosError(t *testing.T) {
-	expectedError := "One field_options block is required"
+	expectedError := "One options block is required"
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
 		variable {
@@ -552,7 +552,7 @@ func TestBlueprintConfigFieldOptionsIsRequiredForRadiosError(t *testing.T) {
 }
 
 func TestBlueprintConfigFieldOptionsIsRequiredForCheckboxesError(t *testing.T) {
-	expectedError := "One field_options block is required"
+	expectedError := "One options block is required"
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
 		variable {
@@ -573,7 +573,7 @@ func TestBlueprintConfigShortTextCanNotHaveOptionsError(t *testing.T) {
 			name = "bucket_prefix"
 			form_config {
 				type = "shortText"
-				field_options{
+				options{
 
 				}
 			}

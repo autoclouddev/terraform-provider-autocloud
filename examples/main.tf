@@ -113,7 +113,7 @@ data "autocloud_blueprint_config" "s3_processor" {
     helper_text  = "bucket prefix helper text (from override block)"
     form_config {
       type = "radio"
-      field_options {
+      options {
         option {
           label   = "dev"
           value   = "some-dev-prefix"
@@ -141,7 +141,7 @@ data "autocloud_blueprint_config" "s3_processor" {
     name = "acceleration_status"
     form_config {
       type = "checkbox"
-      field_options {
+      options {
         option {
           label = "Option 1"
           value = "acceleration_status_1"
