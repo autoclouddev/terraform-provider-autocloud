@@ -28,8 +28,8 @@ func TestBlueprintConfigOverrideVariables(t *testing.T) {
 
 		# OVERRIDE VARIABLE EXAMPLES
 		# - overriding bucket_prefix 'shortText' into 'radio'
-		override_variable {
-		variable_name = "bucket_prefix"
+		variable {
+		name = "bucket_prefix"
 		display_name  = "bucket prefix (from override block)"
 		helper_text   = "bucket prefix helper text (from override block)"
 		form_config {
@@ -58,8 +58,8 @@ func TestBlueprintConfigOverrideVariables(t *testing.T) {
 		}
 
 		# - overriding acceleration_status 'shortText' into 'checkbox'
-		override_variable {
-		variable_name = "acceleration_status"
+		variable {
+		name = "acceleration_status"
 		form_config {
 			type = "checkbox"
 			field_options {
@@ -87,8 +87,8 @@ func TestBlueprintConfigOverrideVariables(t *testing.T) {
 
 		# - overriding attach_public_policy 'radio' into 'shortText'
 
-		override_variable {
-		variable_name = "attach_public_policy"
+		variable {
+		name = "attach_public_policy"
 		form_config {
 			type = "shortText"
 			validation_rule {
@@ -424,8 +424,8 @@ func TestBlueprintConfigComposability(t *testing.T) {
 
 		# OVERRIDE VARIABLE EXAMPLES
 		# - set values from other modules outputs
-		override_variable {
-		variable_name = "comment"
+		variable {
+		name = "comment"
 		value         = autocloud_module.s3_bucket.outputs["s3_bucket_id"]
 		}
 	}
@@ -517,8 +517,8 @@ func TestBlueprintConfigAtLeastOneConfigBlocksValidationError(t *testing.T) {
 	expectedError := `A form_config must be defined for variable`
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
-		override_variable {
-			variable_name = "bucket_prefix"
+		variable {
+			name = "bucket_prefix"
 		}
 	  }`
 	validateErrors(t, expectedError, terraform)
@@ -527,7 +527,7 @@ func TestBlueprintConfigAtLeastOneConfigBlocksValidationError(t *testing.T) {
 func TestBlueprintConfigTooManyFormConfigBlocksValidationError(t *testing.T) {
 	expectedError := "Too many form_config blocks"
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
-		override_variable {
+		variable {
 			form_config {
 			}
 			form_config {
@@ -541,8 +541,8 @@ func TestBlueprintConfigFieldOptionsIsRequiredForRadiosError(t *testing.T) {
 	expectedError := "One field_options block is required"
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
-		override_variable {
-			variable_name = "bucket_prefix"
+		variable {
+			name = "bucket_prefix"
 			form_config {
 				type = "radio"
 			}
@@ -555,8 +555,8 @@ func TestBlueprintConfigFieldOptionsIsRequiredForCheckboxesError(t *testing.T) {
 	expectedError := "One field_options block is required"
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
-		override_variable {
-			variable_name = "bucket_prefix"
+		variable {
+			name = "bucket_prefix"
 			form_config {
 				type = "checkbox"
 			}
@@ -569,8 +569,8 @@ func TestBlueprintConfigShortTextCanNotHaveOptionsError(t *testing.T) {
 	expectedError := "ShortText variables can not have options"
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
-		override_variable {
-			variable_name = "bucket_prefix"
+		variable {
+			name = "bucket_prefix"
 			form_config {
 				type = "shortText"
 				field_options{
@@ -586,8 +586,8 @@ func TestBlueprintConfigIsRequiredValidationsCanNotHaveAValueError(t *testing.T)
 	expectedError := "'isRequired' validation rule can not have a value"
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
-		override_variable {
-			variable_name = "bucket_prefix"
+		variable {
+			name = "bucket_prefix"
 			form_config {
 				type = "shortText"
 				validation_rule {
@@ -605,8 +605,8 @@ func TestBlueprintConfigWhenValueIsSetAFormConfigCanNotBeSet(t *testing.T) {
 	expectedError := "A form_config can not be added when setting the variable's value."
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		source_module_id = "dummy"
-		override_variable {
-			variable_name = "bucket_prefix"
+		variable {
+			name = "bucket_prefix"
 			value = "some dummy value"
 			form_config {
 				type = "shortText"
