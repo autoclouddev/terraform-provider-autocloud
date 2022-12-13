@@ -1,3 +1,10 @@
+# [0.3.0-pre.18](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.17...0.3.0-pre.18) (2022-12-13)
+
+
+### Features
+
+* Renamed fields_options to options ([63aa877](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/63aa877bcfee416441aef5c6ed854af98bd259a2))
+
 # [0.3.0-pre.17](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.16...0.3.0-pre.17) (2022-12-13)
 
 
