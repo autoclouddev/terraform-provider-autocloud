@@ -1,3 +1,10 @@
+# [0.3.0-pre.17](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.16...0.3.0-pre.17) (2022-12-13)
+
+
+### Features
+
+* Replaced override_variable block with variable ([f6789a6](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f6789a64a6283cbd7850b925af03041b55a0f88e))
+
 # [0.3.0-pre.16](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.15...0.3.0-pre.16) (2022-12-08)
 
 
