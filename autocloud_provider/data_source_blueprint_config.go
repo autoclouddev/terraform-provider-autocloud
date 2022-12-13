@@ -125,7 +125,7 @@ func dataSourceBlueprintConfig() *schema.Resource {
 						Required:     true,
 						ValidateFunc: validation.StringInSlice([]string{"shortText", "radio", "checkbox"}, false),
 					},
-					"field_options":   fieldOptionsSchema,
+					"options":         fieldOptionsSchema,
 					"validation_rule": validationRulesSchema,
 				},
 			},
@@ -301,10 +301,10 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 				// field options
 				var fieldOptions []FieldOption
 
-				fieldOptionList := formConfigMap["field_options"].([]interface{})
+				fieldOptionList := formConfigMap["options"].([]interface{})
 				if variableType == "radio" || variableType == "checkbox" {
 					if len(fieldOptionList) != 1 {
-						return nil, errors.New("One field_options block is required")
+						return nil, errors.New("One options block is required")
 					}
 
 					options := fieldOptionList[0].(map[string]interface{})["option"].([]interface{})
