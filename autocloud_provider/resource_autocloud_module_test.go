@@ -60,6 +60,8 @@ func TestAccAutocloudModule(t *testing.T) {
 						"autocloud_module.s3_bucket", "tags_variable", "custom_tags"),
 					resource.TestCheckResourceAttrSet(
 						"autocloud_module.s3_bucket", "display_order.0"),
+					resource.TestCheckResourceAttrSet(
+						"autocloud_module.s3_bucket", "blueprint_config"),
 				),
 			},
 		},

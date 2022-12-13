@@ -42,6 +42,7 @@ locals {
 
 
 
+
 resource "autocloud_module" "s3_bucket" {
 
   ####
@@ -63,7 +64,6 @@ resource "autocloud_module" "s3_bucket" {
 }
 
 
-
 resource "autocloud_module" "cloudfront" {
 
   ####
@@ -83,6 +83,16 @@ resource "autocloud_module" "cloudfront" {
   display_order = ["web_acl_id", "price_class", "http_version"]
 }
 
+data "autocloud_module" "s3_bucket_alt" {
+
+  name = "S3BucketAlt"
+  filter {
+    name    = "S3Bucket"
+    version = "3.4.0"
+    source  = "terraform-aws-modules/s3-bucket/aws" // https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest
+  }
+
+}
 
 data "autocloud_blueprint_config" "s3_processor" {
   source_module_id = autocloud_module.s3_bucket.id
@@ -287,11 +297,12 @@ resource "autocloud_blueprint" "example" {
   autocloud_module {
     id = autocloud_module.s3_bucket.id
 
-    #form_config = local.s3_form_config # example to append questions using locals
-    form_config = data.autocloud_blueprint_config.s3_processor.form_config # config from data source
-    # form_config     = templatefile("${path.module}/files/s3bucket.vars.tpl", {})  # example from file
-    # form_config     = autocloud_module.s3_bucket.form_config                      # example from resource
-    # form_config     = data.autocloud_form_config.s3_bucket.form_config            # example from data
+    # form_config = local.s3_form_config # example to append questions using locals
+    form_config = data.autocloud_blueprint_config.s3_processor.form_config    # config from data source
+    # form_config = templatefile("${path.module}/files/s3bucket.vars.tpl", {})  # example from file
+    # form_config = data.autocloud_form_config.s3_bucket.form_config            # example from data
+    # form_config = autocloud_module.s3_bucket.blueprint_config                 # example from resource
+    # form_config = data.autocloud_module.s3_bucket_alt.blueprint_config        # example from data
 
     #template_config = file("${path.module}/files/s3bucket.tf.tpl")
   }
