@@ -126,7 +126,7 @@ func dataSourceBlueprintConfig() *schema.Resource {
 						Required:     true,
 						ValidateFunc: validation.StringInSlice([]string{"shortText", "radio", "checkbox"}, false),
 					},
-					"field_options":   fieldOptionsSchema,
+					"options":         fieldOptionsSchema,
 					"validation_rule": validationRulesSchema,
 				},
 			},
@@ -141,12 +141,12 @@ func dataSourceBlueprintConfig() *schema.Resource {
 				Required: true,
 			},
 			"omit_variables": setOfStringSchema,
-			"override_variable": {
+			"variable": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"variable_name": {
+						"name": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
@@ -246,14 +246,14 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 		formBuilder.OmitVariables = omit
 	}
 
-	if v, ok := d.GetOk("override_variable"); ok {
+	if v, ok := d.GetOk("variable"); ok {
 		varsList := v.([]interface{})
 		overrideVariables := make(map[string]OverrideVariable, 0)
 
 		// override vars loop
 		for _, f := range varsList {
 			varOverrideMap := f.(map[string]interface{})
-			varName := varOverrideMap["variable_name"].(string)
+			varName := varOverrideMap["name"].(string)
 
 			// Note: if it has a value, then it can NOT have a form_config
 			isValueDefined := false
@@ -302,10 +302,10 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 				// field options
 				var fieldOptions []FieldOption
 
-				fieldOptionList := formConfigMap["field_options"].([]interface{})
+				fieldOptionList := formConfigMap["options"].([]interface{})
 				if variableType == "radio" || variableType == "checkbox" {
 					if len(fieldOptionList) != 1 {
-						return nil, errors.New("One field_options block is required")
+						return nil, errors.New("One options block is required")
 					}
 
 					options := fieldOptionList[0].(map[string]interface{})["option"].([]interface{})
@@ -453,6 +453,7 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		},
 		FieldDataType:       iacModuleVar.FieldDataType,
 		FieldDefaultValue:   iacModuleVar.FieldDefaultValue,
+		FieldValue:          iacModuleVar.FieldValue,
 		AllowConsumerToEdit: true,
 	}
 

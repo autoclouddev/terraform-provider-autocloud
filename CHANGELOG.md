@@ -1,3 +1,31 @@
+# [0.3.0-pre.19](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.18...0.3.0-pre.19) (2022-12-14)
+
+
+### Bug Fixes
+
+* adding AllowConsumerToEdit to true when overriding a variable ([487845f](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/487845fc20c5e75e48918ebe9e3d56f441dffddd))
+
+# [0.3.0-pre.18](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.17...0.3.0-pre.18) (2022-12-13)
+
+
+### Features
+
+* Renamed fields_options to options ([63aa877](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/63aa877bcfee416441aef5c6ed854af98bd259a2))
+
+# [0.3.0-pre.17](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.16...0.3.0-pre.17) (2022-12-13)
+
+
+### Features
+
+* Replaced override_variable block with variable ([f6789a6](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f6789a64a6283cbd7850b925af03041b55a0f88e))
+
+# [0.3.0-pre.16](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.15...0.3.0-pre.16) (2022-12-08)
+
+
+### Bug Fixes
+
+* Renamed terraform_processor to blueprint_config ([8905154](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/8905154165f4110f3019092c4001f2345ea89269))
+
 # [0.3.0-pre.15](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.14...0.3.0-pre.15) (2022-12-07)
 
 

@@ -113,13 +113,13 @@ data "autocloud_blueprint_config" "s3_processor" {
 
   # OVERRIDE VARIABLE EXAMPLES
   # - overriding bucket_prefix 'shortText' into 'radio'
-  override_variable {
-    variable_name = "bucket_prefix"
-    display_name  = "bucket prefix (from override block)"
-    helper_text   = "bucket prefix helper text (from override block)"
+  variable {
+    name         = "bucket_prefix"
+    display_name = "bucket prefix (from override block)"
+    helper_text  = "bucket prefix helper text (from override block)"
     form_config {
       type = "radio"
-      field_options {
+      options {
         option {
           label   = "dev"
           value   = "some-dev-prefix"
@@ -143,11 +143,11 @@ data "autocloud_blueprint_config" "s3_processor" {
   }
 
   # - overriding acceleration_status 'shortText' into 'checkbox'
-  override_variable {
-    variable_name = "acceleration_status"
+  variable {
+    name = "acceleration_status"
     form_config {
       type = "checkbox"
-      field_options {
+      options {
         option {
           label = "Option 1"
           value = "acceleration_status_1"
@@ -168,10 +168,10 @@ data "autocloud_blueprint_config" "s3_processor" {
   }
 
   # - overriding bucket to make it mandatory
-  override_variable {
-    variable_name = "bucket"
-    display_name  = "Bucket name"
-    helper_text   = "Set the bucket name"
+  variable {
+    name         = "bucket"
+    display_name = "Bucket name"
+    helper_text  = "Set the bucket name"
 
     form_config {
       type = "shortText"
@@ -216,9 +216,9 @@ data "autocloud_blueprint_config" "cf_processor" {
 
   # OVERRIDE VARIABLE EXAMPLES
   # - set values from other modules outputs
-  override_variable {
-    variable_name = "comment"
-    value         = autocloud_module.s3_bucket.outputs["s3_bucket_id"]
+  variable {
+    name  = "comment"
+    value = autocloud_module.s3_bucket.outputs["s3_bucket_id"]
   }
 
   override_variable {
