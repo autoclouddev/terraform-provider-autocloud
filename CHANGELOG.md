@@ -1,3 +1,10 @@
+# [0.3.0-pre.19](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.18...0.3.0-pre.19) (2022-12-14)
+
+
+### Bug Fixes
+
+* adding AllowConsumerToEdit to true when overriding a variable ([487845f](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/487845fc20c5e75e48918ebe9e3d56f441dffddd))
+
 # [0.3.0-pre.18](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.17...0.3.0-pre.18) (2022-12-13)
 
 
