@@ -1,3 +1,10 @@
+# [0.3.0-pre.21](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.20...0.3.0-pre.21) (2022-12-14)
+
+
+### Features
+
+* **ep-2588:** renaming autocloud_module form_config into blueprint_config ([83bb2fe](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/83bb2fe22de37909061ba035cacdef4f8f2ac7b6))
+
 # [0.3.0-pre.20](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.19...0.3.0-pre.20) (2022-12-14)
 
 
