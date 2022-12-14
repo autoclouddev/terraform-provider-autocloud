@@ -81,7 +81,7 @@ func dataSourceAutocloudModuleRead(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		err = d.Set("form_config", module.Variables)
+		err = d.Set("blueprint_config", module.Variables)
 		if err != nil {
 			return diag.FromErr(err)
 		}

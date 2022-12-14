@@ -60,7 +60,7 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 	},
-	"form_config": {
+	"blueprint_config": {
 		Description: "Form config",
 		Type:        schema.TypeString,
 		Computed:    true,
@@ -176,7 +176,7 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = d.Set("form_config", iacModule.Variables)
+	err = d.Set("blueprint_config", iacModule.Variables)
 	if err != nil {
 		return diag.FromErr(err)
 	}
