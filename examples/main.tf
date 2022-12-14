@@ -18,11 +18,17 @@ provider "autocloud" {
 }
 
 data "autocloud_github_repos" "repos" {}
+
+####
+# Local vara
 locals {
-  ####
-  # Destination repos
-  dest_repos = data.autocloud_github_repos.repos.data[*].url
+  # Destination repos where generated code will be submitted
+  dest_repos = [
+    for repo in data.autocloud_github_repos.repos.data[*].url : repo
+    if length(regexall("/infrastructure-live", repo)) > 0 || length(regexall("/self-hosted-infrastructure-live", repo)) > 0
+  ]
 }
+
 
 locals {
   s3_vars_from_form_config = jsondecode(data.autocloud_blueprint_config.s3_processor.form_config)
@@ -50,9 +56,9 @@ resource "autocloud_module" "s3_bucket" {
   #
   # See docs: https://developer.hashicorp.com/terraform/language/modules/sources
 
-  version       = "3.4.0"
-  source        = "terraform-aws-modules/s3-bucket/aws" // https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest
-  tags_variable = "custom_tags"
+  version = "3.4.0"
+  source  = "terraform-aws-modules/s3-bucket/aws" // https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest
+  #tags_variable = "custom_tags"                         # this should not be a valid property
   display_order = ["bucket"]
 }
 
@@ -189,7 +195,7 @@ data "autocloud_blueprint_config" "cf_processor" {
     "create_origin_access_identity",
     "custom_error_response",
     "default_cache_behavior",
-    "default_root_object",
+    // "default_root_object", // this will contain a default value
     // "enabled", // we'll let the user select this value in the form
     "geo_restriction",
     "http_version",
@@ -214,6 +220,11 @@ data "autocloud_blueprint_config" "cf_processor" {
     name  = "comment"
     value = autocloud_module.s3_bucket.outputs["s3_bucket_id"]
   }
+
+  override_variable {
+    variable_name = "default_root_object"
+    value         = "index.html"
+  }
 }
 
 resource "autocloud_blueprint" "example" {
@@ -237,7 +248,7 @@ resource "autocloud_blueprint" "example" {
   # Destination repository git configuraiton
   #
   git_config {
-    destination_branch = "master"
+    destination_branch = "main"
 
     git_url_options = local.dest_repos
     git_url_default = length(local.dest_repos) != 0 ? local.dest_repos[0] : "" # Choose the first in the list by default
@@ -245,7 +256,7 @@ resource "autocloud_blueprint" "example" {
     pull_request {
       title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"
       commit_message_template = "[AutoCloud] new EKS generator, created by {{authorName}}"
-      body                    = jsonencode(file("./files/pull_request.md.tpl"))
+      body                    = file("./files/pull_request.md.tpl")
       variables = {
         authorName  = "generic.authorName"
         clusterName = "S3Bucket.Bucket"
@@ -272,16 +283,17 @@ resource "autocloud_blueprint" "example" {
     modules = [autocloud_module.s3_bucket.name, autocloud_module.cloudfront.name]
   }
 
+  ## these will change in future sprints, autocloud_module will be replaced
   autocloud_module {
     id = autocloud_module.s3_bucket.id
 
-    form_config = local.s3_form_config # example to append questions using locals
-    # form_config = data.autocloud_blueprint_config.s3_processor.form_config # config from data source
+    #form_config = local.s3_form_config # example to append questions using locals
+    form_config = data.autocloud_blueprint_config.s3_processor.form_config # config from data source
     # form_config     = templatefile("${path.module}/files/s3bucket.vars.tpl", {})  # example from file
     # form_config     = autocloud_module.s3_bucket.form_config                      # example from resource
     # form_config     = data.autocloud_form_config.s3_bucket.form_config            # example from data
 
-    template_config = file("${path.module}/files/s3bucket.tf.tpl")
+    #template_config = file("${path.module}/files/s3bucket.tf.tpl")
   }
 
   autocloud_module {
