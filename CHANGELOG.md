@@ -1,3 +1,10 @@
+# [0.3.0-pre.20](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.19...0.3.0-pre.20) (2022-12-14)
+
+
+### Features
+
+* **variable_override:** set default value and add regex to detect ouputs ([e7f9253](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e7f925305c519e9495c3e357a717aab11946c892))
+
 # [0.3.0-pre.19](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.18...0.3.0-pre.19) (2022-12-14)
 
 
