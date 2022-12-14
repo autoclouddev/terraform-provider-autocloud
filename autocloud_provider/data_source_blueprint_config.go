@@ -450,9 +450,10 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 			ExplainingText:  explainingText,
 			ValidationRules: validationRules,
 		},
-		FieldDataType:     iacModuleVar.FieldDataType,
-		FieldDefaultValue: iacModuleVar.FieldDefaultValue,
-		FieldValue:        iacModuleVar.FieldValue,
+		FieldDataType:       iacModuleVar.FieldDataType,
+		FieldDefaultValue:   iacModuleVar.FieldDefaultValue,
+		FieldValue:          iacModuleVar.FieldValue,
+		AllowConsumerToEdit: true,
 	}
 
 	if overrideData.Value != nil {
