@@ -54,6 +54,8 @@ func TestAccAutocloudModule(t *testing.T) {
 						"autocloud_module.s3_bucket", "template"),
 					resource.TestCheckResourceAttrSet(
 						"autocloud_module.s3_bucket", "variables.%"),
+					resource.TestCheckResourceAttrSet(
+						"autocloud_module.s3_bucket", "blueprint_config"),
 					resource.TestCheckResourceAttr(
 						"autocloud_module.s3_bucket", "variables.is_ipv6_enabled", "S3Bucket.is_ipv6_enabled"),
 					resource.TestCheckResourceAttr(

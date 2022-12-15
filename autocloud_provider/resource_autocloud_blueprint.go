@@ -176,6 +176,11 @@ func autocloudBlueprint() *schema.Resource {
 					},
 				},
 			},
+			"config": {
+				Description: "instructions",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }

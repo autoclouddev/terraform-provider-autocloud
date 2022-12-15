@@ -2,6 +2,7 @@ package autocloud_provider
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -17,9 +18,11 @@ import (
 )
 
 type FormBuilder struct {
-	sourceModuleID    string
+	//sourceModuleID    string
+	//source            map[string]string
 	OmitVariables     []string                    `json:"omitVariables"`
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariable"`
+	BluePrintConfig   BluePrintConfig
 }
 
 type OverrideVariable struct {
@@ -131,52 +134,65 @@ func dataSourceBlueprintConfig() *schema.Resource {
 				},
 			},
 		}
+	bluePrintConfigSchema := map[string]*schema.Schema{
+		"source_module_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"source": {
+			Type:     schema.TypeMap,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"omit_variables": setOfStringSchema,
+		"variable": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:     schema.TypeString,
+						Required: true,
+					},
+					"form_config": formConfigSchema,
+					"display_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"helper_text": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"value": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"builder": { // it keeps the form builder (omit vars, override vars, ...) as json
+			Description: "Form builder JSON (it keeps the parsed form builder as json)",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"form_config": { // the form as json to replace the default variables
+			Description: "Processed form variables JSON (to replace the default module variables variables)",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"blueprint_config": { // the form as json to replace the default variables
+			Description: "Processed form variables JSON (to replace the default module variables variables)",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+	}
 
 	return &schema.Resource{
 		Description: "terraform form processor (form builder)",
 		ReadContext: dataSourceBlueprintConfigRead,
-		Schema: map[string]*schema.Schema{
-			"source_module_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"omit_variables": setOfStringSchema,
-			"variable": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"form_config": formConfigSchema,
-						"display_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"helper_text": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"builder": { // it keeps the form builder (omit vars, override vars, ...) as json
-				Description: "Form builder JSON (it keeps the parsed form builder as json)",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"form_config": { // the form as json to replace the default variables
-				Description: "Processed form variables JSON (to replace the default module variables variables)",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-		},
+		Schema:      bluePrintConfigSchema,
 	}
 }
 
@@ -190,19 +206,18 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// build the form shape (iac questions' format)
-	c := m.(*autocloudsdk.Client)
-	iacModule, err := c.GetModule(formBuilder.sourceModuleID)
+	//c := m.(*autocloudsdk.Client)
+	//iacModule, err := c.GetModule(formBuilder.sourceModuleID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// omit and override variables
-	newForm, err := mapModuleVariables(formBuilder, iacModule)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// builder (list of vars to override and omit, as JSON)
+	/*
+	 TODO: refactor this part of the code to handle the overrides, and variable keywords
+	 newForm, err := mapModuleVariables(formBuilder, &iacModule)
+	*/
+	newForm := make([]autocloudsdk.FormShape, 0) // this is a placeholder for the FormShape
+	// TODO: depreacte all of these
 	jsonString, err := toJsonString(formBuilder)
 	if err != nil {
 		return diag.FromErr(err)
@@ -223,8 +238,21 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	log.Printf("\nJSON form_config %v\n\n", jsonString)
-
-	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
+	// TODO: end of deprecation
+	config := BluePrintConfig{
+		Id:        formBuilder.BluePrintConfig.Id,
+		Variables: newForm,
+		Children:  formBuilder.BluePrintConfig.Children,
+	}
+	configString, err := toJsonString(config)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("blueprint_config", configString)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.SetId(formBuilder.BluePrintConfig.Id)
 
 	return diags
 }
@@ -232,9 +260,24 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 // maps tf declaration to object
 func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 	formBuilder := &FormBuilder{}
-
-	if v, ok := d.GetOk("source_module_id"); ok {
-		formBuilder.sourceModuleID = v.(string)
+	if v, ok := d.GetOk("source"); ok {
+		mapString := make(map[string]BluePrintConfig)
+		formBuilder.BluePrintConfig.Id = strconv.FormatInt(time.Now().Unix(), 10)
+		for key, value := range v.(map[string]interface{}) {
+			strKey := fmt.Sprintf("%v", key)
+			strValue := fmt.Sprintf("%v", value)
+			fmt.Println(strValue)
+			bc := BluePrintConfig{}
+			err := json.Unmarshal([]byte(strValue), &bc)
+			fmt.Println("blueprintconfig")
+			fmt.Println(bc)
+			if err != nil {
+				fmt.Println(err)
+				return nil, errors.New("invalid conversion to BluePrintConfig")
+			}
+			mapString[strKey] = bc
+			formBuilder.BluePrintConfig.Children = append(formBuilder.BluePrintConfig.Children, bc)
+		}
 	}
 
 	if v, ok := d.GetOk("omit_variables"); ok {
@@ -375,6 +418,8 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 }
 
 // it omits and overrides the iacModule variables based on the formBuilder definition
+//
+//nolint:golint,unused
 func mapModuleVariables(formBuilder *FormBuilder, iacModule *autocloudsdk.IacModule) ([]autocloudsdk.FormShape, error) {
 	// parse iacModule.Variables string into a []autocloudsdk.FormShape slice
 	iacModuleVars, err := ParseVariables(iacModule.Variables)
@@ -417,6 +462,11 @@ func mapModuleVariables(formBuilder *FormBuilder, iacModule *autocloudsdk.IacMod
 }
 
 // it creates an iac question format from override var data
+/*
+TODO: create a test over this function, perhaps it is worth it to rethink the inputs,
+We need as an output a FormShape
+*/
+//nolint:golint,unused
 func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData OverrideVariable) autocloudsdk.FormShape {
 	fieldID := iacModuleVar.ID
 

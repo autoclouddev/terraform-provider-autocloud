@@ -295,6 +295,8 @@ func toJsonString(obj any) (string, error) {
 }
 
 // remove empty spaces from a JSON string
+//
+//nolint:golint,unused
 func compactJson(jsonStr string) string {
 	jsonBuffer := &bytes.Buffer{}
 	if err := json.Compact(jsonBuffer, []byte(jsonStr)); err != nil {

@@ -2,6 +2,7 @@ package autocloud_provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 
@@ -85,6 +86,12 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
+	},
+	// encoding in json for now, but it would be nice to avoid that encoding
+	"blueprint_config": {
+		Description: "blueprint config ",
+		Type:        schema.TypeString,
+		Computed:    true,
 	},
 }
 
@@ -194,6 +201,25 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 	err = d.Set("outputs", outputsMap)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	variables := []autocloudsdk.FormShape{}
+	err = json.Unmarshal([]byte(iacModule.Variables), &variables)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	config := BluePrintConfig{
+		Id:        iacModule.ID,
+		Variables: variables,
+		Children:  make([]BluePrintConfig, 0),
+	}
+	jsonconf, err := json.Marshal(config)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	fmt.Println(string(jsonconf))
+	err = d.Set("blueprint_config", string(jsonconf))
 	if err != nil {
 		return diag.FromErr(err)
 	}
