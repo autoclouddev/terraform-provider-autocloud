@@ -99,7 +99,7 @@ func TestAccDataSourceAutocloudModule(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.autocloud_module.cloudfront", "variables.is_ipv6_enabled", "CloudfrontTest.is_ipv6_enabled"),
 					resource.TestCheckResourceAttrSet(
-						"data.autocloud_module.cloudfront", "form_config"),
+						"data.autocloud_module.cloudfront", "blueprint_config"),
 				),
 			},
 		},
