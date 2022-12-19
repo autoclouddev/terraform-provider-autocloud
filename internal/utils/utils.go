@@ -1,4 +1,4 @@
-package autocloud_provider
+package utils
 
 import (
 	"bytes"
@@ -34,7 +34,7 @@ func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 	return mapString
 }
 
-func toStringSlice(sliceInterface []interface{}) []string {
+func ToStringSlice(sliceInterface []interface{}) []string {
 	values := make([]string, len(sliceInterface))
 	for idx, value := range sliceInterface {
 		values[idx] = value.(string)
@@ -42,7 +42,7 @@ func toStringSlice(sliceInterface []interface{}) []string {
 	return values
 }
 
-func toStringMap(str string) (map[string]string, error) {
+func ToStringMap(str string) (map[string]string, error) {
 	outputMap := map[string]string{}
 	err := json.Unmarshal([]byte(str), &outputMap)
 	if err != nil {
@@ -56,7 +56,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
 		list := labelValues.([]interface{})
-		labels = toStringSlice(list)
+		labels = ToStringSlice(list)
 	}
 
 	generator := autocloudsdk.IacCatalog{
@@ -68,7 +68,11 @@ func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
 		FileDefinitions: GetSdkIacCatalogFileDefinitions(d),
 		GitConfig:       GetSdkIacCatalogGitConfig(d),
 		IacModules:      GetSdkIacCatalogModules(d),
+		//Config:          d.Get("config"),
 	}
+
+	// read from leaves to root all variables and make a huge array of variables
+	// process overrides and conditionals
 
 	return generator
 }
@@ -98,7 +102,7 @@ func GetSdkIacCatalogModules(d *schema.ResourceData) []autocloudsdk.IacCatalogMo
 
 			if orderValues, isorderValuesOk := d.GetOk("display_order"); isorderValuesOk {
 				list := orderValues.([]interface{})
-				autocloudModule.DisplayOrder = toStringSlice(list)
+				autocloudModule.DisplayOrder = ToStringSlice(list)
 			}
 
 			iacModules[i] = autocloudModule
@@ -132,7 +136,7 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacC
 			}
 			if val, ok := fileDefinitionMap["modules"]; ok {
 				var data = val.([]interface{})
-				fileDefinition.Modules = toStringSlice(data)
+				fileDefinition.Modules = ToStringSlice(data)
 			}
 
 			fileDefinitions[i] = fileDefinition
@@ -217,7 +221,7 @@ func GetSdkIacModule(d *schema.ResourceData) autocloudsdk.IacModule {
 	var displayOrder = []string{}
 	if orderValues, isorderValuesOk := d.GetOk("display_order"); isorderValuesOk {
 		list := orderValues.([]interface{})
-		displayOrder = toStringSlice(list)
+		displayOrder = ToStringSlice(list)
 	}
 
 	// note: the Template and Variables fields are calculated by the SDK
@@ -232,7 +236,7 @@ func GetSdkIacModule(d *schema.ResourceData) autocloudsdk.IacModule {
 	return iacModule
 }
 
-func mergeSchemas(a, b map[string]*schema.Schema) map[string]*schema.Schema {
+func MergeSchemas(a, b map[string]*schema.Schema) map[string]*schema.Schema {
 	merged := make(map[string]*schema.Schema)
 	for k, v := range a {
 		merged[k] = v
@@ -261,7 +265,7 @@ func GetVariablesIdMap(str string) (map[string]string, error) {
 
 	varsMap := make(map[string]string)
 	for _, v := range vars {
-		varName, err := getVariableID(v.ID)
+		varName, err := GetVariableID(v.ID)
 		if err == nil {
 			varsMap[varName] = v.ID
 		}
@@ -271,7 +275,7 @@ func GetVariablesIdMap(str string) (map[string]string, error) {
 }
 
 // variables id follow the pattern "<source module>.<variable name>""
-func getVariableID(variableKey string) (string, error) {
+func GetVariableID(variableKey string) (string, error) {
 	keyValue := strings.Split(variableKey, ".")
 	if len(keyValue) == 2 {
 		return keyValue[1], nil
@@ -281,7 +285,7 @@ func getVariableID(variableKey string) (string, error) {
 }
 
 // marshals and converts an object into a compacted JSON string
-func toJsonString(obj any) (string, error) {
+func ToJsonString(obj any) (string, error) {
 	jsonDoc, err := json.Marshal(obj)
 	if err != nil {
 		return "", err

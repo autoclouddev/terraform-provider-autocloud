@@ -1,10 +1,11 @@
-package autocloud_provider
+package blueprint_config_test
 
 import (
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 )
 
 const testAccAutocloudBluePrint = `
@@ -92,8 +93,8 @@ resource "autocloud_blueprint" "bar" {
 
 func TestAccAutocloudBlueprint(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAutocloudBluePrint,
@@ -154,5 +155,5 @@ func TestAutocloudBlueprintHasAtMostOneGitConfigError(t *testing.T) {
 		git_config {}
 		git_config {}
 	  }`
-	validateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }

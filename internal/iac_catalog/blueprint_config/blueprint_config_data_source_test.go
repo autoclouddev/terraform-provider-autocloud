@@ -1,4 +1,4 @@
-package autocloud_provider
+package blueprint_config_test
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
+	blueprint_config "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
 
 func TestBlueprintConfigOverrideVariables(t *testing.T) {
@@ -329,8 +331,8 @@ func TestBlueprintConfigOverrideVariables(t *testing.T) {
 		  ]`)
 	*/
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceBluenprintConfig,
@@ -503,8 +505,8 @@ func TestBlueprintConfigComposability(t *testing.T) {
 		  ]`)
 	*/
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testDataSourceBluenprintConfigComposability,
@@ -531,7 +533,7 @@ func TestBlueprintConfigAtLeastOneConfigBlocksValidationError(t *testing.T) {
 			name = "bucket_prefix"
 		}
 	  }`
-	validateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestBlueprintConfigTooManyFormConfigBlocksValidationError(t *testing.T) {
@@ -544,7 +546,7 @@ func TestBlueprintConfigTooManyFormConfigBlocksValidationError(t *testing.T) {
 			}
 		}
 	  }`
-	validateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestBlueprintConfigFieldOptionsIsRequiredForRadiosError(t *testing.T) {
@@ -558,7 +560,7 @@ func TestBlueprintConfigFieldOptionsIsRequiredForRadiosError(t *testing.T) {
 			}
 		}
 	  }`
-	validateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestBlueprintConfigFieldOptionsIsRequiredForCheckboxesError(t *testing.T) {
@@ -572,7 +574,7 @@ func TestBlueprintConfigFieldOptionsIsRequiredForCheckboxesError(t *testing.T) {
 			}
 		}
 	  }`
-	validateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestBlueprintConfigShortTextCanNotHaveOptionsError(t *testing.T) {
@@ -589,7 +591,7 @@ func TestBlueprintConfigShortTextCanNotHaveOptionsError(t *testing.T) {
 			}
 		}
 	  }`
-	validateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestBlueprintConfigIsRequiredValidationsCanNotHaveAValueError(t *testing.T) {
@@ -608,7 +610,7 @@ func TestBlueprintConfigIsRequiredValidationsCanNotHaveAValueError(t *testing.T)
 			}
 		}
 	  }`
-	validateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestBlueprintConfigWhenValueIsSetAFormConfigCanNotBeSet(t *testing.T) {
@@ -628,11 +630,11 @@ func TestBlueprintConfigWhenValueIsSetAFormConfigCanNotBeSet(t *testing.T) {
 			}
 		}
 	  }`
-	validateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestGetFormBuilder(t *testing.T) {
-	schema1 := dataSourceBlueprintConfig()
+	schema1 := blueprint_config.DataSourceBlueprintConfig()
 	testDataBlueprintResourceSchema := schema1.Schema
 	fmt.Println(testDataBlueprintResourceSchema)
 	raw := map[string]interface{}{
@@ -792,7 +794,7 @@ func TestGetFormBuilder(t *testing.T) {
 	}
 
 	d := schema.TestResourceDataRaw(t, testDataBlueprintResourceSchema, raw)
-	formBuilder, err := getFormBuilder(d)
+	formBuilder, err := blueprint_config.GetFormBuilder(d)
 	if err != nil {
 		fmt.Print(err)
 		t.Fail()

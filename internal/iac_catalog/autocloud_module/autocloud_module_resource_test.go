@@ -1,9 +1,9 @@
-package autocloud_provider
+package autocloud_module_test
 
 import (
 	"testing"
 
-	"github.com/joho/godotenv"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
@@ -32,14 +32,9 @@ resource "autocloud_module" "s3_bucket" {
 `
 
 func TestAccAutocloudModule(t *testing.T) {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		t.Fatalf("err: %s", err)
-	}
-
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAutocloudModule,

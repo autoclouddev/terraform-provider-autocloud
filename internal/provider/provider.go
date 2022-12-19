@@ -1,4 +1,4 @@
-package autocloud_provider
+package provider
 
 import (
 	"context"
@@ -7,6 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/autocloud_module"
+	blueprint_config "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/repositories"
 )
 
 // entry point
@@ -28,13 +31,13 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				"autocloud_blueprint": autocloudBlueprint(),
-				"autocloud_module":    autocloudModule(),
+				//"autocloud_blueprint": autocloudBlueprint(),
+				"autocloud_module": autocloud_module.ResourceAutocloudModule(),
 			},
 			DataSourcesMap: map[string]*schema.Resource{
-				"autocloud_github_repos":     dataSourceRepositories(),
-				"autocloud_module":           dataSourceAutocloudModule(),
-				"autocloud_blueprint_config": dataSourceBlueprintConfig(),
+				"autocloud_github_repos":     repositories.DataSourceRepositories(),
+				"autocloud_module":           autocloud_module.DataSourceAutocloudModule(),
+				"autocloud_blueprint_config": blueprint_config.DataSourceBlueprintConfig(),
 			},
 		}
 		p.ConfigureContextFunc = configure(version, p)

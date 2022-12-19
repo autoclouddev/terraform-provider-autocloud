@@ -1,4 +1,4 @@
-package autocloud_provider
+package blueprint_config
 
 import (
 	"context"
@@ -15,7 +15,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	utils "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
+
+type BluePrintConfig struct {
+	Id        string                   `json:"id"`
+	RefName   string                   `json:"refName"`
+	Variables []autocloudsdk.FormShape `json:"variables"`
+	Children  []BluePrintConfig        `json:"children"`
+}
 
 type FormBuilder struct {
 	//sourceModuleID    string
@@ -51,7 +59,7 @@ type FieldOption struct {
 	Checked bool   `json:"checked"`
 }
 
-func dataSourceBlueprintConfig() *schema.Resource {
+func DataSourceBlueprintConfig() *schema.Resource {
 	setOfStringSchema := &schema.Schema{
 		Type:     schema.TypeSet,
 		Optional: true,
@@ -200,7 +208,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 
 	// map the resource to a FormBuilder object
-	formBuilder, err := getFormBuilder(d)
+	formBuilder, err := GetFormBuilder(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -218,7 +226,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	*/
 	newForm := make([]autocloudsdk.FormShape, 0) // this is a placeholder for the FormShape
 	// TODO: depreacte all of these
-	jsonString, err := toJsonString(formBuilder)
+	jsonString, err := utils.ToJsonString(formBuilder)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -229,7 +237,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	log.Printf("\nJSON builder %v\n", jsonString)
 
 	// new form variables (as JSON)
-	jsonString, err = toJsonString(newForm)
+	jsonString, err = utils.ToJsonString(newForm)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -244,7 +252,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		Variables: newForm,
 		Children:  formBuilder.BluePrintConfig.Children,
 	}
-	configString, err := toJsonString(config)
+	configString, err := utils.ToJsonString(config)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -258,7 +266,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 // maps tf declaration to object
-func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
+func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 	formBuilder := &FormBuilder{}
 	if v, ok := d.GetOk("source"); ok {
 		mapString := make(map[string]BluePrintConfig)
@@ -422,7 +430,7 @@ func getFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 //nolint:golint,unused
 func mapModuleVariables(formBuilder *FormBuilder, iacModule *autocloudsdk.IacModule) ([]autocloudsdk.FormShape, error) {
 	// parse iacModule.Variables string into a []autocloudsdk.FormShape slice
-	iacModuleVars, err := ParseVariables(iacModule.Variables)
+	iacModuleVars, err := utils.ParseVariables(iacModule.Variables)
 
 	if err != nil {
 		return nil, err
@@ -432,14 +440,14 @@ func mapModuleVariables(formBuilder *FormBuilder, iacModule *autocloudsdk.IacMod
 	var overridenIacModuleVars = make([]autocloudsdk.FormShape, 0)
 
 	for _, iacModuleVar := range iacModuleVars {
-		varName, err := getVariableID(iacModuleVar.ID)
+		varName, err := utils.GetVariableID(iacModuleVar.ID)
 
 		if err != nil {
 			return nil, err
 		}
 
 		// omit vars
-		if Contains(formBuilder.OmitVariables, varName) {
+		if utils.Contains(formBuilder.OmitVariables, varName) {
 			log.Printf("the [%s] variable was omitted", varName)
 			continue
 		}

@@ -1,4 +1,4 @@
-package autocloud_provider
+package blueprint_config
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 )
 
-func autocloudBlueprint() *schema.Resource {
+func DataSourceBluePrintConfig() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
 		Description: "main resource to create an IAC blueprint.",
@@ -121,7 +121,7 @@ func autocloudBlueprint() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							ValidateFunc: func(val any, key string) (warns []string, errs []error) {
-								isValidAction := Contains([]string{"CREATE", "EDIT", "HCLEDIT"}, val.(string))
+								isValidAction := true //Contains([]string{"CREATE", "EDIT", "HCLEDIT"}, val.(string))
 								if !isValidAction {
 									errs = append(errs, fmt.Errorf("%q must be a value in [CREATE, EDIT, HCLEDIT], got: %s", key, val))
 								}
@@ -187,7 +187,7 @@ func autocloudBlueprint() *schema.Resource {
 
 func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
-	generator := GetSdkIacCatalog(d)
+	generator := autocloudsdk.IacCatalog{} //GetSdkIacCatalog(d)
 	c := meta.(*autocloudsdk.Client)
 	fmt.Println("SENDING DATA, CREATE")
 	fmt.Println(generator)
@@ -259,7 +259,7 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 func autocloudBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*autocloudsdk.Client)
 
-	updatedGen := GetSdkIacCatalog(d)
+	updatedGen := autocloudsdk.IacCatalog{} //GetSdkIacCatalog(d)
 	updatedGen.ID = d.Id()
 	fmt.Println("UPDATING GENERATOR REQUEST")
 	fmt.Println(updatedGen)
