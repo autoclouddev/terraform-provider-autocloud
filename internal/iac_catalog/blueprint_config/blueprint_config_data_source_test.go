@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
-	blueprint_config "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
 
 func TestAccBlueprintConfig_sourceValidation(t *testing.T) {
@@ -894,4 +894,67 @@ func TestGetFormBuilder(t *testing.T) {
 		t.Errorf("BlueprintConfig.children[0].Variables.length is not 7 is: %d", len(nestedVariables))
 	}
 	fmt.Println(formBuilder.BluePrintConfig)
+}
+
+func TestGenericBlueprintConfig(t *testing.T) {
+	dataKey := "data.autocloud_blueprint_config.generic"
+
+	testDataSourceBluenprintConfig := `
+
+
+
+	data "autocloud_blueprint_config" "generic" {
+		variable {
+			name = "project_name"
+			form_config {
+				type = "shortText"
+				validation_rule {
+					rule          = "isRequired"
+					error_message = "invalid name"
+				}
+			} 
+		}
+
+		variable {
+			name = "env"
+			display_name = "environment target"
+			helper_text  = "environment target description"
+			form_config {
+				type = "radio"
+				options {
+					option {
+						label = "dev"
+						value = "dev"
+						checked = true
+					}
+					option {
+						label   = "nonprod"
+						value   = "nonprod"
+					}
+					option {
+						label   = "prod"
+						value   = "prod"
+					}
+				}
+				validation_rule {
+					rule          = "isRequired"
+					error_message = "invalid"
+				}
+			} 
+		}
+	}`
+
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testDataSourceBluenprintConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						dataKey, "form_config"),
+				),
+			},
+		},
+	})
 }

@@ -231,9 +231,9 @@ data "autocloud_blueprint_config" "cf_processor" {
     value = autocloud_module.s3_bucket.outputs["s3_bucket_id"]
   }
 
-  override_variable {
-    variable_name = "default_root_object"
-    value         = "index.html"
+  variable {
+    name    = "default_root_object"
+    value   = "index.html"
   }
 }
 
