@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
-	utils "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
 type BluePrintConfig struct {
@@ -248,7 +248,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	log.Printf("\nJSON form_config %v\n\n", jsonString)
 	// TODO: end of deprecation
 	config := BluePrintConfig{
-		Id:        formBuilder.BluePrintConfig.Id,
+		Id:        "formBuilder.BluePrintConfig.Id",
 		Variables: newForm,
 		Children:  formBuilder.BluePrintConfig.Children,
 	}
@@ -268,9 +268,10 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 // maps tf declaration to object
 func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 	formBuilder := &FormBuilder{}
+	formBuilder.BluePrintConfig.Id = strconv.FormatInt(time.Now().Unix(), 10)
 	if v, ok := d.GetOk("source"); ok {
 		mapString := make(map[string]BluePrintConfig)
-		formBuilder.BluePrintConfig.Id = strconv.FormatInt(time.Now().Unix(), 10)
+
 		for key, value := range v.(map[string]interface{}) {
 			strKey := fmt.Sprintf("%v", key)
 			strValue := fmt.Sprintf("%v", value)

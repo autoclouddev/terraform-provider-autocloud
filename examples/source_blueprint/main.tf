@@ -27,8 +27,8 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     s3  = autocloud_module.kms.blueprint_config
   }
 
-  override_variable {
-    variable_name = "source.kms.variables.key_name"
+  variable {
+    name = "source.kms.variables.key_name"
     conditional {
       source   = "source.s3.variables.name" # reference syntax
       conditon = "prod"

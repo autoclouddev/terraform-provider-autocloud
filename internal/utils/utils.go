@@ -52,31 +52,6 @@ func ToStringMap(str string) (map[string]string, error) {
 	return outputMap, nil
 }
 
-func GetSdkIacCatalog(d *schema.ResourceData) autocloudsdk.IacCatalog {
-	var labels = []string{}
-	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
-		list := labelValues.([]interface{})
-		labels = ToStringSlice(list)
-	}
-
-	generator := autocloudsdk.IacCatalog{
-		Name:            d.Get("name").(string),
-		Author:          d.Get("author").(string),
-		Description:     d.Get("description").(string),
-		Instructions:    d.Get("instructions").(string),
-		Labels:          labels,
-		FileDefinitions: GetSdkIacCatalogFileDefinitions(d),
-		GitConfig:       GetSdkIacCatalogGitConfig(d),
-		IacModules:      GetSdkIacCatalogModules(d),
-		//Config:          d.Get("config"),
-	}
-
-	// read from leaves to root all variables and make a huge array of variables
-	// process overrides and conditionals
-
-	return generator
-}
-
 func GetSdkIacCatalogModules(d *schema.ResourceData) []autocloudsdk.IacCatalogModule {
 	var iacModules []autocloudsdk.IacCatalogModule
 	if autocloudModules, ok := d.GetOk("autocloud_module"); ok {

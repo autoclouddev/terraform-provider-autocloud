@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/autocloud_module"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint"
 	blueprint_config "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/repositories"
 )
@@ -31,8 +32,8 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				//"autocloud_blueprint": autocloudBlueprint(),
-				"autocloud_module": autocloud_module.ResourceAutocloudModule(),
+				"autocloud_blueprint": blueprint.ResourceAutocloudBlueprint(),
+				"autocloud_module":    autocloud_module.ResourceAutocloudModule(),
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				"autocloud_github_repos":     repositories.DataSourceRepositories(),

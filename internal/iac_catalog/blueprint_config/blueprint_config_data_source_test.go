@@ -1,14 +1,100 @@
 package blueprint_config_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	blueprint_config "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
+
+func TestAccBlueprintConfig_sourceValidation(t *testing.T) {
+	var blueprintConfig blueprint_config.BluePrintConfig
+	resourceName := "data.autocloud_blueprint_config.test"
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBlueprintConfig_basicSource(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBlueprintConfigExist(resourceName, &blueprintConfig),
+					resource.TestCheckResourceAttrSet(
+						resourceName, "source.%"),
+					resource.TestCheckResourceAttrSet(
+						resourceName, "blueprint_config"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccBlueprintConfig_empty(t *testing.T) {
+	resourceName := "data.autocloud_blueprint_config.test"
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBlueprintConfig_empty(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						resourceName, "id"),
+					resource.TestCheckResourceAttrSet(
+						resourceName, "blueprint_config"),
+				),
+			},
+		},
+	})
+}
+
+func testAccBlueprintConfig_empty() string {
+	return `
+	data "autocloud_blueprint_config" "test" {}
+`
+}
+
+func testAccCheckBlueprintConfigExist(resourceName string, blueprintConfig *blueprint_config.BluePrintConfig) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+		rawConf := rs.Primary.Attributes["blueprint_config"]
+
+		err := json.Unmarshal([]byte(rawConf), blueprintConfig)
+		if err != nil {
+			return fmt.Errorf("not a valid blueprint config: %s", rawConf)
+		}
+		return nil
+	}
+}
+
+func testAccBlueprintConfig_basicSource() string {
+	return `
+resource "autocloud_module" "s3" {
+	name    = "s3"
+	source  = "terraform-aws-modules/s3-bucket/aws"
+	version = "3.6.0"
+}
+
+resource "autocloud_module" "kms" {
+	name    = "kms"
+	source  = "terraform-aws-modules/kms/aws"
+	version = "1.3.0"
+}
+data "autocloud_blueprint_config" "test" {
+	source = {
+		kms = autocloud_module.kms.blueprint_config
+		s3  = autocloud_module.s3.blueprint_config
+	  }
+}
+`
+}
 
 func TestBlueprintConfigOverrideVariables(t *testing.T) {
 	dataKey := "data.autocloud_blueprint_config.s3_processor"
