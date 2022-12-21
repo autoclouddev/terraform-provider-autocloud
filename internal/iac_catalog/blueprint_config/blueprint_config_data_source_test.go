@@ -12,6 +12,8 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
 
+// TODO: Fix broken tests because of the new structure
+
 func TestAccBlueprintConfig_sourceValidation(t *testing.T) {
 	var blueprintConfig blueprint_config.BluePrintConfig
 	resourceName := "data.autocloud_blueprint_config.test"
@@ -1104,7 +1106,7 @@ func TestComposeGenericBlueprintConfig(t *testing.T) {
 				Config: testDataSourceBluenprintConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						dataKey, "form_config."),
+						dataKey, "config.#"),
 				),
 			},
 		},

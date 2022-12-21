@@ -59,6 +59,8 @@ type FieldOption struct {
 	Checked bool   `json:"checked"`
 }
 
+const GENERIC = "generic"
+
 func DataSourceBlueprintConfig() *schema.Resource {
 	setOfStringSchema := &schema.Schema{
 		Type:     schema.TypeSet,
@@ -208,6 +210,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	// TODO: Refactor this section to its own method
 	v, ok := d.GetOk("source")
 	var newForm = BluePrintConfig{}
 	if v != nil && ok {
@@ -215,6 +218,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	} else {
 		newForm = mapModuleVariables(formBuilder)
 	}
+	// ENDS HERE
 
 	// new form variables (as JSON)
 	jsonString, err := utils.ToJsonString(newForm)
@@ -307,7 +311,7 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 
 				if isValueDefined {
 					if formConfigListLen != 0 {
-						return nil, fmt.Errorf("A form_config can not be added when setting the variable's value. Var name: [%s], var value [%v]", varName, value)
+						return nil, fmt.Errorf("a form_config can not be added when setting the variable's value. Var name: [%s], var value [%v]", varName, value)
 					}
 
 					// if the value is set and there's no form_config, then we're ok to continue processing the next variable override
@@ -315,11 +319,11 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 				}
 
 				if formConfigListLen == 0 {
-					return nil, fmt.Errorf("A form_config must be defined for variable [%s]", varName)
+					return nil, fmt.Errorf("a form_config must be defined for variable [%s]", varName)
 				}
 				if formConfigListLen > 1 {
 					// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
-					return nil, errors.New("Exactly one form_config must be defined")
+					return nil, errors.New("exactly one form_config must be defined")
 				}
 
 				formConfigMap := formConfigList[0].(map[string]interface{})
@@ -400,16 +404,16 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 	return formBuilder, nil
 }
 
+// TODO: Refactor to share logic with mapVariables
 // mapVariables
 func mapModuleVariables(formBuilder *FormBuilder) BluePrintConfig {
 
 	newForm := BluePrintConfig{
 		Id: strconv.FormatInt(time.Now().Unix(), 10),
-		// Variables: here should be all the variables,
 	}
 
 	for _, variable := range formBuilder.OverrideVariables {
-		fieldID := "generic." + variable.VariableName
+		fieldID := fmt.Sprintf("%s.%s", GENERIC, variable.VariableName)
 
 		validationRules := make([]autocloudsdk.ValidationRule, len(variable.FormConfig.ValidationRules))
 		for i, vr := range variable.FormConfig.ValidationRules {
@@ -426,8 +430,9 @@ func mapModuleVariables(formBuilder *FormBuilder) BluePrintConfig {
 		}
 
 		newVariable := autocloudsdk.FormShape{
-			ID:   fieldID,
-			Type: variable.FormConfig.Type,
+			ID:     fieldID,
+			Type:   variable.FormConfig.Type,
+			Module: GENERIC,
 			FormQuestion: autocloudsdk.FormQuestion{
 				FieldID:         fieldID,
 				FieldType:       variable.FormConfig.Type,
@@ -470,6 +475,7 @@ func mapModuleVariables(formBuilder *FormBuilder) BluePrintConfig {
 	return newForm
 }
 
+// TODO: Update this variables to remove reference to module resource
 // it omits and overrides the iacModule variables based on the formBuilder definition
 func mapVariables(formBuilder *FormBuilder) BluePrintConfig {
 	newForm := BluePrintConfig{

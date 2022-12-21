@@ -21,26 +21,26 @@ resource "autocloud_module" "kms" {
   source = "git@github.com:autoclouddev/infrastructure-modules-demo.git//aws/security/kms?ref=0.1.0"
 }
 
-# data "autocloud_blueprint_config" "kms_custom_form" {
-#   source = {
-#     kms = autocloud_module.kms.blueprint_config
-#     s3  = autocloud_module.kms.blueprint_config
-#   }
+data "autocloud_blueprint_config" "kms_custom_form" {
+  source = {
+    kms = autocloud_module.kms.blueprint_config
+  }
 
-#   variable {
-#     name = "source.kms.variables.key_name"
-#     conditional {
-#       source   = "source.s3.variables.name" # reference syntax
-#       conditon = "prod"
+  variable {
+    name = "key_name"
+    value = "autocloud_kms"
+    # conditional {
+    #   source   = "source.s3.variables.name" # reference syntax
+    #   conditon = "prod"
 
-#       content {
-#         value = "hello"
-#       }
-#     }
-#   }
+    #   content {
+    #     value = "hello"
+    #   }
+    # }
+  }
 
-#   //add override to test backward comp
-# }
+  //add override to test backward comp
+}
 
 data "autocloud_blueprint_config" "generic" {
   variable {
@@ -70,8 +70,6 @@ data "autocloud_blueprint_config" "generic" {
       }
     } 
   }
-
-  //add override to test backward comp
 }
 
 
