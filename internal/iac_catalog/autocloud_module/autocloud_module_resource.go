@@ -1,11 +1,14 @@
-package autocloud_provider
+package autocloud_module
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -60,7 +63,7 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 	},
-	"blueprint_config": {
+	"blueprint_config_1": {
 		Description: "Form config",
 		Type:        schema.TypeString,
 		Computed:    true,
@@ -86,9 +89,15 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 			Type: schema.TypeString,
 		},
 	},
+	// encoding in json for now, but it would be nice to avoid that encoding
+	"blueprint_config": {
+		Description: "blueprint config ",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
 }
 
-func autocloudModule() *schema.Resource {
+func ResourceAutocloudModule() *schema.Resource {
 	return &schema.Resource{
 		Description: "Create an IAC module.",
 
@@ -105,7 +114,7 @@ func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any
 	// use the meta value to retrieve your client from the provider configure method
 	var diags diag.Diagnostics
 
-	iacModule := GetSdkIacModule(d)
+	iacModule := utils.GetSdkIacModule(d)
 	c := meta.(*autocloudsdk.Client)
 	o, err := c.CreateModule(&iacModule)
 	if err != nil {
@@ -168,7 +177,7 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	varsMap, err := GetVariablesIdMap(iacModule.Variables)
+	varsMap, err := utils.GetVariablesIdMap(iacModule.Variables)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -189,11 +198,30 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	outputsMap, err := toStringMap(iacModule.Outputs)
+	outputsMap, err := utils.ToStringMap(iacModule.Outputs)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	err = d.Set("outputs", outputsMap)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	variables := []autocloudsdk.FormShape{}
+	err = json.Unmarshal([]byte(iacModule.Variables), &variables)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	config := blueprint_config.BluePrintConfig{
+		Id:        iacModule.ID,
+		Variables: variables,
+		Children:  make([]blueprint_config.BluePrintConfig, 0),
+	}
+	jsonconf, err := json.Marshal(config)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	fmt.Println(string(jsonconf))
+	err = d.Set("blueprint_config", string(jsonconf))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -205,7 +233,7 @@ func autocloudModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*autocloudsdk.Client)
 
-	updatedIacModule := GetSdkIacModule(d)
+	updatedIacModule := utils.GetSdkIacModule(d)
 	updatedIacModule.ID = d.Id()
 
 	_, err := c.UpdateModule(&updatedIacModule)

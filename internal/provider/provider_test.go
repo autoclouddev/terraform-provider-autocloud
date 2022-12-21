@@ -1,42 +1,21 @@
-package autocloud_provider
+package provider_test
 
 // ref -> https://www.terraform.io/plugin/sdkv2/testing
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 
 	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	provider "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/provider"
 )
 
-// providerFactories are used to instantiate a provider during acceptance testing.
-// The factory function will be invoked for every Terraform CLI command executed
-// to create a provider server to which the CLI can reattach.
-
-//nolint:unparam // The error result is required, but intentionally always nil here
-var providerFactories = map[string]func() (*schema.Provider, error){
-	"autocloud": func() (*schema.Provider, error) {
-		return New("dev")(), nil
-	},
-}
-
 func TestProvider(t *testing.T) {
-	if err := New("dev")().InternalValidate(); err != nil {
-		t.Fatalf("err: %s", err)
-	}
-}
-
-func testAccPreCheck(t *testing.T) {
-	// You can add code here to run prior to any test case execution, for example assertions
-	// about the appropriate environment variables being set are common to see in a pre-check
-	// function.
-	err := godotenv.Load("../.env")
-	if err != nil {
+	if err := provider.New("dev")().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
@@ -47,17 +26,17 @@ func TestProviderEndpoint(t *testing.T) {
 	emptyResourceConfig := terraform.NewResourceConfigRaw(map[string]interface{}{})
 
 	// 1 - initialize the provider WITHOUT an endpoint value in the .env file or in the provider configuration
-	autocloudProvider := New("dev")()
+	autocloudProvider := provider.New("dev")()
 	diags := autocloudProvider.Configure(context.Background(), emptyResourceConfig)
 
 	assert.NotNil(t, diags)
 	assert.Equal(t, "Autocloud API Endpoint is empty", diags[0].Summary)
 
 	// load .env
-	testAccPreCheck(t)
+	acctest.TestAccPreCheck(t)
 
 	// 2 - initialize the provider WITHOUT a given endpoint but WITH a value in the .env
-	autocloudProvider = New("dev")()
+	autocloudProvider = provider.New("dev")()
 	diags = autocloudProvider.Configure(context.Background(), emptyResourceConfig)
 	sdkClient := autocloudProvider.Meta().(*autocloudsdk.Client)
 

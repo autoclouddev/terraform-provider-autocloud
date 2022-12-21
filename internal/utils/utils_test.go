@@ -1,9 +1,10 @@
-package autocloud_provider
+package utils_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
 func TestParseAndMapVariables(t *testing.T) {
@@ -63,12 +64,12 @@ func TestParseAndMapVariables(t *testing.T) {
   }
 ]
 `
-	vars, err := ParseVariables(json)
+	vars, err := utils.ParseVariables(json)
 	assert.Nil(t, err)
 	assert.NotNil(t, vars)
 	assert.Equal(t, vars[1].ID, "s3bucket.attach_elb_log_delivery_policy")
 
-	varsMap, err := GetVariablesIdMap(json)
+	varsMap, err := utils.GetVariablesIdMap(json)
 	assert.Nil(t, err)
 	assert.Equal(t, "s3bucket.attach_require_latest_tls_policy", varsMap["attach_require_latest_tls_policy"])
 	assert.Equal(t, "s3bucket.attach_elb_log_delivery_policy", varsMap["attach_elb_log_delivery_policy"])

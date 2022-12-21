@@ -1,4 +1,4 @@
-package autocloud_provider
+package autocloud_module_test
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 )
 
 const moduleName = "CloudfrontTest"
@@ -69,7 +70,7 @@ func deleteModule() {
 func TestAccDataSourceAutocloudModule(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck: func() {
-			testAccPreCheck(t)
+			acctest.TestAccPreCheck(t)
 			setupSdk()
 			createModule()
 		},
@@ -78,7 +79,7 @@ func TestAccDataSourceAutocloudModule(t *testing.T) {
 			deleteModule()
 			return nil
 		},
-		ProviderFactories: providerFactories,
+		ProviderFactories: acctest.ProviderFactories,
 		// ref -> https://www.terraform.io/plugin/sdkv2/testing/acceptance-tests/teststep
 		Steps: []resource.TestStep{
 			{

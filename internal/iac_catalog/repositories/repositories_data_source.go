@@ -1,4 +1,4 @@
-package autocloud_provider
+package repositories
 
 import (
 	"context"
@@ -13,14 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// type RepositoriesSource struct {
-// 	id          int
-// 	name        string
-// 	url         string
-// 	description string
-// }
-
-func dataSourceRepositories() *schema.Resource {
+func DataSourceRepositories() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
 		Description: "github_repos data source, to check the granted repositories.",

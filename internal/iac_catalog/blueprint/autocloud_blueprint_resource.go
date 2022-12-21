@@ -1,16 +1,20 @@
-package autocloud_provider
+package blueprint
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
-func autocloudBlueprint() *schema.Resource {
+func ResourceAutocloudBlueprint() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
 		Description: "main resource to create an IAC blueprint.",
@@ -21,6 +25,11 @@ func autocloudBlueprint() *schema.Resource {
 		DeleteContext: autocloudBlueprintDelete,
 
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Description: "id",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Name of the blueprint.",
@@ -121,7 +130,7 @@ func autocloudBlueprint() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							ValidateFunc: func(val any, key string) (warns []string, errs []error) {
-								isValidAction := Contains([]string{"CREATE", "EDIT", "HCLEDIT"}, val.(string))
+								isValidAction := true //Contains([]string{"CREATE", "EDIT", "HCLEDIT"}, val.(string))
 								if !isValidAction {
 									errs = append(errs, fmt.Errorf("%q must be a value in [CREATE, EDIT, HCLEDIT], got: %s", key, val))
 								}
@@ -152,29 +161,10 @@ func autocloudBlueprint() *schema.Resource {
 					},
 				},
 			},
-			"autocloud_module": {
-				Description: "autocloud_module",
-				Type:        schema.TypeSet,
-				Required:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Description: "autocloud module id",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"form_config": {
-							Description: "form config",
-							Type:        schema.TypeString,
-							Optional:    true,
-						},
-						"template_config": {
-							Description: "template config",
-							Type:        schema.TypeString,
-							Optional:    true,
-						},
-					},
-				},
+			"config": {
+				Description: "instructions",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 		},
 	}
@@ -182,11 +172,13 @@ func autocloudBlueprint() *schema.Resource {
 
 func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
-	generator := GetSdkIacCatalog(d)
+	generator, err := GetSdkIacCatalog(d)
+	if err != nil {
+		return diag.Errorf(err.Error())
+	}
 	c := meta.(*autocloudsdk.Client)
-	fmt.Println("SENDING DATA, CREATE")
-	fmt.Println(generator)
-	o, err := c.CreateGenerator(generator)
+	log.Printf("sending data: %v ", generator)
+	o, err := c.CreateGenerator(*generator)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
 		if resp != nil {
@@ -243,22 +235,32 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 
 	files := lowercaseFileDefs(generator.FileDefinitions)
 	err = d.Set("file", files)
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	fmt.Println(generator.FormQuestions)
+	formQuestions, err := json.Marshal(generator.FormQuestions)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("config", string(formQuestions))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return diags
 }
 
 func autocloudBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*autocloudsdk.Client)
 
-	updatedGen := GetSdkIacCatalog(d)
+	updatedGen, err := GetSdkIacCatalog(d)
+	if err != nil {
+		return diag.Errorf(err.Error())
+	}
 	updatedGen.ID = d.Id()
-	fmt.Println("UPDATING GENERATOR REQUEST")
-	fmt.Println(updatedGen)
-	_, err := c.UpdateGenerator(updatedGen)
+	log.Println("UPDATING GENERATOR REQUEST")
+	log.Println(updatedGen)
+	_, err = c.UpdateGenerator(*updatedGen)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
 		if resp != nil {
@@ -304,4 +306,39 @@ func lowercaseFileDefs(files []autocloudsdk.IacCatalogFile) []interface{} {
 	}
 
 	return out
+}
+
+func GetSdkIacCatalog(d *schema.ResourceData) (*autocloudsdk.IacCatalog, error) {
+	var labels = []string{}
+	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
+		list := labelValues.([]interface{})
+		labels = utils.ToStringSlice(list)
+	}
+	var blueprintConfig blueprint_config.BluePrintConfig
+	if config, configExist := d.GetOk("config"); configExist {
+		configstr := config.(string)
+		err := json.Unmarshal([]byte(configstr), &blueprintConfig)
+		if err != nil {
+			log.Printf("error: %v", err)
+			return nil, err
+		}
+	} else {
+		blueprintConfig.Variables = make([]autocloudsdk.FormShape, 0)
+	}
+
+	// TODO: convert tree to array
+	// read from leaves to root all variables and make a huge array of variables
+	// process overrides and conditionals
+	generator := autocloudsdk.IacCatalog{
+		Name:            d.Get("name").(string),
+		Author:          d.Get("author").(string),
+		Description:     d.Get("description").(string),
+		Instructions:    d.Get("instructions").(string),
+		Labels:          labels,
+		FileDefinitions: utils.GetSdkIacCatalogFileDefinitions(d),
+		GitConfig:       utils.GetSdkIacCatalogGitConfig(d),
+		FormQuestions:   blueprintConfig.Variables,
+	}
+
+	return &generator, nil
 }

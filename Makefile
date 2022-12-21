@@ -5,7 +5,8 @@ NAME=autocloud
 BINARY=terraform-provider-${NAME}
 CITIZEN_ARCHIVE_NAME=${NAMESPACE}-${NAME}
 OS_ARCH=darwin_amd64
-
+## uncomment the following line if you are working locally
+#VERSION=0.2
 # provider source = autocloud.io/autocloud/iac
 default: install
 

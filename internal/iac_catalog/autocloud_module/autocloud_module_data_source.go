@@ -1,4 +1,4 @@
-package autocloud_provider
+package autocloud_module
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
 var dataFilter = map[string]*schema.Schema{
@@ -35,11 +36,11 @@ var dataFilter = map[string]*schema.Schema{
 	},
 }
 
-func dataSourceAutocloudModule() *schema.Resource {
+func DataSourceAutocloudModule() *schema.Resource {
 	return &schema.Resource{
 		Description: "autocloud module, this resource fetches a previously created module",
 		ReadContext: dataSourceAutocloudModuleRead,
-		Schema:      mergeSchemas(autocloudModuleSchema, dataFilter),
+		Schema:      utils.MergeSchemas(autocloudModuleSchema, dataFilter),
 	}
 }
 
@@ -73,7 +74,7 @@ func dataSourceAutocloudModuleRead(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		varsMap, err := GetVariablesIdMap(module.Variables)
+		varsMap, err := utils.GetVariablesIdMap(module.Variables)
 		if err != nil {
 			return diag.FromErr(err)
 		}
