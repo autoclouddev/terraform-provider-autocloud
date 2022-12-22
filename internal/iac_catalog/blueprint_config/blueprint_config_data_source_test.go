@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
@@ -29,6 +30,8 @@ func TestAccBlueprintConfig_sourceValidation(t *testing.T) {
 						resourceName, "source.%"),
 					resource.TestCheckResourceAttrSet(
 						resourceName, "blueprint_config"),
+					resource.TestCheckResourceAttrSet(
+						resourceName, "config"),
 				),
 			},
 		},
@@ -54,10 +57,70 @@ func TestAccBlueprintConfig_empty(t *testing.T) {
 	})
 }
 
+func TestAccBlueprintConfig_createConfig(t *testing.T) {
+	var formVariables []autocloudsdk.FormShape
+	resourceName := "data.autocloud_blueprint_config.test"
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBlueprintConfig_createConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckCorrectVariablesLength(resourceName, &formVariables),
+					resource.TestCheckResourceAttrSet(
+						resourceName, "id"),
+					resource.TestCheckResourceAttrSet(
+						resourceName, "config"),
+				),
+			},
+		},
+	})
+}
+
+func testAccBlueprintConfig_createConfig() string {
+	return `
+	resource "autocloud_module" "kms" {
+		name    = "kms"
+		source  = "git@github.com:autoclouddev/infrastructure-modules-demo.git//aws/security/kms?ref=0.1.0"
+	}
+	data "autocloud_blueprint_config" "level1" {
+		source = {
+			s3 = autocloud_module.kms.blueprint_config
+		}
+	}
+	data "autocloud_blueprint_config" "test" {
+		source = {
+			level1 = data.autocloud_blueprint_config.level1.blueprint_config
+		}
+	}
+`
+}
+
 func testAccBlueprintConfig_empty() string {
 	return `
 	data "autocloud_blueprint_config" "test" {}
 `
+}
+
+func testAccCheckCorrectVariablesLength(resourceName string, formVariables *[]autocloudsdk.FormShape) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Not found: %s", resourceName)
+		}
+		variables := rs.Primary.Attributes["config"]
+		err := json.Unmarshal([]byte(variables), formVariables)
+
+		if err != nil {
+			return fmt.Errorf("config variables: %s", variables)
+		}
+
+		if len(*formVariables) != 7 {
+			return fmt.Errorf("form variables len: %v", len(*formVariables))
+		}
+		return nil
+	}
 }
 
 func testAccCheckBlueprintConfigExist(resourceName string, blueprintConfig *blueprint_config.BluePrintConfig) resource.TestCheckFunc {
