@@ -16,6 +16,18 @@ provider "autocloud" {
   # endpoint = "https://api.autocloud.domain.com/api/v.0.0.1"
 }
 
+data "autocloud_github_repos" "repos" {}
+
+####
+# Local vara
+locals {
+  # Destination repos where generated code will be submitted
+  dest_repos = [
+    for repo in data.autocloud_github_repos.repos.data[*].url : repo
+    if length(regexall("/infrastructure-live", repo)) > 0 || length(regexall("/self-hosted-infrastructure-live", repo)) > 0
+  ]
+}
+
 resource "autocloud_module" "kms" {
   name   = "kms"
   source = "git@github.com:autoclouddev/infrastructure-modules-demo.git//aws/security/kms?ref=0.1.0"
@@ -24,8 +36,10 @@ resource "autocloud_module" "kms" {
 data "autocloud_blueprint_config" "kms_custom_form" {
   source = {
     kms = autocloud_module.kms.blueprint_config
+    //s3  = autocloud_module.kms.blueprint_config
   }
 
+  
   variable {
     name = "key_name"
     value = "autocloud_kms"
@@ -111,12 +125,12 @@ resource "autocloud_blueprint" "example" {
     pull_request {
       title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"
       commit_message_template = "[AutoCloud] new EKS generator, created by {{authorName}}"
-      body                    = file("./files/pull_request.md.tpl")
+      body                    = file("../files/pull_request.md.tpl")
       variables = {
-        authorName  = "generic.authorName"
-        clusterName = resource.autocloud_blueprint_config.kms.variables["name"]
-        clusterName = "S3Bucket.Bucket"
-        dummyParam  = autocloud_module.s3_bucket.variables["restrict_public_buckets"]
+        authorName = "generic.authorName"
+        //clusterName = "resource.autocloud_blueprint_config.kms.variables["name"]"
+        clusterName = "kms.name"
+        //dummyParam  = autocloud_module.s3_bucket.variables["restrict_public_buckets"]
       }
     }
   }
@@ -127,19 +141,16 @@ resource "autocloud_blueprint" "example" {
   #
 
   file {
-    action    = "CREATE"
-    dest_path = "{{kmsName}}.tf"
+    action      = "CREATE"
+    destination = "{{kmsName}}.tf"
     variables = {
-      kmsName = data.autocloud_form_config.kms_custom_form.variables.name # variables["name"]
+      kmsName = "kms.name" # variables["name"]
     }
 
     modules = [
       autocloud_module.kms.name ## change for id? instead of name
     ]
   }
-  config = data.autocloud_blueprint_config.kms_custom_form.blueprint_config
+  config = data.autocloud_blueprint_config.kms_custom_form.config
 }
-
-
-
 */

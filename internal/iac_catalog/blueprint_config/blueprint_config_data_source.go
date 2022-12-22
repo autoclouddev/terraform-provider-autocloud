@@ -147,10 +147,6 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			},
 		}
 	bluePrintConfigSchema := map[string]*schema.Schema{
-		"source_module_id": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
 		"source": {
 			Type:     schema.TypeMap,
 			Optional: true,
@@ -184,8 +180,13 @@ func DataSourceBlueprintConfig() *schema.Resource {
 				},
 			},
 		},
+		"builder": { // it keeps the form builder (omit vars, override vars, ...) as json
+			Description: "Form builder JSON (it keeps the parsed form builder as json)",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"config": { // the form as json to replace the default variables
-			Description: "Processed form variables JSON (to replace the default module variables variables)",
+			Description: "Variables retrieved in the tree",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -261,7 +262,6 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 			bc := BluePrintConfig{}
 			err := json.Unmarshal([]byte(strValue), &bc)
 			if err != nil {
-				fmt.Println(err)
 				return nil, errors.New("invalid conversion to BluePrintConfig")
 			}
 			mapString[strKey] = bc

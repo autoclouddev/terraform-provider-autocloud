@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -314,16 +313,14 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*autocloudsdk.IacCatalog, error) 
 		list := labelValues.([]interface{})
 		labels = utils.ToStringSlice(list)
 	}
-	var blueprintConfig blueprint_config.BluePrintConfig
+	var formShape []autocloudsdk.FormShape
 	if config, configExist := d.GetOk("config"); configExist {
 		configstr := config.(string)
-		err := json.Unmarshal([]byte(configstr), &blueprintConfig)
+		err := json.Unmarshal([]byte(configstr), &formShape)
 		if err != nil {
 			log.Printf("error: %v", err)
 			return nil, err
 		}
-	} else {
-		blueprintConfig.Variables = make([]autocloudsdk.FormShape, 0)
 	}
 
 	// TODO: convert tree to array
@@ -337,7 +334,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*autocloudsdk.IacCatalog, error) 
 		Labels:          labels,
 		FileDefinitions: utils.GetSdkIacCatalogFileDefinitions(d),
 		GitConfig:       utils.GetSdkIacCatalogGitConfig(d),
-		FormQuestions:   blueprintConfig.Variables,
+		FormQuestions:   formShape,
 	}
 
 	return &generator, nil

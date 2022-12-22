@@ -63,7 +63,7 @@ resource "autocloud_blueprint" "bar" {
       }
     }
   }
-  config = data.autocloud_blueprint_config.test.blueprint_config
+  config = data.autocloud_blueprint_config.test.config
 
 }
 `
