@@ -215,27 +215,30 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 
 	// TODO: Refactor this section to its own method
 	v, ok := d.GetOk("source")
-	var newForm BluePrintConfig
+	var blueprint BluePrintConfig
 	if v != nil && ok {
-		newForm = mapVariables(formBuilder)
+		blueprint = mapVariables(formBuilder)
 	} else {
-		newForm = mapModuleVariables(formBuilder)
+		blueprint = mapModuleVariables(formBuilder)
 	}
 	// ENDS HERE
 
 	// new form variables (as JSON)
-	jsonString, err := utils.ToJsonString(newForm)
+	formVariables := GetFormShape(blueprint)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = d.Set("config", jsonString)
+	jsonVariables, err := utils.ToJsonString(formVariables)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Printf("\nJSON config %v\n\n", jsonString)
+	err = d.Set("config", jsonVariables)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	log.Printf("\nJSON config %v\n\n", jsonVariables)
 	// TODO: end of deprecation
-	config := newForm
-	configString, err := utils.ToJsonString(config)
+	configString, err := utils.ToJsonString(blueprint)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -243,7 +246,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(config.Id)
+	d.SetId(blueprint.Id)
 
 	return diags
 }
