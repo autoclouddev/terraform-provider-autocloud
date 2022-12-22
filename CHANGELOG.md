@@ -1,3 +1,19 @@
+# [0.3.0-pre.22](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.21...0.3.0-pre.22) (2022-12-22)
+
+
+### Bug Fixes
+
+* Fixed linter issues ([ba0772b](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/ba0772b49635c74a324d664833e760b037b1cb78))
+
+
+### Features
+
+* **blueprint:** add context variable to blueprint resource ([1897d52](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1897d52efe8ed78afbb11e1b93a95bab3e98dc53))
+* **blueprint:** use "source" keyword ([34051f5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/34051f5f96571b88833f0be93b8f86e63929a542))
+* Built generic form using custom variables ([9491b9b](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9491b9b23b248dbbc004a82e375b87e6d3e5deb2))
+* Defined TODO for refactors ([654942e](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/654942ea541e2e534d824c3d2c42e3a1a3137eb3))
+* Supported generic and module blueprint_config ([8e69c5c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/8e69c5c1051d720b4ad6311a7e8ba6ff9470d6e9))
+
 # [0.3.0-pre.21](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.20...0.3.0-pre.21) (2022-12-14)
 
 
