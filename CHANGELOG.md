@@ -1,3 +1,10 @@
+# [0.3.0-pre.24](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.23...0.3.0-pre.24) (2022-12-22)
+
+
+### Features
+
+* **blueprint:** add tf source example ([0809365](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/0809365dd68511a3f1235014a162d238a0c07266))
+
 # [0.3.0-pre.23](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.22...0.3.0-pre.23) (2022-12-22)
 
 
