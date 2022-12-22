@@ -269,7 +269,7 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 		}
 	}
 
-	/*if v, ok := d.GetOk("omit_variables"); ok {
+	if v, ok := d.GetOk("omit_variables"); ok {
 		list := v.(*schema.Set).List()
 		omit := make([]string, len(list))
 		for i, optionValue := range list {
@@ -401,7 +401,7 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 		}
 
 		formBuilder.OverrideVariables = overrideVariables
-	}*/
+	}
 
 	return formBuilder, nil
 }
