@@ -60,6 +60,8 @@ type FieldOption struct {
 }
 
 const GENERIC = "generic"
+const RADIO_TYPE = "radio"
+const CHECKBOX_TYPE = "checkbox"
 
 func DataSourceBlueprintConfig() *schema.Resource {
 	setOfStringSchema := &schema.Schema{
@@ -212,7 +214,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 
 	// TODO: Refactor this section to its own method
 	v, ok := d.GetOk("source")
-	var newForm = BluePrintConfig{}
+	var newForm BluePrintConfig
 	if v != nil && ok {
 		newForm = mapVariables(formBuilder)
 	} else {
@@ -333,7 +335,7 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 				var fieldOptions []FieldOption
 
 				fieldOptionList := formConfigMap["options"].([]interface{})
-				if variableType == "radio" || variableType == "checkbox" {
+				if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
 					if len(fieldOptionList) != 1 {
 						return nil, errors.New("one options block is required")
 					}
@@ -407,7 +409,6 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 // TODO: Refactor to share logic with mapVariables
 // mapVariables
 func mapModuleVariables(formBuilder *FormBuilder) BluePrintConfig {
-
 	newForm := BluePrintConfig{
 		Id: strconv.FormatInt(time.Now().Unix(), 10),
 	}
@@ -443,7 +444,7 @@ func mapModuleVariables(formBuilder *FormBuilder) BluePrintConfig {
 			AllowConsumerToEdit: true,
 		}
 
-		if variable.FormConfig.Type == "radio" || variable.FormConfig.Type == "checkbox" {
+		if variable.FormConfig.Type == RADIO_TYPE || variable.FormConfig.Type == CHECKBOX_TYPE {
 			// if the list is empty, set a default value
 			if len(variable.FormConfig.FieldOptions) == 0 {
 				value := "default"
@@ -484,7 +485,6 @@ func mapVariables(formBuilder *FormBuilder) BluePrintConfig {
 	}
 
 	for _, config := range formBuilder.BluePrintConfig.Children {
-
 		// to store processed vars (without omitted vars, with overridden vars).
 		newConfig := BluePrintConfig{
 			Id:      config.Id,
@@ -582,7 +582,7 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		}
 	}
 
-	if overrideData.FormConfig.Type == "radio" || overrideData.FormConfig.Type == "checkbox" {
+	if overrideData.FormConfig.Type == RADIO_TYPE || overrideData.FormConfig.Type == CHECKBOX_TYPE {
 		// if the list is empty, set a default value
 		if len(overrideData.FormConfig.FieldOptions) == 0 {
 			value := "default"
