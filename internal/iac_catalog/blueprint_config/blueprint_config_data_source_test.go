@@ -9,8 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
-	blueprint_config "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
+
+// TODO: Fix broken tests because of the new structure
 
 func TestAccBlueprintConfig_sourceValidation(t *testing.T) {
 	var blueprintConfig blueprint_config.BluePrintConfig
@@ -424,7 +426,7 @@ func TestBlueprintConfigOverrideVariables(t *testing.T) {
 				Config: testDataSourceBluenprintConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
-						dataKey, "source.%"),
+						dataKey, "source.#"),
 					/*resource.TestCheckResourceAttr(
 						dataKey, "builder", builderJsonOverrideVariables),
 					resource.TestCheckResourceAttr(
@@ -894,4 +896,219 @@ func TestGetFormBuilder(t *testing.T) {
 		t.Errorf("BlueprintConfig.children[0].Variables.length is not 7 is: %d", len(nestedVariables))
 	}
 	fmt.Println(formBuilder.BluePrintConfig)
+}
+
+func TestGenericBlueprintConfig(t *testing.T) {
+	dataKey := "data.autocloud_blueprint_config.generic"
+
+	testDataSourceBluenprintConfig := `
+
+
+
+	data "autocloud_blueprint_config" "generic" {
+		variable {
+			name = "project_name"
+			form_config {
+				type = "shortText"
+				validation_rule {
+					rule          = "isRequired"
+					error_message = "invalid name"
+				}
+			} 
+		}
+
+		variable {
+			name = "env"
+			display_name = "environment target"
+			helper_text  = "environment target description"
+			form_config {
+				type = "radio"
+				options {
+					option {
+						label = "dev"
+						value = "dev"
+						checked = true
+					}
+					option {
+						label   = "nonprod"
+						value   = "nonprod"
+					}
+					option {
+						label   = "prod"
+						value   = "prod"
+					}
+				}
+				validation_rule {
+					rule          = "isRequired"
+					error_message = "invalid"
+				}
+			} 
+		}
+	}`
+
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testDataSourceBluenprintConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						dataKey, "form_config."),
+				),
+			},
+		},
+	})
+}
+
+func TestComposeGenericBlueprintConfig(t *testing.T) {
+	dataKey := "data.autocloud_blueprint_config.generic"
+
+	testDataSourceBluenprintConfig := `
+
+	resource "autocloud_module" "s3_bucket" {
+		name = "S3Bucket"
+		version = "3.4.0"
+		source  = "terraform-aws-modules/s3-bucket/aws"
+	}
+
+	data "autocloud_blueprint_config" "generic" {
+		variable {
+			name = "project_name"
+			form_config {
+				type = "shortText"
+				validation_rule {
+					rule          = "isRequired"
+					error_message = "invalid name"
+				}
+			} 
+		}
+
+		variable {
+			name = "env"
+			display_name = "environment target"
+			helper_text  = "environment target description"
+			form_config {
+				type = "radio"
+				options {
+					option {
+						label = "dev"
+						value = "dev"
+						checked = true
+					}
+					option {
+						label   = "nonprod"
+						value   = "nonprod"
+					}
+					option {
+						label   = "prod"
+						value   = "prod"
+					}
+				}
+				validation_rule {
+					rule          = "isRequired"
+					error_message = "invalid"
+				}
+			} 
+		}
+	}
+	
+	data "autocloud_blueprint_config" "s3_processor" {
+		source = {
+			s3 = autocloud_module.s3_bucket.blueprint_config
+			generic = data.autocloud_blueprint_config.generic.blueprint_config
+		}
+		omit_variables   = ["request_payer", "attach_deny_insecure_transport_policy", "putin_khuylo", "attach_policy", "control_object_ownership", "attach_lb_log_delivery_policy", "create_bucket", "restrict_public_buckets", "attach_elb_log_delivery_policy", "object_ownership", "attach_require_latest_tls_policy", "policy", "block_public_acls", "bucket", "acl", "block_public_policy", "object_lock_enabled", "force_destroy", "ignore_public_acls"]
+
+		# bucket_prefix, acceleration_status, expected_bucket_owner => these vars are of 'shortText' type
+		# attach_public_policy is of 'radio' type ('checkbox' types are similar to 'radio' types)
+
+		# OVERRIDE VARIABLE EXAMPLES
+		# - overriding bucket_prefix 'shortText' into 'radio'
+		variable {
+		name = "bucket_prefix"
+		display_name  = "bucket prefix (from override block)"
+		helper_text   = "bucket prefix helper text (from override block)"
+		form_config {
+			type = "radio"
+			options {
+			option {
+				label   = "dev"
+				value   = "some-dev-prefix"
+				checked = false
+			}
+			option {
+				label   = "nonprod"
+				value   = "some-nonprod-prefix"
+				checked = true
+			}
+			option {
+				label = "prod"
+				value = "some-prod-prefix"
+			}
+			}
+			validation_rule {
+			rule          = "isRequired"
+			error_message = "invalid"
+			}
+		}
+		}
+
+		# - overriding acceleration_status 'shortText' into 'checkbox'
+		variable {
+		name = "acceleration_status"
+		form_config {
+			type = "checkbox"
+			options {
+			option {
+				label = "Option 1"
+				value = "acceleration_status_1"
+
+			}
+			option {
+				label   = "Option 2"
+				value   = "acceleration_status_2"
+				checked = true
+			}
+			option {
+				label   = "Option 3"
+				value   = "acceleration_status_3"
+				checked = true
+			}
+			}
+		}
+		}
+
+		# - NOT overriding expected_bucket_owner 'shortText' (it should be displayed as shortText)
+		# ...
+
+		# - overriding attach_public_policy 'radio' into 'shortText'
+
+		variable {
+		name = "attach_public_policy"
+		form_config {
+			type = "shortText"
+			validation_rule {
+			rule          = "regex"
+			value         = "^(yes|no)$"
+			error_message = "invalid. you should choose between 'yes' or 'no'"
+			}
+		}
+		}
+	}
+	`
+
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testDataSourceBluenprintConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						dataKey, "config.#"),
+				),
+			},
+		},
+	})
 }

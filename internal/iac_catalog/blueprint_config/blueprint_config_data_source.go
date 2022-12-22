@@ -59,6 +59,10 @@ type FieldOption struct {
 	Checked bool   `json:"checked"`
 }
 
+const GENERIC = "generic"
+const RADIO_TYPE = "radio"
+const CHECKBOX_TYPE = "checkbox"
+
 func DataSourceBlueprintConfig() *schema.Resource {
 	setOfStringSchema := &schema.Schema{
 		Type:     schema.TypeSet,
@@ -180,12 +184,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 				},
 			},
 		},
-		"builder": { // it keeps the form builder (omit vars, override vars, ...) as json
-			Description: "Form builder JSON (it keeps the parsed form builder as json)",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"form_config": { // the form as json to replace the default variables
+		"config": { // the form as json to replace the default variables
 			Description: "Processed form variables JSON (to replace the default module variables variables)",
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -213,45 +212,28 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	// build the form shape (iac questions' format)
-	//c := m.(*autocloudsdk.Client)
-	//iacModule, err := c.GetModule(formBuilder.sourceModuleID)
-	if err != nil {
-		return diag.FromErr(err)
+	// TODO: Refactor this section to its own method
+	v, ok := d.GetOk("source")
+	var newForm BluePrintConfig
+	if v != nil && ok {
+		newForm = mapVariables(formBuilder)
+	} else {
+		newForm = mapModuleVariables(formBuilder)
 	}
-
-	/*
-	 TODO: refactor this part of the code to handle the overrides, and variable keywords
-	 newForm, err := mapModuleVariables(formBuilder, &iacModule)
-	*/
-	newForm := make([]autocloudsdk.FormShape, 0) // this is a placeholder for the FormShape
-	// TODO: depreacte all of these
-	jsonString, err := utils.ToJsonString(formBuilder)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	err = d.Set("builder", jsonString)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	log.Printf("\nJSON builder %v\n", jsonString)
+	// ENDS HERE
 
 	// new form variables (as JSON)
-	jsonString, err = utils.ToJsonString(newForm)
+	jsonString, err := utils.ToJsonString(newForm)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = d.Set("form_config", jsonString)
+	err = d.Set("config", jsonString)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Printf("\nJSON form_config %v\n\n", jsonString)
+	log.Printf("\nJSON config %v\n\n", jsonString)
 	// TODO: end of deprecation
-	config := BluePrintConfig{
-		Id:        "formBuilder.BluePrintConfig.Id",
-		Variables: newForm,
-		Children:  formBuilder.BluePrintConfig.Children,
-	}
+	config := newForm
 	configString, err := utils.ToJsonString(config)
 	if err != nil {
 		return diag.FromErr(err)
@@ -260,7 +242,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(formBuilder.BluePrintConfig.Id)
+	d.SetId(config.Id)
 
 	return diags
 }
@@ -278,8 +260,6 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 			fmt.Println(strValue)
 			bc := BluePrintConfig{}
 			err := json.Unmarshal([]byte(strValue), &bc)
-			fmt.Println("blueprintconfig")
-			fmt.Println(bc)
 			if err != nil {
 				fmt.Println(err)
 				return nil, errors.New("invalid conversion to BluePrintConfig")
@@ -333,7 +313,7 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 
 				if isValueDefined {
 					if formConfigListLen != 0 {
-						return nil, fmt.Errorf("A form_config can not be added when setting the variable's value. Var name: [%s], var value [%v]", varName, value)
+						return nil, fmt.Errorf("a form_config can not be added when setting the variable's value. Var name: [%s], var value [%v]", varName, value)
 					}
 
 					// if the value is set and there's no form_config, then we're ok to continue processing the next variable override
@@ -341,11 +321,11 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 				}
 
 				if formConfigListLen == 0 {
-					return nil, fmt.Errorf("A form_config must be defined for variable [%s]", varName)
+					return nil, fmt.Errorf("a form_config must be defined for variable [%s]", varName)
 				}
 				if formConfigListLen > 1 {
 					// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
-					return nil, errors.New("Exactly one form_config must be defined")
+					return nil, errors.New("exactly one form_config must be defined")
 				}
 
 				formConfigMap := formConfigList[0].(map[string]interface{})
@@ -355,9 +335,9 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 				var fieldOptions []FieldOption
 
 				fieldOptionList := formConfigMap["options"].([]interface{})
-				if variableType == "radio" || variableType == "checkbox" {
+				if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
 					if len(fieldOptionList) != 1 {
-						return nil, errors.New("One options block is required")
+						return nil, errors.New("one options block is required")
 					}
 
 					options := fieldOptionList[0].(map[string]interface{})["option"].([]interface{})
@@ -426,48 +406,120 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 	return formBuilder, nil
 }
 
+// TODO: Refactor to share logic with mapVariables
+// mapVariables
+func mapModuleVariables(formBuilder *FormBuilder) BluePrintConfig {
+	newForm := BluePrintConfig{
+		Id: strconv.FormatInt(time.Now().Unix(), 10),
+	}
+
+	for _, variable := range formBuilder.OverrideVariables {
+		fieldID := fmt.Sprintf("%s.%s", GENERIC, variable.VariableName)
+
+		validationRules := make([]autocloudsdk.ValidationRule, len(variable.FormConfig.ValidationRules))
+		for i, vr := range variable.FormConfig.ValidationRules {
+			validationRules[i] = autocloudsdk.ValidationRule{
+				Rule:         vr.Rule,
+				Value:        vr.Value,
+				ErrorMessage: vr.ErrorMessage,
+			}
+		}
+
+		fieldLabel := variable.VariableName
+		if variable.DisplayName != "" {
+			fieldLabel = variable.DisplayName
+		}
+
+		newVariable := autocloudsdk.FormShape{
+			ID:     fieldID,
+			Type:   variable.FormConfig.Type,
+			Module: GENERIC,
+			FormQuestion: autocloudsdk.FormQuestion{
+				FieldID:         fieldID,
+				FieldType:       variable.FormConfig.Type,
+				ValidationRules: validationRules,
+				FieldLabel:      fieldLabel,
+				ExplainingText:  variable.HelperText,
+			},
+			AllowConsumerToEdit: true,
+		}
+
+		if variable.FormConfig.Type == RADIO_TYPE || variable.FormConfig.Type == CHECKBOX_TYPE {
+			// if the list is empty, set a default value
+			if len(variable.FormConfig.FieldOptions) == 0 {
+				value := "default"
+				newVariable.FormQuestion.FieldOptions = []autocloudsdk.FieldOption{
+					{
+						Label:   "Autogenerated Option. Please update this value",
+						FieldID: fmt.Sprintf("%s-%s", fieldID, value),
+						Value:   value,
+						Checked: false,
+					},
+				}
+			} else {
+				newVariable.FormQuestion.FieldOptions = make([]autocloudsdk.FieldOption, len(variable.FormConfig.FieldOptions))
+
+				for i, option := range variable.FormConfig.FieldOptions {
+					newVariable.FormQuestion.FieldOptions[i] = autocloudsdk.FieldOption{
+						Label:   option.Label,
+						FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
+						Value:   option.Value,
+						Checked: option.Checked,
+					}
+				}
+			}
+		}
+
+		newForm.Variables = append(newForm.Variables, newVariable)
+	}
+
+	return newForm
+}
+
+// TODO: Update this variables to remove reference to module resource
 // it omits and overrides the iacModule variables based on the formBuilder definition
-//
-//nolint:golint,unused
-func mapModuleVariables(formBuilder *FormBuilder, iacModule *autocloudsdk.IacModule) ([]autocloudsdk.FormShape, error) {
-	// parse iacModule.Variables string into a []autocloudsdk.FormShape slice
-	iacModuleVars, err := utils.ParseVariables(iacModule.Variables)
-
-	if err != nil {
-		return nil, err
+func mapVariables(formBuilder *FormBuilder) BluePrintConfig {
+	newForm := BluePrintConfig{
+		Id: strconv.FormatInt(time.Now().Unix(), 10),
+		// Variables: here should be all the variables,
 	}
 
-	// to store processed vars (without omitted vars, with overridden vars)
-	var overridenIacModuleVars = make([]autocloudsdk.FormShape, 0)
-
-	for _, iacModuleVar := range iacModuleVars {
-		varName, err := utils.GetVariableID(iacModuleVar.ID)
-
-		if err != nil {
-			return nil, err
+	for _, config := range formBuilder.BluePrintConfig.Children {
+		// to store processed vars (without omitted vars, with overridden vars).
+		newConfig := BluePrintConfig{
+			Id:      config.Id,
+			RefName: config.RefName,
 		}
 
-		// omit vars
-		if utils.Contains(formBuilder.OmitVariables, varName) {
-			log.Printf("the [%s] variable was omitted", varName)
-			continue
-		}
+		for _, iacModuleVar := range config.Variables {
+			varName, err := utils.GetVariableID(iacModuleVar.ID)
 
-		// if no override statement, then keep the original var without changes
-		updatedIacModuleVar := iacModuleVar
-		if overrideVariableData, ok := formBuilder.OverrideVariables[varName]; ok {
-			updatedIacModuleVar = buildOverridenVariable(iacModuleVar, overrideVariableData)
-		}
+			if err != nil {
+				return newForm
+			}
 
-		overridenIacModuleVars = append(overridenIacModuleVars, updatedIacModuleVar)
+			// omit vars
+			if utils.Contains(formBuilder.OmitVariables, varName) {
+				log.Printf("the [%s] variable was omitted", varName)
+				continue
+			}
+
+			// if no override statement, then keep the original var without changes
+			updatedIacModuleVar := iacModuleVar
+			if overrideVariableData, ok := formBuilder.OverrideVariables[varName]; ok {
+				updatedIacModuleVar = buildOverridenVariable(iacModuleVar, overrideVariableData)
+			}
+
+			newConfig.Variables = append(newConfig.Variables, updatedIacModuleVar)
+		}
+		// sort questions to keep ordering consistent
+		sort.Slice(newConfig.Variables, func(i, j int) bool {
+			return newConfig.Variables[i].ID < newConfig.Variables[j].ID
+		})
+		newForm.Children = append(newForm.Children, newConfig)
 	}
 
-	// sort questions to keep ordering consistent
-	sort.Slice(overridenIacModuleVars, func(i, j int) bool {
-		return overridenIacModuleVars[i].ID < overridenIacModuleVars[j].ID
-	})
-
-	return overridenIacModuleVars, nil
+	return newForm
 }
 
 // it creates an iac question format from override var data
@@ -530,7 +582,7 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		}
 	}
 
-	if overrideData.FormConfig.Type == "radio" || overrideData.FormConfig.Type == "checkbox" {
+	if overrideData.FormConfig.Type == RADIO_TYPE || overrideData.FormConfig.Type == CHECKBOX_TYPE {
 		// if the list is empty, set a default value
 		if len(overrideData.FormConfig.FieldOptions) == 0 {
 			value := "default"

@@ -24,22 +24,52 @@ resource "autocloud_module" "kms" {
 data "autocloud_blueprint_config" "kms_custom_form" {
   source = {
     kms = autocloud_module.kms.blueprint_config
-    s3  = autocloud_module.kms.blueprint_config
   }
 
   variable {
-    name = "source.kms.variables.key_name"
-    conditional {
-      source   = "source.s3.variables.name" # reference syntax
-      conditon = "prod"
+    name = "key_name"
+    value = "autocloud_kms"
+    # conditional {
+    #   source   = "source.s3.variables.name" # reference syntax
+    #   conditon = "prod"
 
-      content {
-        value = "hello"
-      }
-    }
+    #   content {
+    #     value = "hello"
+    #   }
+    # }
   }
 
   //add override to test backward comp
+}
+
+data "autocloud_blueprint_config" "generic" {
+  variable {
+    name = "env"
+    display_name = "environment target"
+    helper_text  = "environment target description"
+    form_config {
+      type = "radio"
+      options {
+        option {
+          label = "dev"
+          value = "dev"
+          checked = true
+        }
+        option {
+          label   = "nonprod"
+          value   = "nonprod"
+        }
+        option {
+          label   = "prod"
+          value   = "prod"
+        }
+      }
+      validation_rule {
+        rule          = "isRequired"
+        error_message = "invalid"
+      }
+    } 
+  }
 }
 
 
@@ -48,9 +78,9 @@ output "form_module" {
   value = autocloud_module.kms.blueprint_config
 }
 
-output "form_blueprint" {
-  value = data.autocloud_blueprint_config.kms_custom_form.blueprint_config
-}
+# output "form_blueprint" {
+#   value = data.autocloud_blueprint_config.kms_custom_form.blueprint_config
+# }
 /*
 resource "autocloud_blueprint" "example" {
   name = "S3andCloudfront"
