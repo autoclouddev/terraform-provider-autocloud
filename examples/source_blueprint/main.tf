@@ -24,7 +24,7 @@ locals {
   # Destination repos where generated code will be submitted
   dest_repos = [
     for repo in data.autocloud_github_repos.repos.data[*].url : repo
-    if length(regexall("/infrastructure-live", repo)) > 0 || length(regexall("/self-hosted-infrastructure-live", repo)) > 0
+    if length(regexall("/infrastructure-live-demo", repo)) > 0
   ]
 }
 
@@ -33,71 +33,71 @@ resource "autocloud_module" "kms" {
   source = "git@github.com:autoclouddev/infrastructure-modules-demo.git//aws/security/kms?ref=0.1.0"
 }
 
-data "autocloud_blueprint_config" "kms_custom_form" {
-  source = {
-    kms = autocloud_module.kms.blueprint_config
-    //s3  = autocloud_module.kms.blueprint_config
-  }
-
-  
-  variable {
-    name = "key_name"
-    value = "autocloud_kms"
-    # conditional {
-    #   source   = "source.s3.variables.name" # reference syntax
-    #   conditon = "prod"
-
-    #   content {
-    #     value = "hello"
-    #   }
-    # }
-  }
-
-  //add override to test backward comp
-}
 
 data "autocloud_blueprint_config" "generic" {
   variable {
-    name = "env"
+    name         = "env"
     display_name = "environment target"
     helper_text  = "environment target description"
     form_config {
       type = "radio"
       options {
         option {
-          label = "dev"
-          value = "dev"
+          label   = "dev"
+          value   = "dev"
           checked = true
         }
         option {
-          label   = "nonprod"
-          value   = "nonprod"
+          label = "nonprod"
+          value = "nonprod"
         }
         option {
-          label   = "prod"
-          value   = "prod"
+          label = "prod"
+          value = "prod"
         }
       }
       validation_rule {
         rule          = "isRequired"
         error_message = "invalid"
       }
-    } 
+    }
   }
 }
 
+data "autocloud_blueprint_config" "kms_custom_form" {
+  source = {
+    kms     = autocloud_module.kms.blueprint_config
+    generic = data.autocloud_blueprint_config.generic.blueprint_config
+  }
 
-
-output "form_module" {
-  value = autocloud_module.kms.blueprint_config
+  variable {
+    name         = "description"
+    display_name = "choose the usage of this kms"
+    helper_text  = "select the corresponding team"
+    form_config {
+      type = "radio"
+      options {
+        option {
+          label   = "engineering"
+          value   = "engineering"
+          checked = false
+        }
+        option {
+          label   = "finances"
+          value   = "finances"
+          checked = false
+        }
+      }
+    }
+  }
+  //add override to test backward comp
 }
 
-# output "form_blueprint" {
-#   value = data.autocloud_blueprint_config.kms_custom_form.blueprint_config
-# }
-/*
+
+
+
 resource "autocloud_blueprint" "example" {
-  name = "S3andCloudfront"
+  name = "KMS from examples"
 
   ###
   # UI Configuration
@@ -153,4 +153,3 @@ resource "autocloud_blueprint" "example" {
   }
   config = data.autocloud_blueprint_config.kms_custom_form.config
 }
-*/
