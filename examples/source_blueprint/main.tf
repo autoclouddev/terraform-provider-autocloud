@@ -91,6 +91,76 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     }
   }
   //add override to test backward comp
+
+  ### overriding "namespace" (string)
+  # hardcoded value
+  variable {
+    name  = "namespace"
+    value = "some-namespace"
+  }
+
+  ### overriding "enable_key_rotation" (bool)
+  # hardcoded value
+  # variable {
+  #   name  = "enable_key_rotation"
+  #   value = false
+  # }
+
+  # form override
+  variable {
+    name         = "enable_key_rotation"
+    display_name = "enable_key_rotation display name"
+    helper_text  = "enable_key_rotation helper text"
+    form_config {
+      type = "radio"
+      options {
+        option {
+          label   = "ENABLE"
+          value   = true
+          checked = false
+        }
+        option {
+          label   = "DISABLE"
+          value   = false
+          checked = true
+        }
+      }
+    }
+  }
+
+  ### overriding "deletion_window_in_days" (number)
+  # hardcoded value
+  # variable {
+  #   name    = "deletion_window_in_days"
+  #   value   = 30
+  # }
+
+  # form override
+  variable {
+    name         = "deletion_window_in_days"
+    display_name = "deletion_window_in_days display name"
+    helper_text  = "deletion_window_in_days helper text"
+    form_config {
+      type = "radio"
+      options {
+        option {
+          label   = "30 days"
+          value   = 30
+          checked = false
+        }
+        option {
+          label   = "60 days"
+          value   = 60
+          checked = false
+        }
+        option {
+          label   = "90 days"
+          value   = 90
+          checked = true
+        }
+      }
+    }
+  }
 }
 
 
