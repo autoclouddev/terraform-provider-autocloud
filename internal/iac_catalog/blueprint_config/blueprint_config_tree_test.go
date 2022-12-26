@@ -9,6 +9,12 @@ import (
 )
 
 func TestTreeTransversal(t *testing.T) {
+	//     tree
+	//      A
+	//    /   \
+	//   B     D
+	//  /
+	// C
 	tree := blueprint_config.BluePrintConfig{
 		Id: "root",
 		Variables: []autocloudsdk.FormShape{

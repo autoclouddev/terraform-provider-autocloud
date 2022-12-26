@@ -1000,20 +1000,20 @@ func TestGetFormBuilder(t *testing.T) {
 	}
 
 	d := schema.TestResourceDataRaw(t, testDataBlueprintResourceSchema, raw)
-	formBuilder, err := blueprint_config.GetFormBuilder(d)
+	blueprintConfig, err := blueprint_config.GetBlueprintConfigFromSchema(d)
 	if err != nil {
 		fmt.Print(err)
 		t.Fail()
 	}
-	variablesLength := len(formBuilder.BluePrintConfig.Variables)
+	variablesLength := len(blueprintConfig.Variables)
 	if variablesLength != 0 {
 		t.Errorf("BlueprintConfig variables.length is not 0 is: %d", variablesLength)
 	}
-	nestedVariables := formBuilder.BluePrintConfig.Children[0].Variables
+	nestedVariables := blueprintConfig.Children[0].Variables
 	if len(nestedVariables) != 7 {
 		t.Errorf("BlueprintConfig.children[0].Variables.length is not 7 is: %d", len(nestedVariables))
 	}
-	fmt.Println(formBuilder.BluePrintConfig)
+	fmt.Println(blueprintConfig)
 }
 
 func TestGenericBlueprintConfig(t *testing.T) {
@@ -1032,7 +1032,7 @@ func TestGenericBlueprintConfig(t *testing.T) {
 					rule          = "isRequired"
 					error_message = "invalid name"
 				}
-			} 
+			}
 		}
 
 		variable {
@@ -1060,7 +1060,7 @@ func TestGenericBlueprintConfig(t *testing.T) {
 					rule          = "isRequired"
 					error_message = "invalid"
 				}
-			} 
+			}
 		}
 	}`
 
@@ -1099,7 +1099,7 @@ func TestComposeGenericBlueprintConfig(t *testing.T) {
 					rule          = "isRequired"
 					error_message = "invalid name"
 				}
-			} 
+			}
 		}
 
 		variable {
@@ -1127,10 +1127,10 @@ func TestComposeGenericBlueprintConfig(t *testing.T) {
 					rule          = "isRequired"
 					error_message = "invalid"
 				}
-			} 
+			}
 		}
 	}
-	
+
 	data "autocloud_blueprint_config" "s3_processor" {
 		source = {
 			s3 = autocloud_module.s3_bucket.blueprint_config
