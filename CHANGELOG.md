@@ -1,3 +1,10 @@
+# [0.3.0-pre.25](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.24...0.3.0-pre.25) (2022-12-28)
+
+
+### Bug Fixes
+
+* Fixed missing types for overrides variables ([50bdd4d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/50bdd4d44fe0dbd9dc2fa7d69dfc69089ec96095))
+
 # [0.3.0-pre.24](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.23...0.3.0-pre.24) (2022-12-22)
 
 
