@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -1032,7 +1036,7 @@ func TestGenericBlueprintConfig(t *testing.T) {
 					rule          = "isRequired"
 					error_message = "invalid name"
 				}
-			} 
+			}
 		}
 
 		variable {
@@ -1060,7 +1064,7 @@ func TestGenericBlueprintConfig(t *testing.T) {
 					rule          = "isRequired"
 					error_message = "invalid"
 				}
-			} 
+			}
 		}
 	}`
 
@@ -1099,7 +1103,7 @@ func TestComposeGenericBlueprintConfig(t *testing.T) {
 					rule          = "isRequired"
 					error_message = "invalid name"
 				}
-			} 
+			}
 		}
 
 		variable {
@@ -1127,10 +1131,10 @@ func TestComposeGenericBlueprintConfig(t *testing.T) {
 					rule          = "isRequired"
 					error_message = "invalid"
 				}
-			} 
+			}
 		}
 	}
-	
+
 	data "autocloud_blueprint_config" "s3_processor" {
 		source = {
 			s3 = autocloud_module.s3_bucket.blueprint_config
@@ -1229,4 +1233,69 @@ func TestComposeGenericBlueprintConfig(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestBlueprintConfigConditionalsReading(t *testing.T) {
+	schema1 := blueprint_config.DataSourceBlueprintConfig()
+	testDataBlueprintResourceSchema := schema1.Schema
+	fmt.Println(testDataBlueprintResourceSchema)
+	raw := map[string]interface{}{
+		"source": map[string]interface{}{
+			"Cloudfront": `{
+				"id": "clbnr5y2019144hyi1xc0yhex",
+				"variables": [
+					{
+						"id": "Cloudfront.comment",
+						"conditionals": [
+						  {
+							"source": "generic.variable.environment",
+							"condition": "nonprod",
+							"options": [
+							  {
+								"label": "nonprod",
+								"fieldId": "",
+								"value": "fake string",
+								"checked": false
+							  },
+							  {
+								"label": "sandbox",
+								"fieldId": "",
+								"value": "abc123fgh",
+								"checked": true
+							  }
+							]
+						  }
+						]
+					  },
+					  {
+						"id": "Cloudfront.dummy",
+						"conditionals": [
+						  {
+							"source": "generic.variable.environment",
+							"condition": "nonprod",
+							"value" : "dummy-static-value",
+							"options": []
+						  }
+						]
+					  }
+				],
+				"children": []
+			  }`,
+		},
+	}
+
+	d := schema.TestResourceDataRaw(t, testDataBlueprintResourceSchema, raw)
+	formBuilder, err := blueprint_config.GetFormBuilder(d)
+	if err != nil {
+		fmt.Print(err)
+		t.Fail()
+	}
+	assert.Equal(t, 1, len(formBuilder.BluePrintConfig.Children))
+
+	assert.Equal(t, 2, len(formBuilder.BluePrintConfig.Children[0].Variables))
+	assert.Nil(t, formBuilder.BluePrintConfig.Children[0].Variables[0].Conditionals[0].Value)
+	assert.Equal(t, "dummy-static-value", *formBuilder.BluePrintConfig.Children[0].Variables[1].Conditionals[0].Value)
+
+	jsonBlueprintConfig, _ := utils.ToJsonString(formBuilder.BluePrintConfig)
+	fmt.Printf("blueprint config: [%v]\n", jsonBlueprintConfig)
 }
