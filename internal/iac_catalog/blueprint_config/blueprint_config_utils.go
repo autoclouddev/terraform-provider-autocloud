@@ -52,14 +52,14 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		AllowConsumerToEdit: true,
 	}
 
-	if overrideData.Value != nil {
+	if overrideData.Value != "" {
 		// starting with the naive approach to see if an string is a module
 		// we will replace this introducing the notion of all outputs involved at the API process
 		r := regexp.MustCompile("module[.]([A-Za-z0-9_]+)[.]outputs[.]([A-Za-z0-9_]+)")
-		newIacModuleVar.FieldValue = *overrideData.Value
-		newIacModuleVar.FieldDefaultValue = *overrideData.Value
+		newIacModuleVar.FieldValue = overrideData.Value
+		newIacModuleVar.FieldDefaultValue = overrideData.Value
 		newIacModuleVar.AllowConsumerToEdit = false
-		if r.MatchString(*overrideData.Value) {
+		if r.MatchString(overrideData.Value) {
 			newIacModuleVar.FieldDataType = "hcl-expression"
 		} else {
 			newIacModuleVar.FieldDataType = "string"

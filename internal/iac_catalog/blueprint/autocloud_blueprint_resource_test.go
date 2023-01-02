@@ -1,6 +1,7 @@
 package blueprint_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -126,5 +127,5 @@ func TestAutocloudBlueprintHasAtMostOneGitConfigError(t *testing.T) {
 		git_config {}
 		git_config {}
 	  }`
-	acctest.ValidateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
 }
