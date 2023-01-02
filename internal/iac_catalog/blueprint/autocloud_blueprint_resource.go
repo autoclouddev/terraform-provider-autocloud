@@ -237,7 +237,7 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	fmt.Printf("generator.FormQuestions %v\n", generator.FormQuestions)
+	log.Printf("generator.FormQuestions %v\n", generator.FormQuestions)
 	formQuestions, err := json.Marshal(generator.FormQuestions)
 	if err != nil {
 		return diag.FromErr(err)
