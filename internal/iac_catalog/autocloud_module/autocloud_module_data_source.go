@@ -3,7 +3,6 @@ package autocloud_module
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -57,7 +56,7 @@ func dataSourceAutocloudModuleRead(ctx context.Context, d *schema.ResourceData, 
 			source = filterMap["source"].(string)
 		}
 		module, err := c.GetModuleByParams(name, version, source)
-		fmt.Println(module)
+		//fmt.Println(module)
 		if err != nil {
 			return diag.FromErr(err)
 		}

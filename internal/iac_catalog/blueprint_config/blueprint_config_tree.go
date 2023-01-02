@@ -2,7 +2,6 @@ package blueprint_config
 
 import (
 	"log"
-	"sort"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
@@ -22,30 +21,61 @@ func postOrderTransversal(root *BluePrintConfig) []autocloudsdk.FormShape {
 		childrenvars := postOrderTransversal(&v) // this &v now the address of the inner v
 		vars = append(vars, childrenvars...)
 	}
-	admittedVars := omitVars(vars, root.OmitVariables)
+	log.Printf("current node omit vars, %s", root.OmitVariables)
+	admittedVars := OmitVars(vars, root.OmitVariables)
+	log.Printf("the [%v] addmited vars", admittedVars)
+	log.Printf("current override vars, %v", root.OverrideVariables)
 	return overrideVariables(admittedVars, root.OverrideVariables)
 }
 
-func omitVars(vars []autocloudsdk.FormShape, omitts []string) []autocloudsdk.FormShape {
-	addmittedVars := make([]autocloudsdk.FormShape, 0)
-	for _, iacModuleVar := range vars {
-		varName, err := utils.GetVariableID(iacModuleVar.ID)
+func OmitVars(vars []autocloudsdk.FormShape, omitts []string) []autocloudsdk.FormShape {
+	addmittedVars := vars
+	for _, omit := range omitts {
+		idx := findInd(addmittedVars, omit)
+		if idx == -1 {
+			continue
+		}
+		addmittedVars = remove(addmittedVars, idx)
+	}
+	return addmittedVars
+	/*
+		for _, iacModuleVar := range vars {
+			varName, err := utils.GetVariableID(iacModuleVar.ID)
 
-		if err != nil {
-			log.Printf("WARNING: no variable ID found -> %v, evaluated value : %v", err, iacModuleVar)
-			return make([]autocloudsdk.FormShape, 0)
+			if err != nil {
+				log.Printf("WARNING: no variable ID found -> %v, evaluated value : %v", err, iacModuleVar)
+				return make([]autocloudsdk.FormShape, 0)
+			}
+
+			// omit vars
+			if !utils.Contains(omitts, varName) {
+				addmittedVars = append(addmittedVars, iacModuleVar)
+				log.Printf("the [%s] variable was addmitted", varName)
+			} else {
+				log.Printf("the [%s] variable was omitted", varName)
+			}
 		}
 
-		// omit vars
-		if !utils.Contains(omitts, varName) {
-			addmittedVars = append(addmittedVars, iacModuleVar)
-			log.Printf("the [%s] variable was addmitted", varName)
-		} else {
+		return addmittedVars*/
+}
+func findInd(vars []autocloudsdk.FormShape, varname string) int {
+	for i, v := range vars {
+		varName, err := utils.GetVariableID(v.ID)
+		if err != nil {
+			log.Printf("the [%s] variable not found", varName)
+			return -1
+		}
+		if varName == varname {
 			log.Printf("the [%s] variable was omitted", varName)
+			return i
 		}
 	}
+	log.Printf("the [%s] omitted value not found in vars", varname)
+	return -1
+}
 
-	return addmittedVars
+func remove(slice []autocloudsdk.FormShape, s int) []autocloudsdk.FormShape {
+	return append(slice[:s], slice[s+1:]...)
 }
 
 func overrideVariables(vars []autocloudsdk.FormShape, overrides map[string]OverrideVariable) []autocloudsdk.FormShape {
@@ -67,9 +97,9 @@ func overrideVariables(vars []autocloudsdk.FormShape, overrides map[string]Overr
 		formVar := buildGenericVariable(ov)
 		vars = append(vars, formVar)
 	}
-	// sort questions to keep ordering consistent
-	sort.Slice(vars, func(i, j int) bool {
+	// sort questions to keep ordering consistent ??
+	/*sort.Slice(vars, func(i, j int) bool {
 		return vars[i].ID < vars[j].ID
-	})
+	})*/
 	return vars
 }

@@ -1,20 +1,23 @@
 package blueprint_config
 
-import autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+import (
+	"errors"
+
+	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+)
 
 type BluePrintConfig struct {
 	Id                string                      `json:"id"`
 	RefName           string                      `json:"refName"`
-	OmitVariables     []string                    `json:"-"`
-	OverrideVariables map[string]OverrideVariable `json:"-"`
+	OmitVariables     []string                    `json:"ommitVariables"`
+	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
 	Variables         []autocloudsdk.FormShape    `json:"variables"`
 	Children          []BluePrintConfig           `json:"children"`
-	//omit
 }
 
 type OverrideVariable struct {
 	VariableName string     `json:"variableName"`
-	Value        *string    `json:"value"`
+	Value        string     `json:"value"`
 	DisplayName  string     `json:"displayName"`
 	HelperText   string     `json:"helperText"`
 	FormConfig   FormConfig `json:"formConfig"`
@@ -41,3 +44,9 @@ type FieldOption struct {
 const GENERIC = "generic"
 const RADIO_TYPE = "radio"
 const CHECKBOX_TYPE = "checkbox"
+
+var ErrSetValueInForm = errors.New("A form options can not be added when setting the variable's value.")
+var ErrOneFormConfPerVar = errors.New("A form_config must be defined for variable")
+var ErrOneBlockOptionsRequied = errors.New("One options block is required")
+var ErrShortTextCantHaveOptions = errors.New("ShortText variables can not have options")
+var ErrIsRequiredCantHaveValue = errors.New("'isRequired' validation rule can not have a value")

@@ -24,39 +24,6 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		},
 	}
 
-	fieldOptionsSchema := &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		// MinItems: 1,
-		MaxItems: 1,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"option": {
-					Type:     schema.TypeList,
-					Optional: true,
-					MinItems: 1,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"label": {
-								Type:     schema.TypeString,
-								Required: true,
-							},
-							"value": {
-								Type:     schema.TypeString,
-								Required: true,
-							},
-							"checked": {
-								Type:     schema.TypeBool,
-								Optional: true,
-								Default:  false,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
 	validationRulesSchema := &schema.Schema{
 		Type:     schema.TypeSet,
 		Optional: true,
@@ -81,23 +48,6 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		},
 	}
 
-	formConfigSchema :=
-		&schema.Schema{
-			Type:     schema.TypeSet,
-			Optional: true,
-			MaxItems: 1,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"type": {
-						Type:         schema.TypeString,
-						Required:     true,
-						ValidateFunc: validation.StringInSlice([]string{"shortText", "radio", "checkbox"}, false),
-					},
-					"options":         fieldOptionsSchema,
-					"validation_rule": validationRulesSchema,
-				},
-			},
-		}
 	bluePrintConfigSchema := map[string]*schema.Schema{
 		"source": {
 			Type:     schema.TypeMap,
@@ -116,7 +66,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 						Type:     schema.TypeString,
 						Required: true,
 					},
-					"form_config": formConfigSchema,
+					//"form_config": formConfigSchema,
 					"display_name": {
 						Type:     schema.TypeString,
 						Optional: true,
@@ -129,6 +79,43 @@ func DataSourceBlueprintConfig() *schema.Resource {
 						Type:     schema.TypeString,
 						Optional: true,
 					},
+					"type": {
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringInSlice([]string{"shortText", "radio", "checkbox"}, false),
+					},
+					"options": {
+						Type:     schema.TypeSet,
+						Optional: true,
+						MaxItems: 1,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"option": {
+									Type:     schema.TypeSet,
+									Optional: true,
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"label": {
+												Type:     schema.TypeString,
+												Required: true,
+											},
+											"value": {
+												Type:     schema.TypeString,
+												Required: true,
+											},
+											"checked": {
+												Type:     schema.TypeBool,
+												Optional: true,
+												Default:  false,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+
+					"validation_rule": validationRulesSchema,
 				},
 			},
 		},
@@ -180,9 +167,11 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	bpOutput, err := utils.ToJsonString(blueprintConfig)
+	//log.Println(bpOutput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	err = d.Set("blueprint_config", bpOutput)
 	if err != nil {
 		return diag.FromErr(err)
@@ -196,13 +185,14 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, error) {
 	bp := &BluePrintConfig{}
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
+	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
 	if v, ok := d.GetOk("source"); ok {
 		mapString := make(map[string]BluePrintConfig)
 		for key, value := range v.(map[string]interface{}) {
 			strKey := fmt.Sprintf("%v", key)
 			strValue := fmt.Sprintf("%v", value)
-			log.Printf("INPUT: %v/n", key)
-			log.Printf("VALUE: %v", strValue)
+			log.Printf("SOURCE_INPUT_KEY: %v/n", key)
+			log.Printf("SOURCE_INPUT_VALUE: %v", strValue)
 			bc := BluePrintConfig{}
 			err := json.Unmarshal([]byte(strValue), &bc)
 			if err != nil {
@@ -219,137 +209,130 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	}
 
 	if v, ok := d.GetOk("omit_variables"); ok {
+		log.Printf("omit_vars get.ok is ok, %v\n", v)
 		list := v.(*schema.Set).List()
 		omit := make([]string, len(list))
 		for i, optionValue := range list {
 			omit[i] = optionValue.(string)
 		}
 		bp.OmitVariables = omit
+		log.Printf("the [%v] are the omitted vars", bp.OmitVariables)
+	} else {
+		log.Printf("omit_vars get.ok not ok, no variables were added\n")
 	}
 
 	if v, ok := d.GetOk("variable"); ok {
 		varsList := v.([]interface{})
-		overrideVariables := make(map[string]OverrideVariable, 0)
-
+		log.Println(varsList...)
 		// override vars loop
-		for _, f := range varsList {
-			varOverrideMap := f.(map[string]interface{})
+		for _, currentVar := range varsList {
+			varOverrideMap := currentVar.(map[string]interface{})
 			varName := varOverrideMap["name"].(string)
-
-			// Note: if it has a value, then it can NOT have a form_config
+			bp.OverrideVariables[varName] = OverrideVariable{
+				VariableName: varName,
+				DisplayName:  varOverrideMap["display_name"].(string),
+				HelperText:   varOverrideMap["helper_text"].(string),
+			}
+			// Note: if it has a value, then it can NOT have form options "options"
 			isValueDefined := false
 			value, ok := varOverrideMap["value"]
-			if ok {
-				valueStr, ok := value.(string)
-				if ok {
-					isValueDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
-					if isValueDefined {
-						overrideVariables[varName] = OverrideVariable{
-							VariableName: varName,
-							DisplayName:  varOverrideMap["display_name"].(string),
-							HelperText:   varOverrideMap["helper_text"].(string),
-							Value:        &valueStr,
-						}
-					}
+			valueStr, valueIsString := value.(string)
+			isValueDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
+			if ok && valueIsString && isValueDefined {
+				// refactor op, if entry, ok could be a function
+				if entry, ok := bp.OverrideVariables[varName]; ok {
+					entry.Value = valueStr
+					bp.OverrideVariables[varName] = entry
+				} else {
+					return nil, errors.New("cant define blueprint config")
+				}
+				continue // no options or validation rules required, validation rules are for webform
+			}
+
+			optionsFromSchema := varOverrideMap["options"].(*schema.Set)
+			if isValueDefined {
+				if len(optionsFromSchema.List()) != 0 {
+					return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w Var name: [%s], var value [%v]", ErrSetValueInForm, varName, value)
+				}
+
+				// if the value is set and there's no form options, then we're ok to continue processing the next variable override
+				continue
+			}
+			if len(optionsFromSchema.List()) > 1 {
+				// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
+				return nil, errors.New("exactly one \"options\" must be defined")
+			}
+
+			rawVariableType := varOverrideMap["type"]
+			variableType := rawVariableType.(string)
+			if entry, ok := bp.OverrideVariables[varName]; ok {
+				entry.FormConfig = FormConfig{
+					Type:            variableType,
+					ValidationRules: make([]ValidationRule, 0),
+					FieldOptions:    make([]FieldOption, 0),
+				}
+				bp.OverrideVariables[varName] = entry
+			} else {
+				return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
+			}
+
+			if variableType == "shortText" {
+				if len(optionsFromSchema.List()) > 0 {
+					return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrShortTextCantHaveOptions)
 				}
 			}
 
-			// for config (we should only have 1 form_config by var)
-			if formConfigInput, ok := varOverrideMap["form_config"]; ok {
-				formConfigList := formConfigInput.(*schema.Set).List()
-
-				formConfigListLen := len(formConfigList)
-
-				if isValueDefined {
-					if formConfigListLen != 0 {
-						return nil, fmt.Errorf("a form_config can not be added when setting the variable's value. Var name: [%s], var value [%v]", varName, value)
-					}
-
-					// if the value is set and there's no form_config, then we're ok to continue processing the next variable override
-					continue
+			if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
+				if len(optionsFromSchema.List()) != 1 {
+					return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrOneBlockOptionsRequied)
 				}
+				rawOptionsCluster := optionsFromSchema.List()[0] // "options key in schema options {}"
+				rawOptions := rawOptionsCluster.(map[string]interface{})
 
-				if formConfigListLen == 0 {
-					return nil, fmt.Errorf("a form_config must be defined for variable [%s]", varName)
-				}
-				if formConfigListLen > 1 {
-					// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
-					return nil, errors.New("exactly one form_config must be defined")
-				}
+				optionSchema := rawOptions["option"].(*schema.Set)
 
-				formConfigMap := formConfigList[0].(map[string]interface{})
-				variableType := formConfigMap["type"].(string)
-
-				// field options
-				var fieldOptions []FieldOption
-
-				fieldOptionList := formConfigMap["options"].([]interface{})
-				if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
-					if len(fieldOptionList) != 1 {
-						return nil, errors.New("one options block is required")
+				for _, option := range optionSchema.List() {
+					options := option.(map[string]interface{})
+					fieldOption := FieldOption{
+						Label:   options["label"].(string),
+						Value:   options["value"].(string),
+						Checked: options["checked"].(bool),
 					}
-
-					options := fieldOptionList[0].(map[string]interface{})["option"].([]interface{})
-					fieldOptions = make([]FieldOption, len(options))
-					optionCount := 0
-					for _, vOption := range options {
-						optionMap := vOption.(map[string]interface{})
-
-						fieldOptions[optionCount] = FieldOption{
-							Label:   optionMap["label"].(string),
-							Value:   optionMap["value"].(string),
-							Checked: optionMap["checked"].(bool),
-						}
-						optionCount++
-					}
-				} else if variableType == "shortText" {
-					if len(fieldOptionList) > 0 {
-						return nil, errors.New("ShortText variables can not have options")
-					}
-
-					// nothing should be done here.
-				}
-
-				// validation rules
-				validationRulesList := formConfigMap["validation_rule"].(*schema.Set).List()
-				validationRules := make([]ValidationRule, len(validationRulesList))
-
-				for iValidationRule, validationRule := range validationRulesList {
-					validationRuleMap := validationRule.(map[string]interface{})
-
-					rule := validationRuleMap["rule"].(string)
-					ruleValue := validationRuleMap["value"].(string)
-
-					if rule == "isRequired" && ruleValue != "" {
-						return nil, errors.New("'isRequired' validation rule can not have a value")
-					}
-
-					validationRules[iValidationRule] = ValidationRule{
-						Rule:         rule,
-						Value:        ruleValue,
-						ErrorMessage: validationRuleMap["error_message"].(string),
+					// refactor op, if entry, ok could be a function
+					if entry, ok := bp.OverrideVariables[varName]; ok {
+						entry.FormConfig.FieldOptions = append(entry.FormConfig.FieldOptions, fieldOption)
+						bp.OverrideVariables[varName] = entry
+					} else {
+						return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
 					}
 				}
+			}
+			// validation rules
+			validationRulesList := varOverrideMap["validation_rule"].(*schema.Set).List()
 
-				// build var config
-				formConfig := FormConfig{
-					Type:            variableType,
-					FieldOptions:    fieldOptions,
-					ValidationRules: validationRules,
+			for _, validationRule := range validationRulesList {
+				validationRuleMap := validationRule.(map[string]interface{})
+
+				rule := validationRuleMap["rule"].(string)
+				ruleValue := validationRuleMap["value"].(string)
+
+				if rule == "isRequired" && ruleValue != "" {
+					return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrIsRequiredCantHaveValue)
+				}
+				vr := ValidationRule{
+					Rule:         rule,
+					Value:        ruleValue,
+					ErrorMessage: validationRuleMap["error_message"].(string),
 				}
 
-				// build the override variable wrapper object
-
-				overrideVariables[varName] = OverrideVariable{
-					VariableName: varName,
-					DisplayName:  varOverrideMap["display_name"].(string),
-					HelperText:   varOverrideMap["helper_text"].(string),
-					FormConfig:   formConfig,
+				if entry, ok := bp.OverrideVariables[varName]; ok {
+					entry.FormConfig.ValidationRules = append(entry.FormConfig.ValidationRules, vr)
+					bp.OverrideVariables[varName] = entry
+				} else {
+					return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
 				}
 			}
 		}
-		bp.OverrideVariables = overrideVariables
 	}
-
 	return bp, nil
 }
