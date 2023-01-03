@@ -34,17 +34,25 @@ type FormBuilder struct {
 }
 
 type OverrideVariable struct {
-	VariableName string     `json:"variableName"`
-	Value        *string    `json:"value"`
-	DisplayName  string     `json:"displayName"`
-	HelperText   string     `json:"helperText"`
-	FormConfig   FormConfig `json:"formConfig"`
+	VariableName string              `json:"variableName"`
+	Value        *string             `json:"value"`
+	DisplayName  string              `json:"displayName"`
+	HelperText   string              `json:"helperText"`
+	FormConfig   *FormConfig         `json:"formConfig"`
+	Conditionals []ConditionalConfig `json:"conditionals"`
 }
 
 type FormConfig struct {
 	Type            string           `json:"type"`
 	FieldOptions    []FieldOption    `json:"fieldOptions"`
 	ValidationRules []ValidationRule `json:"validationRules"`
+}
+type ConditionalConfig struct {
+	Source    string        `json:"source"`
+	Condition string        `json:"condition"`
+	Type      string        `json:"type"`
+	Options   []FieldOption `json:"options"`
+	Value     *string       `json:"value"`
 }
 
 type ValidationRule struct {
@@ -62,6 +70,7 @@ type FieldOption struct {
 const GENERIC = "generic"
 const RADIO_TYPE = "radio"
 const CHECKBOX_TYPE = "checkbox"
+const SHORTTEXT_TYPE = "shortText"
 
 func DataSourceBlueprintConfig() *schema.Resource {
 	setOfStringSchema := &schema.Schema{
@@ -72,35 +81,36 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		},
 	}
 
+	optionItemSchema := &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		MinItems: 1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"label": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"value": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"checked": {
+					Type:     schema.TypeBool,
+					Optional: true,
+					Default:  false,
+				},
+			},
+		},
+	}
+
 	fieldOptionsSchema := &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
-		// MinItems: 1,
 		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"option": {
-					Type:     schema.TypeList,
-					Optional: true,
-					MinItems: 1,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"label": {
-								Type:     schema.TypeString,
-								Required: true,
-							},
-							"value": {
-								Type:     schema.TypeString,
-								Required: true,
-							},
-							"checked": {
-								Type:     schema.TypeBool,
-								Optional: true,
-								Default:  false,
-							},
-						},
-					},
-				},
+				"option": optionItemSchema,
 			},
 		},
 	}
@@ -139,13 +149,60 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					"type": {
 						Type:         schema.TypeString,
 						Required:     true,
-						ValidateFunc: validation.StringInSlice([]string{"shortText", "radio", "checkbox"}, false),
+						ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE}, false),
 					},
 					"options":         fieldOptionsSchema,
 					"validation_rule": validationRulesSchema,
 				},
 			},
 		}
+
+	conditionalSchema := &schema.Schema{
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"source": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"condition": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"type": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"content": {
+					Type:     schema.TypeSet,
+					Required: true,
+					MinItems: 1,
+					MaxItems: 1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"value": {
+								Type:     schema.TypeSet,
+								Optional: true,
+								MinItems: 1,
+								MaxItems: 1,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"option": optionItemSchema,
+									},
+								},
+							},
+							"static": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
 	bluePrintConfigSchema := map[string]*schema.Schema{
 		"source": {
 			Type:     schema.TypeMap,
@@ -177,6 +234,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 						Type:     schema.TypeString,
 						Optional: true,
 					},
+					"conditional": conditionalSchema,
 				},
 			},
 		},
@@ -228,6 +286,13 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	// validate variables conditionals (by now, we're supporting conditionals only referencing radio fields)
+	err = validateConditionals(formVariables)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	jsonVariables, err := utils.ToJsonString(formVariables)
 	if err != nil {
 		return diag.FromErr(err)
@@ -308,7 +373,8 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 				}
 			}
 
-			// for config (we should only have 1 form_config by var)
+			// form_config
+			var formConfig *FormConfig = nil
 			if formConfigInput, ok := varOverrideMap["form_config"]; ok {
 				formConfigList := formConfigInput.(*schema.Set).List()
 
@@ -324,29 +390,127 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 				}
 
 				if formConfigListLen == 0 {
-					return nil, fmt.Errorf("a form_config must be defined for variable [%s]", varName)
+					if conditionalsInput, conditionalsOk := varOverrideMap["conditionals"]; conditionalsOk {
+						if len(conditionalsInput.(*schema.Set).List()) > 0 {
+							// if we don't have any conditionals, we should have at least 1 form_config
+							return nil, fmt.Errorf("a form_config must be defined for the variable [%s]", varName)
+						}
+					}
 				}
 				if formConfigListLen > 1 {
 					// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
 					return nil, errors.New("exactly one form_config must be defined")
 				}
 
-				formConfigMap := formConfigList[0].(map[string]interface{})
-				variableType := formConfigMap["type"].(string)
+				if formConfigListLen == 1 {
+					formConfigMap := formConfigList[0].(map[string]interface{})
+					variableType := formConfigMap["type"].(string)
 
-				// field options
-				var fieldOptions []FieldOption
+					// field options
+					var fieldOptions []FieldOption
 
-				fieldOptionList := formConfigMap["options"].([]interface{})
-				if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
-					if len(fieldOptionList) != 1 {
-						return nil, errors.New("one options block is required")
+					fieldOptionList := formConfigMap["options"].([]interface{})
+					if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
+						if len(fieldOptionList) != 1 {
+							return nil, errors.New("one options block is required")
+						}
+
+						options := fieldOptionList[0].(map[string]interface{})["option"].([]interface{})
+						fieldOptions = make([]FieldOption, len(options))
+						optionCount := 0
+						for _, vOption := range options {
+							optionMap := vOption.(map[string]interface{})
+
+							fieldOptions[optionCount] = FieldOption{
+								Label:   optionMap["label"].(string),
+								Value:   optionMap["value"].(string),
+								Checked: optionMap["checked"].(bool),
+							}
+							optionCount++
+						}
+					} else if variableType == SHORTTEXT_TYPE {
+						if len(fieldOptionList) > 0 {
+							return nil, errors.New("ShortText variables can not have options")
+						}
+
+						// nothing should be done here.
 					}
 
-					options := fieldOptionList[0].(map[string]interface{})["option"].([]interface{})
-					fieldOptions = make([]FieldOption, len(options))
+					// validation rules
+					validationRulesList := formConfigMap["validation_rule"].(*schema.Set).List()
+					validationRules := make([]ValidationRule, len(validationRulesList))
+
+					for iValidationRule, validationRule := range validationRulesList {
+						validationRuleMap := validationRule.(map[string]interface{})
+
+						rule := validationRuleMap["rule"].(string)
+						ruleValue := validationRuleMap["value"].(string)
+
+						if rule == "isRequired" && ruleValue != "" {
+							return nil, errors.New("'isRequired' validation rule can not have a value")
+						}
+
+						validationRules[iValidationRule] = ValidationRule{
+							Rule:         rule,
+							Value:        ruleValue,
+							ErrorMessage: validationRuleMap["error_message"].(string),
+						}
+					}
+
+					// build var config
+					formConfig = &FormConfig{
+						Type:            variableType,
+						FieldOptions:    fieldOptions,
+						ValidationRules: validationRules,
+					}
+				}
+			}
+
+			// build the override variable wrapper object
+			overrideVariables[varName] = OverrideVariable{
+				VariableName: varName,
+				DisplayName:  varOverrideMap["display_name"].(string),
+				HelperText:   varOverrideMap["helper_text"].(string),
+				FormConfig:   formConfig,
+				Conditionals: getConditionals(varOverrideMap),
+			}
+		}
+
+		formBuilder.OverrideVariables = overrideVariables
+	}
+
+	return formBuilder, nil
+}
+
+func getConditionals(varOverrideMap map[string]interface{}) []ConditionalConfig {
+	var conditionals []ConditionalConfig
+
+	if conditionalsInput, conditionalsOk := varOverrideMap["conditional"]; conditionalsOk {
+		conditionalsList := conditionalsInput.(*schema.Set).List()
+		conditionals = make([]ConditionalConfig, len(conditionalsList))
+
+		for i, conditional := range conditionalsList {
+			conditionalMap := conditional.(map[string]interface{})
+			conditionalContentMap := conditionalMap["content"].(*schema.Set).List()[0].(map[string]interface{}) // length validated at schema level
+			var fieldOptions []FieldOption = make([]FieldOption, 0)
+			var staticValue *string
+
+			if staticVal, ok := conditionalContentMap["static"]; ok && staticVal != "" {
+				str, castOk := staticVal.(string)
+				if castOk {
+					staticValue = &str
+				}
+			}
+
+			if staticValue == nil {
+				conditionalValueMap := conditionalContentMap["value"].(*schema.Set).List()
+				if len(conditionalValueMap) > 0 {
+					fieldOptionList := conditionalValueMap[0].(map[string]interface{})["option"].([]interface{})
+
+					fieldOptions = make([]FieldOption, len(fieldOptionList))
+
 					optionCount := 0
-					for _, vOption := range options {
+					for _, vOption := range fieldOptionList {
 						optionMap := vOption.(map[string]interface{})
 
 						fieldOptions[optionCount] = FieldOption{
@@ -356,57 +520,41 @@ func GetFormBuilder(d *schema.ResourceData) (*FormBuilder, error) {
 						}
 						optionCount++
 					}
-				} else if variableType == "shortText" {
-					if len(fieldOptionList) > 0 {
-						return nil, errors.New("ShortText variables can not have options")
-					}
-
-					// nothing should be done here.
 				}
+			}
 
-				// validation rules
-				validationRulesList := formConfigMap["validation_rule"].(*schema.Set).List()
-				validationRules := make([]ValidationRule, len(validationRulesList))
+			conditionals[i] = ConditionalConfig{
+				Source:    conditionalMap["source"].(string),
+				Condition: conditionalMap["condition"].(string),
+				Type:      conditionalMap["type"].(string),
+				Options:   fieldOptions,
+				Value:     staticValue,
+			}
+		}
+	}
 
-				for iValidationRule, validationRule := range validationRulesList {
-					validationRuleMap := validationRule.(map[string]interface{})
+	return conditionals
+}
 
-					rule := validationRuleMap["rule"].(string)
-					ruleValue := validationRuleMap["value"].(string)
+func validateConditionals(variables []autocloudsdk.FormShape) error {
+	// vars to map
+	var varsMap = make(map[string]autocloudsdk.FormShape, len(variables))
+	for _, variable := range variables {
+		varsMap[variable.ID] = variable
+	}
 
-					if rule == "isRequired" && ruleValue != "" {
-						return nil, errors.New("'isRequired' validation rule can not have a value")
-					}
-
-					validationRules[iValidationRule] = ValidationRule{
-						Rule:         rule,
-						Value:        ruleValue,
-						ErrorMessage: validationRuleMap["error_message"].(string),
-					}
-				}
-
-				// build var config
-				formConfig := FormConfig{
-					Type:            variableType,
-					FieldOptions:    fieldOptions,
-					ValidationRules: validationRules,
-				}
-
-				// build the override variable wrapper object
-
-				overrideVariables[varName] = OverrideVariable{
-					VariableName: varName,
-					DisplayName:  varOverrideMap["display_name"].(string),
-					HelperText:   varOverrideMap["helper_text"].(string),
-					FormConfig:   formConfig,
+	// validate conditionals
+	for _, variable := range variables {
+		for _, conditional := range variable.Conditionals {
+			if dependencyVariable, ok := varsMap[conditional.Source]; ok {
+				if dependencyVariable.FormQuestion.FieldType != RADIO_TYPE {
+					return fmt.Errorf("the conditional's source variable can only be of 'radio' type [variable: %v, source variable: %v, source variable type: %v]", variable.ID, conditional.Source, dependencyVariable.FormQuestion.FieldType)
 				}
 			}
 		}
-
-		formBuilder.OverrideVariables = overrideVariables
 	}
 
-	return formBuilder, nil
+	return nil
 }
 
 // TODO: Refactor to share logic with mapVariables
@@ -419,12 +567,17 @@ func mapModuleVariables(formBuilder *FormBuilder) BluePrintConfig {
 	for _, variable := range formBuilder.OverrideVariables {
 		fieldID := fmt.Sprintf("%s.%s", GENERIC, variable.VariableName)
 
-		validationRules := make([]autocloudsdk.ValidationRule, len(variable.FormConfig.ValidationRules))
-		for i, vr := range variable.FormConfig.ValidationRules {
-			validationRules[i] = autocloudsdk.ValidationRule{
-				Rule:         vr.Rule,
-				Value:        vr.Value,
-				ErrorMessage: vr.ErrorMessage,
+		var varType = ""
+		var validationRules []autocloudsdk.ValidationRule
+		if variable.FormConfig != nil {
+			varType = variable.FormConfig.Type
+			validationRules = make([]autocloudsdk.ValidationRule, len(variable.FormConfig.ValidationRules))
+			for i, vr := range variable.FormConfig.ValidationRules {
+				validationRules[i] = autocloudsdk.ValidationRule{
+					Rule:         vr.Rule,
+					Value:        vr.Value,
+					ErrorMessage: vr.ErrorMessage,
+				}
 			}
 		}
 
@@ -435,19 +588,20 @@ func mapModuleVariables(formBuilder *FormBuilder) BluePrintConfig {
 
 		newVariable := autocloudsdk.FormShape{
 			ID:     fieldID,
-			Type:   variable.FormConfig.Type,
+			Type:   varType,
 			Module: GENERIC,
 			FormQuestion: autocloudsdk.FormQuestion{
 				FieldID:         fieldID,
-				FieldType:       variable.FormConfig.Type,
+				FieldType:       varType,
 				ValidationRules: validationRules,
 				FieldLabel:      fieldLabel,
 				ExplainingText:  variable.HelperText,
 			},
 			AllowConsumerToEdit: true,
+			Conditionals:        mapToSdkConditionals(fieldID, variable.Conditionals),
 		}
 
-		if variable.FormConfig.Type == RADIO_TYPE || variable.FormConfig.Type == CHECKBOX_TYPE {
+		if variable.FormConfig != nil && (variable.FormConfig.Type == RADIO_TYPE || variable.FormConfig.Type == CHECKBOX_TYPE) {
 			// if the list is empty, set a default value
 			if len(variable.FormConfig.FieldOptions) == 0 {
 				value := "default"
@@ -510,7 +664,7 @@ func mapVariables(formBuilder *FormBuilder) BluePrintConfig {
 			// if no override statement, then keep the original var without changes
 			updatedIacModuleVar := iacModuleVar
 			if overrideVariableData, ok := formBuilder.OverrideVariables[varName]; ok {
-				updatedIacModuleVar = buildOverridenVariable(iacModuleVar, overrideVariableData)
+				updatedIacModuleVar = buildOverriddenVariable(iacModuleVar, overrideVariableData)
 			}
 
 			newConfig.Variables = append(newConfig.Variables, updatedIacModuleVar)
@@ -531,16 +685,19 @@ TODO: create a test over this function, perhaps it is worth it to rethink the in
 We need as an output a FormShape
 */
 //nolint:golint,unused
-func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData OverrideVariable) autocloudsdk.FormShape {
+func buildOverriddenVariable(iacModuleVar autocloudsdk.FormShape, overrideData OverrideVariable) autocloudsdk.FormShape {
 	fieldID := iacModuleVar.ID
 
 	// map validation rules
-	validationRules := make([]autocloudsdk.ValidationRule, len(overrideData.FormConfig.ValidationRules))
-	for i, vr := range overrideData.FormConfig.ValidationRules {
-		validationRules[i] = autocloudsdk.ValidationRule{
-			Rule:         vr.Rule,
-			Value:        vr.Value,
-			ErrorMessage: vr.ErrorMessage,
+	var validationRules []autocloudsdk.ValidationRule
+	if overrideData.FormConfig != nil {
+		validationRules := make([]autocloudsdk.ValidationRule, len(overrideData.FormConfig.ValidationRules))
+		for i, vr := range overrideData.FormConfig.ValidationRules {
+			validationRules[i] = autocloudsdk.ValidationRule{
+				Rule:         vr.Rule,
+				Value:        vr.Value,
+				ErrorMessage: vr.ErrorMessage,
+			}
 		}
 	}
 
@@ -555,7 +712,7 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 	}
 
 	variableType := iacModuleVar.FormQuestion.FieldType
-	if overrideData.FormConfig.Type != "" {
+	if overrideData.FormConfig != nil && overrideData.FormConfig.Type != "" {
 		variableType = overrideData.FormConfig.Type
 	}
 
@@ -574,6 +731,7 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		FieldDefaultValue:   iacModuleVar.FieldDefaultValue,
 		FieldValue:          iacModuleVar.FieldValue,
 		AllowConsumerToEdit: true,
+		Conditionals:        mapToSdkConditionals(fieldID, overrideData.Conditionals),
 	}
 
 	if overrideData.Value != nil {
@@ -590,7 +748,7 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		}
 	}
 
-	if overrideData.FormConfig.Type == RADIO_TYPE || overrideData.FormConfig.Type == CHECKBOX_TYPE {
+	if overrideData.FormConfig != nil && (overrideData.FormConfig.Type == RADIO_TYPE || overrideData.FormConfig.Type == CHECKBOX_TYPE) {
 		// if the list is empty, set a default value
 		if len(overrideData.FormConfig.FieldOptions) == 0 {
 			value := "default"
@@ -617,4 +775,28 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 	}
 
 	return newIacModuleVar
+}
+
+func mapToSdkConditionals(fieldID string, conditionals []ConditionalConfig) []autocloudsdk.ConditionalConfig {
+	sdkConditionals := make([]autocloudsdk.ConditionalConfig, len(conditionals))
+	for i, conditional := range conditionals {
+		fieldOptions := make([]autocloudsdk.FieldOption, len(conditional.Options))
+		for j, option := range conditional.Options {
+			fieldOptions[j] = autocloudsdk.FieldOption{
+				FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
+				Label:   option.Label,
+				Value:   option.Value,
+				Checked: option.Checked,
+			}
+		}
+		sdkConditionals[i] = autocloudsdk.ConditionalConfig{
+			Source:    conditional.Source,
+			Condition: conditional.Condition,
+			Options:   fieldOptions,
+			Value:     conditional.Value,
+			Type:      conditional.Type,
+		}
+	}
+
+	return sdkConditionals
 }
