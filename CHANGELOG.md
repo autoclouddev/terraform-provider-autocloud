@@ -1,3 +1,11 @@
+# [0.3.0-pre.26](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.25...0.3.0-pre.26) (2023-01-03)
+
+
+### Features
+
+* **ep-2617:** iac conditionals ([7ce70e3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/7ce70e36b5a0208b1ae29efcd72b93ffb7531c1c))
+* **ep-2617:** iac conditionals (fmt to log) ([03fc304](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/03fc30421f2187130ec83ed62eb60db98a6514fe))
+
 # [0.3.0-pre.25](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.24...0.3.0-pre.25) (2022-12-28)
 
 
