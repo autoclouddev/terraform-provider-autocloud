@@ -177,6 +177,8 @@ data "autocloud_blueprint_config" "s3_processor" {
     }
   }
 
+
+
   # - overriding bucket to make it mandatory
   variable {
     name         = "bucket"
@@ -232,8 +234,8 @@ data "autocloud_blueprint_config" "cf_processor" {
   }
 
   variable {
-    name    = "default_root_object"
-    value   = "index.html"
+    name  = "default_root_object"
+    value = "index.html"
   }
 }
 
@@ -298,7 +300,7 @@ resource "autocloud_blueprint" "example" {
     id = autocloud_module.s3_bucket.id
 
     # form_config = local.s3_form_config # example to append questions using locals
-    form_config = data.autocloud_blueprint_config.s3_processor.form_config    # config from data source
+    form_config = data.autocloud_blueprint_config.s3_processor.form_config # config from data source
     # form_config = templatefile("${path.module}/files/s3bucket.vars.tpl", {})  # example from file
     # form_config = data.autocloud_form_config.s3_bucket.form_config            # example from data
     # form_config = autocloud_module.s3_bucket.blueprint_config                 # example from resource

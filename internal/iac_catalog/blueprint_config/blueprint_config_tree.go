@@ -31,34 +31,15 @@ func postOrderTransversal(root *BluePrintConfig) []autocloudsdk.FormShape {
 func OmitVars(vars []autocloudsdk.FormShape, omitts []string) []autocloudsdk.FormShape {
 	addmittedVars := vars
 	for _, omit := range omitts {
-		idx := findInd(addmittedVars, omit)
+		idx := findIdx(addmittedVars, omit)
 		if idx == -1 {
 			continue
 		}
 		addmittedVars = remove(addmittedVars, idx)
 	}
 	return addmittedVars
-	/*
-		for _, iacModuleVar := range vars {
-			varName, err := utils.GetVariableID(iacModuleVar.ID)
-
-			if err != nil {
-				log.Printf("WARNING: no variable ID found -> %v, evaluated value : %v", err, iacModuleVar)
-				return make([]autocloudsdk.FormShape, 0)
-			}
-
-			// omit vars
-			if !utils.Contains(omitts, varName) {
-				addmittedVars = append(addmittedVars, iacModuleVar)
-				log.Printf("the [%s] variable was addmitted", varName)
-			} else {
-				log.Printf("the [%s] variable was omitted", varName)
-			}
-		}
-
-		return addmittedVars*/
 }
-func findInd(vars []autocloudsdk.FormShape, varname string) int {
+func findIdx(vars []autocloudsdk.FormShape, varname string) int {
 	for i, v := range vars {
 		varName, err := utils.GetVariableID(v.ID)
 		if err != nil {

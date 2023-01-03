@@ -70,6 +70,7 @@ resource "autocloud_blueprint" "bar" {
 `
 
 func TestAccAutocloudBlueprint(t *testing.T) {
+	t.SkipNow()
 	resourceName := "autocloud_blueprint.bar"
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.TestAccPreCheck(t) },

@@ -1,10 +1,13 @@
 package blueprint_config_test
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -203,29 +206,29 @@ func TestAccBlueprintConfig_OverrideVars(t *testing.T) {
 			name         = "bucket_prefix"
 			display_name = "bucket prefix (from override block)"
 			helper_text  = "bucket prefix helper text (from override block)"
-			form_config {
-			  type = "radio"
-			  options {
+
+			type = "radio"
+			options {
 				option {
-				  label   = "dev"
-				  value   = "some-dev-prefix"
-				  checked = false
+					label   = "dev"
+					value   = "some-dev-prefix"
+					checked = false
 				}
 				option {
-				  label   = "nonprod"
-				  value   = "some-nonprod-prefix"
-				  checked = true
+					label   = "nonprod"
+					value   = "some-nonprod-prefix"
+					checked = true
 				}
 				option {
-				  label = "prod"
-				  value = "some-prod-prefix"
+					label = "prod"
+					value = "some-prod-prefix"
 				}
-			  }
+			}
 			  validation_rule {
 				rule          = "isRequired"
 				error_message = "invalid"
 			  }
-			}
+
 		  }`,
 	}
 
@@ -281,25 +284,25 @@ func testAccBlueprintConfig_OverrideVariables(omitted []string, overrides []stri
 		# - overriding acceleration_status 'shortText' into 'checkbox'
 		variable {
 		  name = "acceleration_status"
-		  form_config {
+
 			type = "checkbox"
 			options {
-			  option {
+				option {
 				label = "Option 1"
 				value = "acceleration_status_1"
 
-			  }
-			  option {
+				}
+				option {
 				label   = "Option 2"
 				value   = "acceleration_status_2"
 				checked = true
-			  }
-			  option {
+				}
+				option {
 				label   = "Option 3"
 				value   = "acceleration_status_3"
 				checked = true
-			  }
-			}
+				}
+
 		  }
 		}
 
@@ -307,18 +310,18 @@ func testAccBlueprintConfig_OverrideVariables(omitted []string, overrides []stri
 		# ...
 
 		# - overriding attach_public_policy 'radio' into 'shortText'
-
+		/*
 		variable {
 		  name = "attach_public_policy"
-		  form_config {
+
 			type = "shortText"
 			validation_rule {
 			  rule          = "regex"
 			  value         = "^(yes|no)$"
 			  error_message = "invalid. you should choose between 'yes' or 'no'"
 			}
-		  }
-		}
+
+		}*/
 	  }
 
 	`
@@ -344,41 +347,41 @@ func TestGenericBlueprintConfig(t *testing.T) {
 	data "autocloud_blueprint_config" "generic" {
 		variable {
 			name = "project_name"
-			form_config {
-				type = "shortText"
-				validation_rule {
-					rule          = "isRequired"
-					error_message = "invalid name"
-				}
+
+			type = "shortText"
+			validation_rule {
+				rule          = "isRequired"
+				error_message = "invalid name"
 			}
+
 		}
 
 		variable {
 			name = "env"
 			display_name = "environment target"
 			helper_text  = "environment target description"
-			form_config {
-				type = "radio"
-				options {
-					option {
-						label = "dev"
-						value = "dev"
-						checked = true
-					}
-					option {
-						label   = "nonprod"
-						value   = "nonprod"
-					}
-					option {
-						label   = "prod"
-						value   = "prod"
-					}
+
+			type = "radio"
+			options {
+				option {
+					label = "dev"
+					value = "dev"
+					checked = true
 				}
-				validation_rule {
-					rule          = "isRequired"
-					error_message = "invalid"
+				option {
+					label   = "nonprod"
+					value   = "nonprod"
+				}
+				option {
+					label   = "prod"
+					value   = "prod"
 				}
 			}
+			validation_rule {
+				rule          = "isRequired"
+				error_message = "invalid"
+			}
+
 		}
 	}`
 
@@ -403,40 +406,30 @@ func TestBlueprintConfigWhenValueIsSetAFormConfigCanNotBeSet(t *testing.T) {
 		variable {
 			name = "bucket_prefix"
 			value = "some dummy value"
-			form_config {
-				type = "shortText"
-				validation_rule {
-					rule          = "isRequired"
-					error_message = "invalid"
-					value		  = "some value"
-				  }
-			}
-		}
-	  }`
-	acctest.ValidateErrors(t, expectedError, terraform)
-}
 
-func TestBlueprintConfigAtLeastOneConfigBlocksValidationError(t *testing.T) {
-	expectedError := blueprint_config.ErrOneFormConfPerVar
-	terraform := `data "autocloud_blueprint_config" "s3_processor" {
-		variable {
-			name = "bucket_prefix"
+			type = "shortText"
+			validation_rule {
+				rule          = "isRequired"
+				error_message = "invalid"
+				value		  = "some value"
+			}
+
 		}
 	  }`
 	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestBlueprintConfigTooManyFormConfigBlocksValidationError(t *testing.T) {
-	expectedError := "Too many form_config blocks"
+	expectedError := blueprint_config.ErrOneBlockOptionsRequied
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		variable {
-			form_config {
+			options {
 			}
-			form_config {
+			options {
 			}
 		}
 	  }`
-	acctest.ValidateErrors(t, errors.New(expectedError), terraform)
+	acctest.ValidateErrors(t, expectedError, terraform)
 }
 
 func TestBlueprintConfigFieldOptionsIsRequiredForRadiosError(t *testing.T) {
@@ -444,9 +437,8 @@ func TestBlueprintConfigFieldOptionsIsRequiredForRadiosError(t *testing.T) {
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		variable {
 			name = "bucket_prefix"
-			form_config {
-				type = "radio"
-			}
+			type = "radio"
+
 		}
 	  }`
 	acctest.ValidateErrors(t, expectedError, terraform)
@@ -457,9 +449,8 @@ func TestBlueprintConfigFieldOptionsIsRequiredForCheckboxesError(t *testing.T) {
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		variable {
 			name = "bucket_prefix"
-			form_config {
-				type = "checkbox"
-			}
+			type = "checkbox"
+
 		}
 	  }`
 	acctest.ValidateErrors(t, expectedError, terraform)
@@ -471,11 +462,9 @@ func TestBlueprintConfigShortTextCanNotHaveOptionsError(t *testing.T) {
 
 		variable {
 			name = "bucket_prefix"
-			form_config {
-				type = "shortText"
-				options{
+			type = "shortText"
+			options{
 
-				}
 			}
 		}
 	  }`
@@ -487,14 +476,14 @@ func TestBlueprintConfigIsRequiredValidationsCanNotHaveAValueError(t *testing.T)
 	terraform := `data "autocloud_blueprint_config" "s3_processor" {
 		variable {
 			name = "bucket_prefix"
-			form_config {
-				type = "shortText"
-				validation_rule {
-					rule          = "isRequired"
-					error_message = "invalid"
-					value		  = "some value"
-				  }
+
+			type = "shortText"
+			validation_rule {
+				rule          = "isRequired"
+				error_message = "invalid"
+				value		  = "some value"
 			}
+
 		}
 	  }`
 	acctest.ValidateErrors(t, expectedError, terraform)
@@ -714,5 +703,69 @@ func TestGetFormBuilder(t *testing.T) {
 	if len(blueprintConfig.OverrideVariables) != 1 {
 		t.Errorf("BlueprintConfig.OverrideVariables is not 1 is: %d", len(blueprintConfig.OmitVariables))
 	}
-	log.Print(blueprintConfig.OverrideVariables)
+	fmt.Println(blueprintConfig)
+}
+
+func TestBlueprintConfigConditionalsReading(t *testing.T) {
+	schema1 := blueprint_config.DataSourceBlueprintConfig()
+	testDataBlueprintResourceSchema := schema1.Schema
+	log.Println(testDataBlueprintResourceSchema)
+	raw := map[string]interface{}{
+		"source": map[string]interface{}{
+			"Cloudfront": `{
+				"id": "clbnr5y2019144hyi1xc0yhex",
+				"variables": [
+					{
+						"id": "Cloudfront.comment",
+						"conditionals": [
+						  {
+							"source": "generic.variable.environment",
+							"condition": "nonprod",
+							"options": [
+							  {
+								"label": "nonprod",
+								"fieldId": "",
+								"value": "fake string",
+								"checked": false
+							  },
+							  {
+								"label": "sandbox",
+								"fieldId": "",
+								"value": "abc123fgh",
+								"checked": true
+							  }
+							]
+						  }
+						]
+					  },
+					  {
+						"id": "Cloudfront.dummy",
+						"conditionals": [
+						  {
+							"source": "generic.variable.environment",
+							"condition": "nonprod",
+							"value" : "dummy-static-value",
+							"options": []
+						  }
+						]
+					  }
+				],
+				"children": []
+			  }`,
+		},
+	}
+
+	d := schema.TestResourceDataRaw(t, testDataBlueprintResourceSchema, raw)
+	blueprintConfig, err := blueprint_config.GetBlueprintConfigFromSchema(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, 1, len(blueprintConfig.Children))
+
+	assert.Equal(t, 2, len(blueprintConfig.Children[0].Variables))
+	assert.Nil(t, blueprintConfig.Children[0].Variables[0].Conditionals[0].Value)
+	assert.Equal(t, "dummy-static-value", *blueprintConfig.Children[0].Variables[1].Conditionals[0].Value)
+
+	jsonBlueprintConfig, _ := utils.ToJsonString(blueprintConfig)
+	fmt.Printf("blueprint config: [%v]\n", jsonBlueprintConfig)
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -43,6 +44,74 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					Type:     schema.TypeString,
 					Optional: true,
 					Default:  "",
+				},
+			},
+		},
+	}
+
+	optionItemSchema := &schema.Schema{
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"label": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"value": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"checked": {
+					Type:     schema.TypeBool,
+					Optional: true,
+					Default:  false,
+				},
+			},
+		},
+	}
+
+	conditionalSchema := &schema.Schema{
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"source": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"condition": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"type": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"content": {
+					Type:     schema.TypeSet,
+					Required: true,
+					MinItems: 1,
+					MaxItems: 1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"value": {
+								Type:     schema.TypeSet,
+								Optional: true,
+								MinItems: 1,
+								MaxItems: 1,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"option": optionItemSchema,
+									},
+								},
+							},
+							"static": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -82,7 +151,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					"type": {
 						Type:         schema.TypeString,
 						Required:     true,
-						ValidateFunc: validation.StringInSlice([]string{"shortText", "radio", "checkbox"}, false),
+						ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE}, false),
 					},
 					"options": {
 						Type:     schema.TypeSet,
@@ -90,31 +159,11 @@ func DataSourceBlueprintConfig() *schema.Resource {
 						MaxItems: 1,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"option": {
-									Type:     schema.TypeSet,
-									Optional: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"label": {
-												Type:     schema.TypeString,
-												Required: true,
-											},
-											"value": {
-												Type:     schema.TypeString,
-												Required: true,
-											},
-											"checked": {
-												Type:     schema.TypeBool,
-												Optional: true,
-												Default:  false,
-											},
-										},
-									},
-								},
+								"option": optionItemSchema,
 							},
 						},
 					},
-
+					"conditional":     conditionalSchema,
 					"validation_rule": validationRulesSchema,
 				},
 			},
@@ -157,6 +206,10 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	err = validateConditionals(formVariables)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	jsonFormShape, err := utils.ToJsonString(formVariables)
 	if err != nil {
 		return diag.FromErr(err)
@@ -182,6 +235,8 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 // maps tf declaration to object
+//
+//nolint:golint,gocyclo
 func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, error) {
 	bp := &BluePrintConfig{}
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
@@ -242,6 +297,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 				// refactor op, if entry, ok could be a function
 				if entry, ok := bp.OverrideVariables[varName]; ok {
 					entry.Value = valueStr
+
 					bp.OverrideVariables[varName] = entry
 				} else {
 					return nil, errors.New("cant define blueprint config")
@@ -261,6 +317,14 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 			if len(optionsFromSchema.List()) > 1 {
 				// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
 				return nil, errors.New("exactly one \"options\" must be defined")
+			}
+
+			if len(optionsFromSchema.List()) == 0 {
+				conditionalsInput, conditionalsExist := varOverrideMap["conditionals"]
+				if conditionalsExist && len(conditionalsInput.(*schema.Set).List()) > 0 {
+					// if we don't have any conditionals, we should have at least 1 form_config
+					return nil, fmt.Errorf("a form_config must be defined for the variable [%s]", varName)
+				}
 			}
 
 			rawVariableType := varOverrideMap["type"]
@@ -332,7 +396,88 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 					return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
 				}
 			}
+			// Conditionals
+
+			conditionalsSet, conditionalExists := varOverrideMap["conditionals"].(*schema.Set)
+			if conditionalExists {
+				if entry, ok := bp.OverrideVariables[varName]; ok {
+					entry.Conditionals = getConditionals(conditionalsSet)
+					bp.OverrideVariables[varName] = entry
+				} else {
+					return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
+				}
+			}
 		}
 	}
 	return bp, nil
+}
+
+func validateConditionals(variables []autocloudsdk.FormShape) error {
+	// vars to map
+	var varsMap = make(map[string]autocloudsdk.FormShape, len(variables))
+	for _, variable := range variables {
+		varsMap[variable.ID] = variable
+	}
+
+	// validate conditionals
+	for _, variable := range variables {
+		for _, conditional := range variable.Conditionals {
+			dependencyVariable, dependecyExist := varsMap[conditional.Source]
+			if dependecyExist && dependencyVariable.FormQuestion.FieldType != RADIO_TYPE {
+				return fmt.Errorf("the conditional's source variable can only be of 'radio' type [variable: %v, source variable: %v, source variable type: %v]", variable.ID, conditional.Source, dependencyVariable.FormQuestion.FieldType)
+			}
+		}
+	}
+
+	return nil
+}
+
+func getConditionals(varOverrideMap *schema.Set) []ConditionalConfig {
+	conditionalsList := varOverrideMap.List()
+	conditionals := make([]ConditionalConfig, len(conditionalsList))
+
+	for i, conditional := range conditionalsList {
+		conditionalMap := conditional.(map[string]interface{})
+		conditionalContentMap := conditionalMap["content"].(*schema.Set).List()[0].(map[string]interface{}) // length validated at schema level
+		var fieldOptions []FieldOption = make([]FieldOption, 0)
+		var staticValue string
+
+		if staticVal, ok := conditionalContentMap["static"]; ok && staticVal != "" {
+			str, castOk := staticVal.(string)
+			if castOk {
+				staticValue = str
+			}
+		}
+
+		if staticValue == "" {
+			conditionalValueMap := conditionalContentMap["value"].(*schema.Set).List()
+			if len(conditionalValueMap) > 0 {
+				fieldOptionList := conditionalValueMap[0].(map[string]interface{})["option"].([]interface{})
+
+				fieldOptions = make([]FieldOption, len(fieldOptionList))
+
+				optionCount := 0
+				for _, vOption := range fieldOptionList {
+					optionMap := vOption.(map[string]interface{})
+
+					fieldOptions[optionCount] = FieldOption{
+						Label:   optionMap["label"].(string),
+						Value:   optionMap["value"].(string),
+						Checked: optionMap["checked"].(bool),
+					}
+					optionCount++
+				}
+			}
+		}
+
+		conditionals[i] = ConditionalConfig{
+			Source:    conditionalMap["source"].(string),
+			Condition: conditionalMap["condition"].(string),
+			Type:      conditionalMap["type"].(string),
+			Options:   fieldOptions,
+			Value:     staticValue,
+		}
+	}
+
+	return conditionals
 }

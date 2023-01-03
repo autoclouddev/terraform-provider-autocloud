@@ -1,3 +1,38 @@
+# [0.3.0-pre.26](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.25...0.3.0-pre.26) (2023-01-03)
+
+
+### Features
+
+* **ep-2617:** iac conditionals ([7ce70e3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/7ce70e36b5a0208b1ae29efcd72b93ffb7531c1c))
+* **ep-2617:** iac conditionals (fmt to log) ([03fc304](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/03fc30421f2187130ec83ed62eb60db98a6514fe))
+
+# [0.3.0-pre.25](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.24...0.3.0-pre.25) (2022-12-28)
+
+
+### Bug Fixes
+
+* Fixed missing types for overrides variables ([50bdd4d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/50bdd4d44fe0dbd9dc2fa7d69dfc69089ec96095))
+
+# [0.3.0-pre.24](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.23...0.3.0-pre.24) (2022-12-22)
+
+
+### Features
+
+* **blueprint:** add tf source example ([0809365](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/0809365dd68511a3f1235014a162d238a0c07266))
+
+# [0.3.0-pre.23](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.22...0.3.0-pre.23) (2022-12-22)
+
+
+### Bug Fixes
+
+* Renabled omit and override variables for new blueprint_config ([55c1664](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/55c16644cc31ab0f400f29caac5fac82ff60bfae))
+
+
+### Features
+
+* **blueprint:** add tf example ([7be7c32](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/7be7c3202e2c268dc51dbe1ed64e6e6977a1ab4a))
+* **blueprint:** get form shape from tree ([3a2136b](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/3a2136b854e5e049b717de4839666032f7942f57))
+
 # [0.3.0-pre.22](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.21...0.3.0-pre.22) (2022-12-22)
 
 
