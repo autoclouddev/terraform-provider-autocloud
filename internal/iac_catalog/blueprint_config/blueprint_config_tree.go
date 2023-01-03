@@ -70,7 +70,7 @@ func findInd(vars []autocloudsdk.FormShape, varname string) int {
 			return i
 		}
 	}
-	log.Printf("the [%s] ommited value not found in vars", varname)
+	log.Printf("the [%s] omitted value not found in vars", varname)
 	return -1
 }
 

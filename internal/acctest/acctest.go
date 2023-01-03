@@ -48,7 +48,6 @@ func ValidateErrors(t *testing.T, expectedError error, terraform string) {
 			if strings.Contains(err.Error(), expectedError.Error()) {
 				fmt.Println("successful test - The error was catched")
 				return nil
-
 			}
 			return err
 		},
