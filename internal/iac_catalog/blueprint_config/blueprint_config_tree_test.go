@@ -1,10 +1,11 @@
 package blueprint_config_test
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/big"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
@@ -13,7 +14,8 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
-func fakeFormShape(moduleName string) autocloudsdk.FormShape {
+func fakeFormShape() autocloudsdk.FormShape {
+	moduleName := "s3"
 	a := autocloudsdk.FormShape{}
 	err := faker.FakeData(&a)
 	if err != nil {
@@ -31,10 +33,10 @@ func TestTreeTransversal(t *testing.T) {
 	//   B     D
 	//  /
 	// C
-	AVariables := []autocloudsdk.FormShape{fakeFormShape("s3")}
-	BVariables := []autocloudsdk.FormShape{fakeFormShape("s3"), fakeFormShape("s3")}
-	CVariables := []autocloudsdk.FormShape{fakeFormShape("s3"), fakeFormShape("s3")}
-	DVariables := []autocloudsdk.FormShape{fakeFormShape("s3")}
+	AVariables := []autocloudsdk.FormShape{fakeFormShape()}
+	BVariables := []autocloudsdk.FormShape{fakeFormShape(), fakeFormShape()}
+	CVariables := []autocloudsdk.FormShape{fakeFormShape(), fakeFormShape()}
+	DVariables := []autocloudsdk.FormShape{fakeFormShape()}
 
 	tree := blueprint_config.BluePrintConfig{
 		Id:        "root",
@@ -91,12 +93,15 @@ func TestOmitVars(t *testing.T) {
 	varCount := 10
 	pickedCount := 3
 	for i := 0; i < varCount; i++ {
-		vars = append(vars, fakeFormShape("s3"))
+		vars = append(vars, fakeFormShape())
 	}
 	omits := []string{}
 	for i := 0; i < pickedCount; i++ {
-		pick := rand.Intn(len(vars) - i)
-		varname, _ := utils.GetVariableID(vars[pick].ID)
+		pick, err := rand.Int(rand.Reader, big.NewInt(int64(len(vars)-i)))
+		if err != nil {
+			panic(err)
+		}
+		varname, _ := utils.GetVariableID(vars[pick.Int64()].ID)
 		omits = append(omits, varname)
 	}
 	result := blueprint_config.OmitVars(vars, omits)

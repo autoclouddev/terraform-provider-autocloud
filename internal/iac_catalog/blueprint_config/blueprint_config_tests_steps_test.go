@@ -74,7 +74,7 @@ func testAccCheckOmitCorrectness(omitted []string, formVars *[]autocloudsdk.Form
 }
 
 // variableConf string, formVars *[]autocloudsdk.FormShape
-func testAccCheckOverrides(resourceName string, overideVars []string, formVariables *[]autocloudsdk.FormShape) resource.TestCheckFunc {
+func testAccCheckOverrides(resourceName string, overideVars []string) resource.TestCheckFunc {
 	type ValidationRule struct {
 		Rule         string `hcl:"rule"`
 		Value        string `hcl:"value,optional"`

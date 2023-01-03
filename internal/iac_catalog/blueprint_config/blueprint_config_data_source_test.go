@@ -245,7 +245,7 @@ func TestAccBlueprintConfig_OverrideVars(t *testing.T) {
 						resourceName, "id"),
 					resource.TestCheckResourceAttrSet(
 						resourceName, "config"),
-					testAccCheckOverrides(resourceName, overideVars, &formVariables),
+					testAccCheckOverrides(resourceName, overideVars),
 				),
 			},
 		},
