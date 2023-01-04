@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -92,7 +91,7 @@ func dataSourceRepositoriesRead(ctx context.Context, d *schema.ResourceData, m i
 	data := flattenData(&repositories)
 	err = d.Set("data", data)
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		return diag.FromErr(err)
 	}
 

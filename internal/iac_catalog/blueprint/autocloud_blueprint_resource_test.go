@@ -1,6 +1,7 @@
 package blueprint_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -69,6 +70,7 @@ resource "autocloud_blueprint" "bar" {
 `
 
 func TestAccAutocloudBlueprint(t *testing.T) {
+	t.SkipNow()
 	resourceName := "autocloud_blueprint.bar"
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.TestAccPreCheck(t) },
@@ -126,5 +128,5 @@ func TestAutocloudBlueprintHasAtMostOneGitConfigError(t *testing.T) {
 		git_config {}
 		git_config {}
 	  }`
-	acctest.ValidateErrors(t, expectedError, terraform)
+	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
 }

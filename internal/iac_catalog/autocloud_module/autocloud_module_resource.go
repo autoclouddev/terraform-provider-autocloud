@@ -220,7 +220,7 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	fmt.Println(string(jsonconf))
+	//fmt.Println(string(jsonconf))
 	err = d.Set("blueprint_config", string(jsonconf))
 	if err != nil {
 		return diag.FromErr(err)

@@ -1,7 +1,6 @@
 package autocloud_module_test
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"testing"
@@ -45,7 +44,7 @@ func createModule() {
 		Version: version,
 	}
 	_, err := c.CreateModule(&iacModule)
-	fmt.Println(err)
+	//fmt.Println(err)
 	if err != nil {
 		panic("module not created")
 	}
