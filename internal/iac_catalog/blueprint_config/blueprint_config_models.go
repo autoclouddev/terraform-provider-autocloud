@@ -29,7 +29,7 @@ type ConditionalConfig struct {
 	Condition string        `json:"condition"`
 	Type      string        `json:"type"`
 	Options   []FieldOption `json:"options"`
-	Value     string        `json:"value"`
+	Value     *string       `json:"value"`
 }
 type FormConfig struct {
 	Type            string           `json:"type"`

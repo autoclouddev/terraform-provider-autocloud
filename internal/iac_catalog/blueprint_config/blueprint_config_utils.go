@@ -1,7 +1,9 @@
 package blueprint_config
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
@@ -50,6 +52,7 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		FieldDefaultValue:   iacModuleVar.FieldDefaultValue,
 		FieldValue:          iacModuleVar.FieldValue,
 		AllowConsumerToEdit: true,
+		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(overrideData.Conditionals)),
 	}
 
 	if overrideData.Value != "" {
@@ -91,6 +94,28 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 			}
 		}
 	}
+	for i, conditional := range overrideData.Conditionals {
+		log.Printf("buildOverridenVariable -> conditional: %v \n", conditional)
+		fieldOptions := make([]autocloudsdk.FieldOption, 0)
+		for _, option := range conditional.Options {
+			fo := autocloudsdk.FieldOption{
+				FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
+				Label:   option.Label,
+				Value:   option.Value,
+				Checked: option.Checked,
+			}
+			fieldOptions = append(fieldOptions, fo)
+		}
+		newIacModuleVar.Conditionals[i] = autocloudsdk.ConditionalConfig{
+			Source:    conditional.Source,
+			Condition: conditional.Condition,
+			Options:   fieldOptions,
+			Value:     conditional.Value,
+			Type:      conditional.Type,
+		}
+	}
+	str, _ := json.MarshalIndent(newIacModuleVar, "", "    ")
+	log.Printf("formVariable: %s", string(str))
 
 	return newIacModuleVar
 }
@@ -124,6 +149,7 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 			ExplainingText:  ov.HelperText,
 		},
 		AllowConsumerToEdit: true,
+		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(ov.Conditionals)),
 	}
 
 	if ov.FormConfig.Type == RADIO_TYPE || ov.FormConfig.Type == CHECKBOX_TYPE {
@@ -151,5 +177,26 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 			}
 		}
 	}
+
+	for i, conditional := range ov.Conditionals {
+		fieldOptions := make([]autocloudsdk.FieldOption, len(conditional.Options))
+		for j, option := range conditional.Options {
+			fieldOptions[j] = autocloudsdk.FieldOption{
+				FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
+				Label:   option.Label,
+				Value:   option.Value,
+				Checked: option.Checked,
+			}
+		}
+		formVariable.Conditionals[i] = autocloudsdk.ConditionalConfig{
+			Source:    conditional.Source,
+			Condition: conditional.Condition,
+			Options:   fieldOptions,
+			Value:     conditional.Value,
+			Type:      conditional.Type,
+		}
+	}
+	str, _ := json.MarshalIndent(formVariable, "", "    ")
+	log.Printf("formVariable: %s", string(str))
 	return formVariable
 }

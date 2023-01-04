@@ -48,25 +48,25 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     name         = "name"
     display_name = "choose the usage of this kms (name)"
     helper_text  = "select the corresponding team"
-    form_config {
-      type = "radio"
-      options {
-        option {
-          label   = "engineering"
-          value   = "engineering"
-          checked = false
-        }
-        option {
-          label   = "finances"
-          value   = "finances"
-          checked = false
-        }
-        option {
-          label   = "sales"
-          value   = "sales"
-          checked = true
-        }
+
+    type = "radio"
+    options {
+      option {
+        label   = "engineering"
+        value   = "engineering"
+        checked = false
       }
+      option {
+        label   = "finances"
+        value   = "finances"
+        checked = false
+      }
+      option {
+        label   = "sales"
+        value   = "sales"
+        checked = true
+      }
+
     }
   }
 
@@ -178,4 +178,9 @@ resource "autocloud_blueprint" "example" {
     ]
   }
   config = data.autocloud_blueprint_config.kms_custom_form.config
+}
+
+
+output "bf" {
+  value = data.autocloud_blueprint_config.kms_custom_form.config
 }

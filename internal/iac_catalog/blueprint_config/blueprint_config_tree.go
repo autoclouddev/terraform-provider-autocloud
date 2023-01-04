@@ -1,6 +1,7 @@
 package blueprint_config
 
 import (
+	"encoding/json"
 	"log"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
@@ -8,6 +9,8 @@ import (
 )
 
 func GetFormShape(root BluePrintConfig) []autocloudsdk.FormShape {
+	str, _ := json.MarshalIndent(root, "", "    ")
+	log.Printf("root bc: %s", string(str))
 	return postOrderTransversal(&root)
 }
 
@@ -39,6 +42,7 @@ func OmitVars(vars []autocloudsdk.FormShape, omitts []string) []autocloudsdk.For
 	}
 	return addmittedVars
 }
+
 func findIdx(vars []autocloudsdk.FormShape, varname string) int {
 	for i, v := range vars {
 		varName, err := utils.GetVariableID(v.ID)
