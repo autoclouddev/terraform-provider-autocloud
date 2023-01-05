@@ -37,13 +37,18 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		explainingText = overrideData.HelperText
 	}
 
+	variableType := iacModuleVar.FormQuestion.FieldType
+	if overrideData.FormConfig.Type != "" {
+		variableType = overrideData.FormConfig.Type
+	}
+
 	newIacModuleVar := autocloudsdk.FormShape{
 		ID:     iacModuleVar.ID,
-		Type:   overrideData.FormConfig.Type,
+		Type:   iacModuleVar.Type,
 		Module: iacModuleVar.Module,
 		FormQuestion: autocloudsdk.FormQuestion{
 			FieldID:         fieldID,
-			FieldType:       overrideData.FormConfig.Type,
+			FieldType:       variableType,
 			FieldLabel:      fieldLabel,
 			ExplainingText:  explainingText,
 			ValidationRules: validationRules,

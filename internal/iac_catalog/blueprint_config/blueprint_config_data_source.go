@@ -195,7 +195,11 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	pretty, err := utils.PrettyStruct(blueprintConfig)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	log.Println("INPUT BLUEPRINTCONFIG->", pretty)
 	// new form variables (as JSON)
 	formVariables := GetFormShape(*blueprintConfig)
 	if err != nil {
@@ -214,13 +218,13 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	bpOutput, err := utils.ToJsonString(blueprintConfig)
+	/*bpOutput, err := utils.ToJsonString(blueprintConfig)
 	//log.Println(bpOutput)
 	if err != nil {
 		return diag.FromErr(err)
-	}
+	}*/
 
-	err = d.Set("blueprint_config", bpOutput)
+	err = d.Set("blueprint_config", pretty)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -241,7 +245,8 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 			strKey := fmt.Sprintf("%v", key)
 			strValue := fmt.Sprintf("%v", value)
 			log.Printf("SOURCE_INPUT_KEY: %v/n", key)
-			log.Printf("SOURCE_INPUT_VALUE: %v", strValue)
+			formattedValue, _ := utils.PrettyString(strValue)
+			log.Printf("SOURCE_INPUT_VALUE: %v", formattedValue)
 			bc := BluePrintConfig{}
 			err := json.Unmarshal([]byte(strValue), &bc)
 			if err != nil {
