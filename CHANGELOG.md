@@ -1,3 +1,10 @@
+# [0.3.0-pre.28](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.27...0.3.0-pre.28) (2023-01-05)
+
+
+### Bug Fixes
+
+* Fixed source_blueprint example ([cf22f35](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/cf22f35030bfe942946500c1177fde142583ee1f))
+
 # [0.3.0-pre.27](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.26...0.3.0-pre.27) (2023-01-04)
 
 
