@@ -1,3 +1,10 @@
+# [0.3.0-pre.29](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.28...0.3.0-pre.29) (2023-01-05)
+
+
+### Features
+
+* **tree:** parse json to include overridevariables ([57b6332](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/57b6332ae5a8b356959a80c57ee04ce654a16766))
+
 # [0.3.0-pre.28](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.27...0.3.0-pre.28) (2023-01-05)
 
 
