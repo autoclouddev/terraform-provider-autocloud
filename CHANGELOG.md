@@ -1,3 +1,18 @@
+# [0.3.0-pre.27](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.26...0.3.0-pre.27) (2023-01-04)
+
+
+### Bug Fixes
+
+* linting issues ([e879caf](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e879cafb0eff3cbd98e498de10efc728263df866))
+
+
+### Features
+
+* **conditionals:** integrate conditionals with tree ([1dc8f08](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1dc8f08d8e5877882b393353b7f7d2fa7b1ef209))
+* **schema:** remove form options ([e50f418](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e50f418e69bb76ec1109f3430058045992cc44ed))
+* **schema:** remove form options ([bb04707](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/bb047072b7e4937c2359247ef36a7d94fe61aeb2))
+* **tree:** process variables by tree level ([28fd1b2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/28fd1b260bacc85eb10bd3f49ac7cc1d3e7cf1d8))
+
 # [0.3.0-pre.26](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.25...0.3.0-pre.26) (2023-01-03)
 
 
