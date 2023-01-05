@@ -39,28 +39,27 @@ data "autocloud_blueprint_config" "generic" {
     name         = "env"
     display_name = "environment target"
     helper_text  = "environment target description"
-    form_config {
-      type = "radio"
-      options {
-        option {
-          label   = "dev"
-          value   = "dev"
-          checked = true
-        }
-        option {
-          label = "nonprod"
-          value = "nonprod"
-        }
-        option {
-          label = "prod"
-          value = "prod"
-        }
+    type = "radio"
+    options {
+      option {
+        label   = "dev"
+        value   = "dev"
+        checked = true
       }
-      validation_rule {
-        rule          = "isRequired"
-        error_message = "invalid"
+      option {
+        label = "nonprod"
+        value = "nonprod"
+      }
+      option {
+        label = "prod"
+        value = "prod"
       }
     }
+    validation_rule {
+      rule          = "isRequired"
+      error_message = "invalid"
+    }
+  
   }
 }
 
@@ -74,19 +73,17 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     name         = "description"
     display_name = "choose the usage of this kms"
     helper_text  = "select the corresponding team"
-    form_config {
-      type = "radio"
-      options {
-        option {
-          label   = "engineering"
-          value   = "engineering"
-          checked = false
-        }
-        option {
-          label   = "finances"
-          value   = "finances"
-          checked = false
-        }
+    type = "radio"
+    options {
+      option {
+        label   = "engineering"
+        value   = "engineering"
+        checked = false
+      }
+      option {
+        label   = "finances"
+        value   = "finances"
+        checked = false
       }
     }
   }
@@ -111,19 +108,17 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     name         = "enable_key_rotation"
     display_name = "enable_key_rotation display name"
     helper_text  = "enable_key_rotation helper text"
-    form_config {
-      type = "radio"
-      options {
-        option {
-          label   = "ENABLE"
-          value   = true
-          checked = false
-        }
-        option {
-          label   = "DISABLE"
-          value   = false
-          checked = true
-        }
+    type = "radio"
+    options {
+      option {
+        label   = "ENABLE"
+        value   = true
+        checked = false
+      }
+      option {
+        label   = "DISABLE"
+        value   = false
+        checked = true
       }
     }
   }
@@ -140,24 +135,22 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     name         = "deletion_window_in_days"
     display_name = "deletion_window_in_days display name"
     helper_text  = "deletion_window_in_days helper text"
-    form_config {
-      type = "radio"
-      options {
-        option {
-          label   = "30 days"
-          value   = 30
-          checked = false
-        }
-        option {
-          label   = "60 days"
-          value   = 60
-          checked = false
-        }
-        option {
-          label   = "90 days"
-          value   = 90
-          checked = true
-        }
+    type = "radio"
+    options {
+      option {
+        label   = "30 days"
+        value   = 30
+        checked = false
+      }
+      option {
+        label   = "60 days"
+        value   = 60
+        checked = false
+      }
+      option {
+        label   = "90 days"
+        value   = 90
+        checked = true
       }
     }
   }
