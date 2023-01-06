@@ -1,3 +1,10 @@
+# [0.3.0-pre.30](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.29...0.3.0-pre.30) (2023-01-06)
+
+
+### Features
+
+* **ep-2628:** iac lists ([979bfbb](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/979bfbb94d6a5bd5fdba25187b3aa5852c7eb54d))
+
 # [0.3.0-pre.29](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.28...0.3.0-pre.29) (2023-01-05)
 
 
