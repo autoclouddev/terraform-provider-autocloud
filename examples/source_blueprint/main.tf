@@ -61,6 +61,17 @@ data "autocloud_blueprint_config" "generic" {
     }
   
   }
+
+  variable {
+    name         = "resource_metadata"
+    display_name = "resource metadata"
+    helper_text  = "environment target description"
+    type = "map"
+    required_values = {
+      "managed-by" = "autocloud"
+      owner = null
+    }
+  }
 }
 
 data "autocloud_blueprint_config" "kms_custom_form" {

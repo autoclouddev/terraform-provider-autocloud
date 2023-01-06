@@ -151,7 +151,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					"type": {
 						Type:         schema.TypeString,
 						Optional:     true,
-						ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE}, false),
+						ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE}, false),
 					},
 					"options": {
 						Type:     schema.TypeSet,
@@ -161,6 +161,14 @@ func DataSourceBlueprintConfig() *schema.Resource {
 							Schema: map[string]*schema.Schema{
 								"option": optionItemSchema,
 							},
+						},
+					},
+					"required_values": {
+						Description: "required_values",
+						Type:        schema.TypeMap,
+						Optional:    true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
 					},
 					"conditional":     conditionalSchema,
@@ -231,6 +239,24 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(blueprintConfig.Id)
 
 	return diags
+}
+
+type KeyValue struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+func ConvertMap(mapInterface map[string]interface{}) map[string]string {
+	mapString := make(map[string]string)
+
+	for key, value := range mapInterface {
+		strKey := fmt.Sprintf("%v", key)
+		strValue := fmt.Sprintf("%v", value)
+
+		mapString[strKey] = strValue
+	}
+
+	return mapString
 }
 
 // maps tf declaration to object
@@ -369,6 +395,35 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 					}
 				}
 			}
+
+			if variableType == MAP_TYPE {
+				if val, ok := varOverrideMap["required_values"]; ok {
+					var variablesMap = val.(map[string]interface{})
+					ccc := ConvertMap(variablesMap)
+
+					pairs := make([]KeyValue, 0)
+
+					for key, value := range ccc {
+						pair := KeyValue{Key: key, Value: value}
+						pairs = append(pairs, pair)
+
+					}
+					mapValue, err := json.Marshal(pairs)
+					if err != nil {
+						fmt.Println(err)
+					}
+
+					if entry, ok := bp.OverrideVariables[varName]; ok {
+						entry.Value = string(mapValue)
+
+						bp.OverrideVariables[varName] = entry
+					} else {
+						return nil, errors.New("cant define blueprint config")
+					}
+
+				}
+			}
+
 			// validation rules
 			validationRulesList := varOverrideMap["validation_rule"].(*schema.Set).List()
 

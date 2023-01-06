@@ -142,10 +142,16 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		fieldLabel = ov.DisplayName
 	}
 
+	fieldValue := "[]" // empty map
+	if ov.FormConfig.Type == MAP_TYPE && ov.Value != "" {
+		fieldValue = ov.Value
+	}
+
 	formVariable := autocloudsdk.FormShape{
-		ID:     fieldID,
-		Type:   ov.FormConfig.Type,
-		Module: GENERIC,
+		ID:         fieldID,
+		Type:       ov.FormConfig.Type,
+		Module:     GENERIC,
+		FieldValue: fieldValue,
 		FormQuestion: autocloudsdk.FormQuestion{
 			FieldID:         fieldID,
 			FieldType:       ov.FormConfig.Type,
