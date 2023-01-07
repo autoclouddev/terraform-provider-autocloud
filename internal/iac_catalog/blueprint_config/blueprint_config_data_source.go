@@ -255,7 +255,6 @@ func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 }
 
 // maps tf declaration to object
-
 func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, error) {
 	bp := &BluePrintConfig{}
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
@@ -401,7 +400,6 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 					for key, value := range ccc {
 						pair := autocloudsdk.KeyValue{Key: key, Value: value}
 						pairs = append(pairs, pair)
-
 					}
 					mapValue, err := json.Marshal(pairs)
 					if err != nil {
@@ -415,7 +413,6 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 					} else {
 						return nil, errors.New("cant define blueprint config")
 					}
-
 				}
 			}
 
