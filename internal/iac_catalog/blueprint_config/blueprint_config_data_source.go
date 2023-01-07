@@ -241,11 +241,6 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-type KeyValue struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
-}
-
 func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 	mapString := make(map[string]string)
 
@@ -401,10 +396,10 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 					var variablesMap = val.(map[string]interface{})
 					ccc := ConvertMap(variablesMap)
 
-					pairs := make([]KeyValue, 0)
+					pairs := make([]autocloudsdk.KeyValue, 0)
 
 					for key, value := range ccc {
-						pair := KeyValue{Key: key, Value: value}
+						pair := autocloudsdk.KeyValue{Key: key, Value: value}
 						pairs = append(pairs, pair)
 
 					}
