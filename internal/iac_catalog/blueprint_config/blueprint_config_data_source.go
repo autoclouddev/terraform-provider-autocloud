@@ -255,6 +255,8 @@ func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 }
 
 // maps tf declaration to object
+//
+//nolint:gocyclo
 func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, error) {
 	bp := &BluePrintConfig{}
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
