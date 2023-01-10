@@ -1,3 +1,17 @@
+# [0.3.0-pre.31](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.30...0.3.0-pre.31) (2023-01-10)
+
+
+### Bug Fixes
+
+* Fixed issues with field types ([aec64c4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/aec64c486071c343f32ff516611cc3ff19da8127))
+* Turned off linter for gocyclo because of GetBlueprintConfigFromSchema function complexity ([e124be7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e124be787a516740a18f7e98c9befd951d0069ee))
+
+
+### Features
+
+* Added map type to provider ([4b58396](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/4b5839634b1b2cafa59796a7583d38e8caf90f1a))
+* Added maps example ([2b169e3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/2b169e3db8d8c8adc890c86accadb0d192826d9f))
+
 # [0.3.0-pre.30](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.29...0.3.0-pre.30) (2023-01-06)
 
 
