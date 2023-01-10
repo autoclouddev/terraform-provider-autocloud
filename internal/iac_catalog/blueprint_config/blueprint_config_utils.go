@@ -44,7 +44,6 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 
 	newIacModuleVar := autocloudsdk.FormShape{
 		ID:     iacModuleVar.ID,
-		Type:   iacModuleVar.Type,
 		Module: iacModuleVar.Module,
 		FormQuestion: autocloudsdk.FormQuestion{
 			FieldID:         fieldID,
@@ -137,15 +136,24 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		}
 	}
 
+	if ov.FormConfig.Type == "" {
+		log.Fatalf("cant initialize generic variable %s without type", ov.VariableName)
+	}
+
 	fieldLabel := ov.VariableName
 	if ov.DisplayName != "" {
 		fieldLabel = ov.DisplayName
 	}
 
+	fieldValue := "{}" // empty map
+	if ov.FormConfig.Type == MAP_TYPE && ov.Value != "" {
+		fieldValue = ov.Value
+	}
+
 	formVariable := autocloudsdk.FormShape{
-		ID:     fieldID,
-		Type:   ov.FormConfig.Type,
-		Module: GENERIC,
+		ID:         fieldID,
+		Module:     GENERIC,
+		FieldValue: fieldValue,
 		FormQuestion: autocloudsdk.FormQuestion{
 			FieldID:         fieldID,
 			FieldType:       ov.FormConfig.Type,

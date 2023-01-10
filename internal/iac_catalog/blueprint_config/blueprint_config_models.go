@@ -53,6 +53,7 @@ const GENERIC = "generic"
 const RADIO_TYPE = "radio"
 const CHECKBOX_TYPE = "checkbox"
 const SHORTTEXT_TYPE = "shortText"
+const MAP_TYPE = "map"
 
 var ErrSetValueInForm = errors.New("A form options can not be added when setting the variable's value.")
 var ErrOneBlockOptionsRequied = errors.New("No more than 1 \"options\" blocks are allowed")
