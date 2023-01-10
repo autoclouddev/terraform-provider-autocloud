@@ -16,20 +16,22 @@ type BluePrintConfig struct {
 }
 
 type OverrideVariable struct {
-	VariableName string              `json:"variableName"`
-	Value        string              `json:"value"`
-	DisplayName  string              `json:"displayName"`
-	HelperText   string              `json:"helperText"`
-	FormConfig   FormConfig          `json:"formConfig"`
-	Conditionals []ConditionalConfig `json:"conditionals"`
+	VariableName   string              `json:"variableName"`
+	Value          string              `json:"value"`
+	RequiredValues []string            `json:"requiredValues"`
+	DisplayName    string              `json:"displayName"`
+	HelperText     string              `json:"helperText"`
+	FormConfig     FormConfig          `json:"formConfig"`
+	Conditionals   []ConditionalConfig `json:"conditionals"`
 }
 
 type ConditionalConfig struct {
-	Source    string        `json:"source"`
-	Condition string        `json:"condition"`
-	Type      string        `json:"type"`
-	Options   []FieldOption `json:"options"`
-	Value     *string       `json:"value"`
+	Source         string        `json:"source"`
+	Condition      string        `json:"condition"`
+	Type           string        `json:"type"`
+	Options        []FieldOption `json:"options"`
+	Value          *string       `json:"value"`
+	RequiredValues []string      `json:"requiredValues"`
 }
 type FormConfig struct {
 	Type            string           `json:"type"`

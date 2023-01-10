@@ -14,7 +14,7 @@ import (
 TODO: create a test over this function, perhaps it is worth it to rethink the inputs,
 We need as an output a FormShape
 */
-func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData OverrideVariable) autocloudsdk.FormShape {
+func buildOverriddenVariable(iacModuleVar autocloudsdk.FormShape, overrideData OverrideVariable) autocloudsdk.FormShape {
 	fieldID := iacModuleVar.ID
 
 	// map validation rules
@@ -55,6 +55,7 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		FieldDataType:       iacModuleVar.FieldDataType,
 		FieldDefaultValue:   iacModuleVar.FieldDefaultValue,
 		FieldValue:          iacModuleVar.FieldValue,
+		RequiredValues:      overrideData.RequiredValues,
 		AllowConsumerToEdit: true,
 		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(overrideData.Conditionals)),
 	}
@@ -111,11 +112,12 @@ func buildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 			fieldOptions = append(fieldOptions, fo)
 		}
 		newIacModuleVar.Conditionals[i] = autocloudsdk.ConditionalConfig{
-			Source:    conditional.Source,
-			Condition: conditional.Condition,
-			Options:   fieldOptions,
-			Value:     conditional.Value,
-			Type:      conditional.Type,
+			Source:         conditional.Source,
+			Condition:      conditional.Condition,
+			Options:        fieldOptions,
+			Value:          conditional.Value,
+			Type:           conditional.Type,
+			RequiredValues: conditional.RequiredValues,
 		}
 	}
 	str, _ := json.MarshalIndent(newIacModuleVar, "", "    ")
@@ -162,6 +164,7 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 			ExplainingText:  ov.HelperText,
 		},
 		AllowConsumerToEdit: true,
+		RequiredValues:      ov.RequiredValues,
 		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(ov.Conditionals)),
 	}
 
@@ -202,11 +205,12 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 			}
 		}
 		formVariable.Conditionals[i] = autocloudsdk.ConditionalConfig{
-			Source:    conditional.Source,
-			Condition: conditional.Condition,
-			Options:   fieldOptions,
-			Value:     conditional.Value,
-			Type:      conditional.Type,
+			Source:         conditional.Source,
+			Condition:      conditional.Condition,
+			Options:        fieldOptions,
+			Value:          conditional.Value,
+			Type:           conditional.Type,
+			RequiredValues: conditional.RequiredValues,
 		}
 	}
 	str, _ := json.MarshalIndent(formVariable, "", "    ")

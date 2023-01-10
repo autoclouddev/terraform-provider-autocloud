@@ -59,7 +59,7 @@ data "autocloud_blueprint_config" "generic" {
       rule          = "isRequired"
       error_message = "invalid"
     }
-  
+
   }
 
   variable {

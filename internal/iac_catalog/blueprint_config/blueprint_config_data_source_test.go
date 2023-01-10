@@ -658,6 +658,10 @@ func TestGetFormBuilder(t *testing.T) {
 						"error_message": "invalid",
 					},
 				},
+				"required_list_values": []interface{}{
+					"required-value-1",
+					"required-value-2",
+				},
 				"options": []interface{}{
 					map[string]interface{}{
 						"option": []interface{}{
@@ -674,6 +678,25 @@ func TestGetFormBuilder(t *testing.T) {
 							map[string]interface{}{
 								"label": "prod",
 								"value": "some-prod-prefix",
+							},
+						},
+					},
+				},
+			},
+			map[string]interface{}{
+				"name": "some-var",
+				"type": "radio",
+				"conditional": []interface{}{
+					map[string]interface{}{
+						"content": []interface{}{
+							map[string]interface{}{
+								"source":    "generic.variable.environment",
+								"condition": "nonprod",
+								"required_list_values": []interface{}{
+									"required-value-1",
+									"required-value-2",
+									"required-value-3",
+								},
 							},
 						},
 					},
@@ -700,9 +723,20 @@ func TestGetFormBuilder(t *testing.T) {
 	if len(blueprintConfig.OmitVariables) != 2 {
 		t.Errorf("BlueprintConfig.OmitVariables is not 2 is: %d", len(blueprintConfig.OmitVariables))
 	}
-	if len(blueprintConfig.OverrideVariables) != 1 {
-		t.Errorf("BlueprintConfig.OverrideVariables is not 1 is: %d", len(blueprintConfig.OmitVariables))
+	if len(blueprintConfig.OverrideVariables) != 2 {
+		t.Errorf("BlueprintConfig.OverrideVariables is not 2 is: %d", len(blueprintConfig.OmitVariables))
 	}
+
+	requiredValuesCount := len(blueprintConfig.OverrideVariables["great_name"].RequiredValues)
+	if requiredValuesCount != 2 {
+		t.Errorf("BlueprintConfig.OverrideVariables RequiredValues is not 2 is: %d", requiredValuesCount)
+	}
+
+	conditionalRequiredValuesCount := len(blueprintConfig.OverrideVariables["some-var"].Conditionals[0].RequiredValues)
+	if conditionalRequiredValuesCount != 3 {
+		t.Errorf("BlueprintConfig.OverrideVariables Conditional RequiredValues is not 3 is: %d", conditionalRequiredValuesCount)
+	}
+
 	fmt.Println(blueprintConfig)
 }
 

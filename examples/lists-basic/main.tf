@@ -150,8 +150,8 @@ resource "autocloud_blueprint" "example" {
     git_url_default = length(local.dest_repos) != 0 ? local.dest_repos[0] : "" # Choose the first in the list by default
 
     pull_request {
-      title                   = "[AutoCloud] new EKS generator, created by {{authorName}}"
-      commit_message_template = "[AutoCloud] new EKS generator, created by {{authorName}}"
+      title                   = "[AutoCloud] new ECS generator, created by {{authorName}}"
+      commit_message_template = "[AutoCloud] new ECS generator, created by {{authorName}}"
       body                    = file("../files/pull_request.md.tpl")
       variables = {
         authorName = "generic.authorName"

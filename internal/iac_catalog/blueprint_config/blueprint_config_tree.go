@@ -73,7 +73,7 @@ func overrideVariables(vars []autocloudsdk.FormShape, overrides map[string]Overr
 			return make([]autocloudsdk.FormShape, 0)
 		}
 		if overrideVariableData, ok := overrides[varName]; ok {
-			vars[i] = buildOverridenVariable(iacVar, overrideVariableData)
+			vars[i] = buildOverriddenVariable(iacVar, overrideVariableData)
 			delete(overrides, varName)
 		}
 	}
