@@ -1,3 +1,10 @@
+# [0.3.0-pre.32](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.31...0.3.0-pre.32) (2023-01-10)
+
+
+### Features
+
+* **ep-2685:** iac conditionals lists and required list values ([2a9cd10](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/2a9cd1011f642edba0b2d6956adedd9fb7e8581e))
+
 # [0.3.0-pre.31](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.30...0.3.0-pre.31) (2023-01-10)
 
 
