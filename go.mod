@@ -10,6 +10,8 @@ require (
 	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20221230194829-5ce46a5a7507
 )
 
+require github.com/pkg/errors v0.9.1 // indirect
+
 //uncomment the following line when working with local setup
 //replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../terraform-provider-sdk/
 
@@ -67,6 +69,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.1 // indirect
 	cloud.google.com/go/iam v0.7.0 // indirect
 	cloud.google.com/go/storage v1.28.0 // indirect
+	github.com/apex/log v1.9.0
 	github.com/aws/aws-sdk-go v1.44.147 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/go-faker/faker/v4 v4.0.0-beta.4
