@@ -138,7 +138,7 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		}
 	}
 
-	if ov.FormConfig.Type == "" {
+	if ov.FormConfig.Type == "" && ov.Value == "" {
 		log.Fatalf("cant initialize generic variable %s without type", ov.VariableName)
 	}
 
@@ -147,9 +147,12 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		fieldLabel = ov.DisplayName
 	}
 
-	fieldValue := "{}" // empty map
-	if ov.FormConfig.Type == MAP_TYPE && ov.Value != "" {
-		fieldValue = ov.Value
+	fieldValue := ov.Value
+	if ov.FormConfig.Type == MAP_TYPE {
+		fieldValue = "{}" // empty map
+		if ov.Value != "" {
+			fieldValue = ov.Value
+		}
 	}
 
 	formVariable := autocloudsdk.FormShape{
