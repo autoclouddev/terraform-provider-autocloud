@@ -1,3 +1,11 @@
+# [0.3.0-pre.34](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.33...0.3.0-pre.34) (2023-01-13)
+
+
+### Bug Fixes
+
+* Default options from module for override variables ([257124a](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/257124a3895134c62d09968a65aef8afe13904ae))
+* Updated override_var example ([22cac2c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/22cac2cdb558e0af5be363d480cca3d954db70ac))
+
 # [0.3.0-pre.33](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.32...0.3.0-pre.33) (2023-01-13)
 
 
