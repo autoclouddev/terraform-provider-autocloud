@@ -1,3 +1,10 @@
+# [0.3.0-pre.33](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.32...0.3.0-pre.33) (2023-01-13)
+
+
+### Features
+
+* **ep-2769:** iac variable.value ([b512139](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b512139fd61226a36b1bf6d0d9cae50ef6dae73d))
+
 # [0.3.0-pre.32](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.31...0.3.0-pre.32) (2023-01-10)
 
 
