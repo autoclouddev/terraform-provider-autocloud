@@ -9,7 +9,7 @@ import (
 type BluePrintConfig struct {
 	Id                string                      `json:"id"`
 	RefName           string                      `json:"refName"`
-	OmitVariables     []string                    `json:"ommitVariables"`
+	OmitVariables     []string                    `json:"omitVariables"`
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
 	Variables         []autocloudsdk.FormShape    `json:"variables"`
 	Children          []BluePrintConfig           `json:"children"`

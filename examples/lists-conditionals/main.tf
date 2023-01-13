@@ -7,11 +7,6 @@ terraform {
   }
 }
 
-## tests
-# - static value y required values
-# - var con required values + override con (conditionals y required values)
-# - pass some value as local
-
 provider "autocloud" {
   # endpoint = "https://api.autocloud.domain.com/api/v.0.0.1"
 }
