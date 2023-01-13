@@ -749,29 +749,6 @@ func TestBlueprintConfigConditionalsReading(t *testing.T) {
 			"Cloudfront": `{
 				"id": "clbnr5y2019144hyi1xc0yhex",
 				"variables": [
-					{
-						"id": "Cloudfront.comment",
-						"conditionals": [
-						  {
-							"source": "generic.variable.environment",
-							"condition": "nonprod",
-							"options": [
-							  {
-								"label": "nonprod",
-								"fieldId": "",
-								"value": "fake string",
-								"checked": false
-							  },
-							  {
-								"label": "sandbox",
-								"fieldId": "",
-								"value": "abc123fgh",
-								"checked": true
-							  }
-							]
-						  }
-						]
-					  },
 					  {
 						"id": "Cloudfront.dummy",
 						"conditionals": [
@@ -796,9 +773,8 @@ func TestBlueprintConfigConditionalsReading(t *testing.T) {
 	}
 	assert.Equal(t, 1, len(blueprintConfig.Children))
 
-	assert.Equal(t, 2, len(blueprintConfig.Children[0].Variables))
-	assert.Nil(t, blueprintConfig.Children[0].Variables[0].Conditionals[0].Value)
-	assert.Equal(t, "dummy-static-value", *blueprintConfig.Children[0].Variables[1].Conditionals[0].Value)
+	assert.Equal(t, 1, len(blueprintConfig.Children[0].Variables))
+	assert.Equal(t, "dummy-static-value", blueprintConfig.Children[0].Variables[0].Conditionals[0].Value)
 
 	jsonBlueprintConfig, _ := utils.ToJsonString(blueprintConfig)
 	fmt.Printf("blueprint config: [%v]\n", jsonBlueprintConfig)

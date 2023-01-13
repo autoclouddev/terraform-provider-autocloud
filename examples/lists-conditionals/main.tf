@@ -133,22 +133,26 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
           local.sample_string_var
         ]
 
-        value {
-          option {
-            label = "dev subnet option 1"
-            value = "dev-subnet-option-1"
+        value = jsonencode(
+          {
+            options = [
+              {
+                label = "dev subnet option 1"
+                value = "dev-subnet-option-1"
+              },
+              {
+                label   = "dev subnet option 2"
+                value   = "dev-subnet-option-2"
+                checked = true
+              },
+              {
+                label   = "dev subnet option 3"
+                value   = "dev-subnet-option-3"
+                checked = true
+              }
+            ]
           }
-          option {
-            label   = "dev subnet option 2"
-            value   = "dev-subnet-option-2"
-            checked = true
-          }
-          option {
-            label   = "dev subnet option 3"
-            value   = "dev-subnet-option-3"
-            checked = true
-          }
-        }
+        )
       }
     }
 
@@ -163,22 +167,27 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
           "required-prod-subnet-1",
           "required-prod-subnet-2"
         ]
-        value {
-          option {
-            label = "prod subnet option 1"
-            value = "prod-subnet-option-1"
+
+        value = jsonencode(
+          {
+            options = [
+              {
+                label = "prod subnet option 1"
+                value = "prod-subnet-option-1"
+              },
+              {
+                label   = "prod subnet option 2"
+                value   = "prod-subnet-option-2"
+                checked = true
+              },
+              {
+                label   = "prod subnet option 3"
+                value   = "prod-subnet-option-3"
+                checked = true
+              }
+            ]
           }
-          option {
-            label   = "prod subnet option 2"
-            value   = "prod-subnet-option-2"
-            checked = true
-          }
-          option {
-            label   = "prod subnet option 3"
-            value   = "prod-subnet-option-3"
-            checked = true
-          }
-        }
+        )
       }
     }
   }
@@ -199,26 +208,29 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
       condition = "dev"
       type      = "checkbox"
 
-
       content {
         required_list_values = [
           "3000",
           "3001",
         ]
-        value {
 
-          option {
-            label   = "PORT 30000 (dev)"
-            value   = 30000
-            checked = true
+        value = jsonencode(
+          {
+            options = [
+              {
+                label   = "PORT 30000 (dev)"
+                value   = 30000
+                checked = true
+              },
+              {
+                label   = "PORT 30001 (dev)"
+                value   = 30001
+                checked = false
+              },
+            ]
           }
-          option {
-            label   = "PORT 30001 (dev)"
-            value   = 30001
-            checked = false
-          }
+        )
 
-        }
       }
     }
 
@@ -233,19 +245,24 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
           "2000",
           "2001",
         ]
-        value {
-          option {
-            label   = "PORT 20000 (prod)"
-            value   = 20000
-            checked = true
-          }
-          option {
-            label   = "PORT 20001 (prod)"
-            value   = 20001
-            checked = false
-          }
 
-        }
+        value = jsonencode(
+          {
+            options = [
+              {
+                label   = "PORT 20000 (prod)"
+                value   = 20000
+                checked = true
+              },
+              {
+                label   = "PORT 20001 (prod)"
+                value   = 20001
+                checked = false
+              },
+            ]
+          }
+        )
+
       }
     }
   }

@@ -77,21 +77,24 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     conditional {
       source    = "kms.name"
       condition = "engineering"
-      # type    = "radio"
-      type = "checkbox"
+      type      = "checkbox"
 
       content {
-        value {
-          option {
-            label = "engineering namespace #1"
-            value = "eng-ns-1"
+        value = jsonencode(
+          {
+            options = [
+              {
+                label = "engineering namespace #1"
+                value = "eng-ns-1"
+              },
+              {
+                label   = "engineering namespace #2"
+                value   = "eng-ns-2"
+                checked = true
+              }
+            ]
           }
-          option {
-            label   = "engineering namespace #2"
-            value   = "eng-ns-2"
-            checked = true
-          }
-        }
+        )
       }
     }
 
@@ -101,17 +104,21 @@ data "autocloud_blueprint_config" "kms_custom_form" {
       type      = "radio"
 
       content {
-        value {
-          option {
-            label = "finances namespace #1"
-            value = "fin-ns-1"
+        value = jsonencode(
+          {
+            options = [
+              {
+                label = "finances namespace #1"
+                value = "fin-ns-1"
+              },
+              {
+                label   = "finances namespace #2"
+                value   = "fin-ns-2"
+                checked = true
+              }
+            ]
           }
-          option {
-            label   = "finances namespace #2"
-            value   = "fin-ns-2"
-            checked = true
-          }
-        }
+        )
       }
     }
 
@@ -119,7 +126,7 @@ data "autocloud_blueprint_config" "kms_custom_form" {
       source    = "kms.name"
       condition = "sales"
       content {
-        static = "sales-ns-1"
+        value = "sales-ns-1"
       }
     }
   }
