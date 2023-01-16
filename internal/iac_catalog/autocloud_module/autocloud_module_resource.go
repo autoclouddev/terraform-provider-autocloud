@@ -214,7 +214,7 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	config := blueprint_config.BluePrintConfig{
 		Id:        iacModule.ID,
 		Variables: variables,
-		Children:  make([]blueprint_config.BluePrintConfig, 0),
+		Children:  make(map[string]blueprint_config.BluePrintConfig),
 	}
 	jsonconf, err := json.Marshal(config)
 	if err != nil {

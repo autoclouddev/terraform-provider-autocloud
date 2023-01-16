@@ -643,7 +643,7 @@ func TestGetFormBuilder(t *testing.T) {
 						"allowConsumerToEdit": true
 					}
 				],
-				"children": []
+				"children": {}
 			  }`,
 		},
 		"variable": []interface{}{
@@ -716,10 +716,13 @@ func TestGetFormBuilder(t *testing.T) {
 	if variablesLength != 0 {
 		t.Errorf("BlueprintConfig variables.length is not 0 is: %d", variablesLength)
 	}
-	nestedVariables := blueprintConfig.Children[0].Variables
-	if len(nestedVariables) != 7 {
-		t.Errorf("BlueprintConfig.children[0].Variables.length is not 7 is: %d", len(nestedVariables))
+
+	kms := blueprintConfig.Children["kms"]
+	//nestedVariables := blueprintConfig.Children[0].Variables
+	if len(kms.Variables) != 7 {
+		t.Errorf("BlueprintConfig.children[0].Variables.length is not 7 is: %d", len(kms.Variables))
 	}
+
 	if len(blueprintConfig.OmitVariables) != 2 {
 		t.Errorf("BlueprintConfig.OmitVariables is not 2 is: %d", len(blueprintConfig.OmitVariables))
 	}
@@ -784,7 +787,7 @@ func TestBlueprintConfigConditionalsReading(t *testing.T) {
 						]
 					  }
 				],
-				"children": []
+				"children": {}
 			  }`,
 		},
 	}
@@ -796,9 +799,9 @@ func TestBlueprintConfigConditionalsReading(t *testing.T) {
 	}
 	assert.Equal(t, 1, len(blueprintConfig.Children))
 
-	assert.Equal(t, 2, len(blueprintConfig.Children[0].Variables))
-	assert.Nil(t, blueprintConfig.Children[0].Variables[0].Conditionals[0].Value)
-	assert.Equal(t, "dummy-static-value", *blueprintConfig.Children[0].Variables[1].Conditionals[0].Value)
+	assert.Equal(t, 2, len(blueprintConfig.Children["Cloudfront"].Variables))
+	assert.Nil(t, blueprintConfig.Children["Cloudfront"].Variables[0].Conditionals[0].Value)
+	assert.Equal(t, "dummy-static-value", *blueprintConfig.Children["Cloudfront"].Variables[1].Conditionals[0].Value)
 
 	jsonBlueprintConfig, _ := utils.ToJsonString(blueprintConfig)
 	fmt.Printf("blueprint config: [%v]\n", jsonBlueprintConfig)

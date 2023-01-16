@@ -1,6 +1,7 @@
 package blueprint_config_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -68,8 +69,11 @@ func TestOverrideVariable(t *testing.T) {
 		overridesCopy[k] = v
 	}
 
-	newVars := blueprint_config.OverrideVariables(originalVars, overrides)
+	newVars, err := blueprint_config.OverrideVariables(originalVars, overrides)
 
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	for _, newVar := range newVars {
 		varName, err := utils.GetVariableID(newVar.ID)
 		if err != nil {
@@ -80,6 +84,42 @@ func TestOverrideVariable(t *testing.T) {
 		checkConditionals(newVar, overridesCopy[varName], t)
 		checkAllowConsumerToEdit(newVar, overridesCopy[varName], t)
 	}
+	t.Cleanup(closer)
+}
+
+func TestOverrideVariableError(t *testing.T) {
+	closer := acctest.EnvSetter(map[string]string{
+		"TF_LOG": "DEBUG", // to see the DEBUG logs
+	})
+	var expectedError = blueprint_config.ErrVariableNotFound
+	originalVars := []autocloudsdk.FormShape{
+		{
+			ID:                  "module1Id",
+			Module:              "module1",
+			FormQuestion:        autocloudsdk.FormQuestion{},
+			FieldDataType:       "string",
+			FieldDefaultValue:   "string",
+			FieldValue:          "string",
+			AllowConsumerToEdit: true,
+			Conditionals:        []autocloudsdk.ConditionalConfig{},
+		},
+	}
+
+	overrides := make(map[string]blueprint_config.OverrideVariable)
+	for i := 0; i < len(originalVars); i++ {
+		ov, err := CreateFakeOverride()
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		overrides[ov.VariableName] = *ov
+	}
+
+	_, err := blueprint_config.OverrideVariables(originalVars, overrides)
+
+	if !errors.Is(err, expectedError) {
+		t.Fatalf("no error was detected")
+	}
+
 	t.Cleanup(closer)
 }
 
@@ -197,16 +237,36 @@ func CreateFakeOverride() (*blueprint_config.OverrideVariable, error) {
 		return nil, err
 	}
 	// faker cant create arrays of specific length
-	formConfig.FieldOptions = formConfig.FieldOptions[:3]
-	formConfig.ValidationRules = formConfig.ValidationRules[:1]
+	formConfig.FieldOptions = make([]blueprint_config.FieldOption, 0)
+	for i := 0; i < 2; i++ {
+		var fieldOption blueprint_config.FieldOption
+		err := faker.FakeData(&fieldOption)
+		if err != nil {
+			return nil, err
+		}
+		formConfig.FieldOptions = append(formConfig.FieldOptions, fieldOption)
+	}
+	var ValidationRule blueprint_config.ValidationRule
+	err = faker.FakeData(&ValidationRule)
+	if err != nil {
+		return nil, err
+	}
+	formConfig.ValidationRules = []blueprint_config.ValidationRule{ValidationRule}
 
 	var conditional blueprint_config.ConditionalConfig
 	err = faker.FakeData(&conditional)
 	if err != nil {
 		fmt.Print(err)
 	}
-	conditional.Options = conditional.Options[:2]
-
+	conditional.Options = make([]blueprint_config.FieldOption, 0)
+	for i := 0; i < 2; i++ {
+		var fieldOption blueprint_config.FieldOption
+		err := faker.FakeData(&fieldOption)
+		if err != nil {
+			return nil, err
+		}
+		conditional.Options = append(conditional.Options, fieldOption)
+	}
 	var ov blueprint_config.OverrideVariable
 	err = faker.FakeData(&ov)
 	if err != nil {

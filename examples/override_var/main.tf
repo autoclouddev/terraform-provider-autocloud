@@ -49,7 +49,6 @@ resource "autocloud_module" "s3_bucket" {
   display_order = ["bucket"]
 }
 
-
 resource "autocloud_module" "cloudfront" {
 
   ####
@@ -68,6 +67,8 @@ resource "autocloud_module" "cloudfront" {
   source        = "terraform-aws-modules/cloudfront/aws" // https://registry.terraform.io/modules/terraform-aws-modules/cloudfront/aws/latest
   display_order = ["web_acl_id", "price_class", "http_version"]
 }
+
+
 
 
 
@@ -98,7 +99,7 @@ data "autocloud_blueprint_config" "s3_processor" {
   ]
 
   variable {
-    name         = "bucket_prefix"
+    name         = "s3_m.variables.bucket_prefix"
     display_name = "bucket prefix (from override block)"
     helper_text  = "bucket prefix helper text (from override block)"
 
@@ -130,42 +131,10 @@ data "autocloud_blueprint_config" "s3_processor" {
   # bucket_prefix, acceleration_status => these vars are of 'shortText' type
   # attach_public_policy is of 'radio' type ('checkbox' types are similar to 'radio' types)
 
-  # OVERRIDE VARIABLE EXAMPLES
-  # - overriding bucket_prefix 'shortText' into 'radio'
-
-  variable {
-    name         = "bucket_prefix"
-    display_name = "bucket prefix (from override block)"
-    helper_text  = "bucket prefix helper text (from override block)"
-
-    type = "radio"
-    options {
-      option {
-        label   = "dev"
-        value   = "some-dev-prefix"
-        checked = false
-      }
-      option {
-        label   = "nonprod"
-        value   = "some-nonprod-prefix"
-        checked = true
-      }
-      option {
-        label = "prod"
-        value = "some-prod-prefix"
-      }
-    }
-    validation_rule {
-      rule          = "isRequired"
-      error_message = "invalid"
-    }
-
-  }
-
 
   # - overriding acceleration_status 'shortText' into 'checkbox'
   variable {
-    name = "acceleration_status"
+    name = "s3_m.variables.acceleration_status"
 
     type = "checkbox"
     options {
@@ -207,6 +176,7 @@ data "autocloud_blueprint_config" "s3_processor" {
 
 }
 
+
 data "autocloud_blueprint_config" "cf_processor" {
   source = {
     cf = autocloud_module.cloudfront.blueprint_config
@@ -243,12 +213,12 @@ data "autocloud_blueprint_config" "cf_processor" {
   # OVERRIDE VARIABLE EXAMPLES
   # - set values from other modules outputs
   variable {
-    name  = "comment"
+    name  = "cf.variables.comment"
     value = autocloud_module.s3_bucket.outputs["s3_bucket_id"]
   }
 
   variable {
-    name  = "default_root_object"
+    name  = "cf.variables.default_root_object"
     value = "index.html"
   }
 
@@ -264,7 +234,7 @@ data "autocloud_blueprint_config" "final" {
 }
 
 resource "autocloud_blueprint" "example" {
-  name = "S3andCloudfront"
+  name = "varRef"
 
   ###
   # UI Configuration

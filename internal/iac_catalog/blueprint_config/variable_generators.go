@@ -31,7 +31,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		}
 	}
 
-	fieldLabel := overrideData.VariableName
+	fieldLabel := iacModuleVar.FormQuestion.FieldLabel
 	if overrideData.DisplayName != "" {
 		fieldLabel = overrideData.DisplayName
 	}

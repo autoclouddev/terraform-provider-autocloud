@@ -12,7 +12,7 @@ type BluePrintConfig struct {
 	OmitVariables     []string                    `json:"ommitVariables"`
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
 	Variables         []autocloudsdk.FormShape    `json:"variables"`
-	Children          []BluePrintConfig           `json:"children"`
+	Children          map[string]BluePrintConfig  `json:"children"`
 }
 
 type OverrideVariable struct {
@@ -61,3 +61,4 @@ var ErrSetValueInForm = errors.New("A form options can not be added when setting
 var ErrOneBlockOptionsRequied = errors.New("No more than 1 \"options\" blocks are allowed")
 var ErrShortTextCantHaveOptions = errors.New("ShortText variables can not have options")
 var ErrIsRequiredCantHaveValue = errors.New("'isRequired' validation rule can not have a value")
+var ErrVariableNotFound = errors.New("ERROR: no variable ID found")
