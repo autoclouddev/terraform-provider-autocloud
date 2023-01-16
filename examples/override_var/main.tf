@@ -73,7 +73,7 @@ resource "autocloud_module" "cloudfront" {
 
 data "autocloud_blueprint_config" "s3_processor" {
   source = {
-    s3 = autocloud_module.s3_bucket.blueprint_config
+    s3_m = autocloud_module.s3_bucket.blueprint_config
   }
   omit_variables = [
     "acl",

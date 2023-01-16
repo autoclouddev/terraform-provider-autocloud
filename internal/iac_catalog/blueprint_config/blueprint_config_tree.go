@@ -2,15 +2,17 @@ package blueprint_config
 
 import (
 	"encoding/json"
-	"log"
 
+	"github.com/apex/log"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/logger"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
 func GetFormShape(root BluePrintConfig) []autocloudsdk.FormShape {
+	var log = logger.Create(log.Fields{"fn": "GetFormShape()"})
 	str, _ := json.MarshalIndent(root, "", "    ")
-	log.Printf("root bc: %s", string(str))
+	log.Debugf("root bc: %s", string(str))
 	return postOrderTransversal(&root)
 }
 
@@ -19,16 +21,17 @@ func GetFormShape(root BluePrintConfig) []autocloudsdk.FormShape {
 // processing the current level overrides and generics
 func postOrderTransversal(root *BluePrintConfig) []autocloudsdk.FormShape {
 	var vars []autocloudsdk.FormShape = root.Variables
+
 	for _, v := range root.Children {
 		v := v                                   // avoid implicit memory aliasing
 		childrenvars := postOrderTransversal(&v) // this &v now the address of the inner v
 		vars = append(vars, childrenvars...)
 	}
-	log.Printf("current node omit vars, %s", root.OmitVariables)
+	log.Debugf("current node omit vars, %s", root.OmitVariables)
 	admittedVars := OmitVars(vars, root.OmitVariables)
-	log.Printf("the [%v] addmited vars", admittedVars)
-	log.Printf("current override vars, %v", root.OverrideVariables)
-	return overrideVariables(admittedVars, root.OverrideVariables)
+	log.Debugf("the [%v] addmited vars", admittedVars)
+	log.Debugf("current override vars, %v", root.OverrideVariables)
+	return OverrideVariables(admittedVars, root.OverrideVariables)
 }
 
 func OmitVars(vars []autocloudsdk.FormShape, omitts []string) []autocloudsdk.FormShape {
@@ -47,15 +50,15 @@ func findIdx(vars []autocloudsdk.FormShape, varname string) int {
 	for i, v := range vars {
 		varName, err := utils.GetVariableID(v.ID)
 		if err != nil {
-			log.Printf("the [%s] variable not found", varName)
+			log.Debugf("the [%s] variable not found", varName)
 			return -1
 		}
 		if varName == varname {
-			log.Printf("the [%s] variable was omitted", varName)
+			log.Debugf("the [%s] variable was omitted", varName)
 			return i
 		}
 	}
-	log.Printf("the [%s] omitted value not found in vars", varname)
+	log.Debugf("the [%s] omitted value not found in vars", varname)
 	return -1
 }
 
@@ -63,23 +66,28 @@ func remove(slice []autocloudsdk.FormShape, s int) []autocloudsdk.FormShape {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-func overrideVariables(vars []autocloudsdk.FormShape, overrides map[string]OverrideVariable) []autocloudsdk.FormShape {
+func OverrideVariables(vars []autocloudsdk.FormShape, overrides map[string]OverrideVariable) []autocloudsdk.FormShape {
+	var log = logger.Create(log.Fields{"fn": "OverrideVariables()"})
 	// transform all original Variables to its overrides
 	for i, iacVar := range vars {
 		varName, err := utils.GetVariableID(iacVar.ID)
 
 		if err != nil {
-			log.Printf("WARNING: no variable ID found -> %v, evaluated value : %v", err, iacVar)
+			log.Debugf("WARNING: no variable ID found -> %v, evaluated value : %v", err, iacVar)
 			return make([]autocloudsdk.FormShape, 0)
 		}
-		if overrideVariableData, ok := overrides[varName]; ok {
-			vars[i] = buildOverriddenVariable(iacVar, overrideVariableData)
-			delete(overrides, varName)
+		overrideVariableData, ok := overrides[varName]
+		if ok {
+			str, _ := json.MarshalIndent(overrideVariableData, "", "    ")
+			log.Debugf("data -> %s", string(str))
+			vars[i] = BuildOverridenVariable(iacVar, overrideVariableData)
+			delete(overrides, varName) //delete after for loop
 		}
+		log.Debugf("ok? %v", ok)
 	}
 	// on this point only generics remain, no original variables
 	for _, ov := range overrides {
-		formVar := buildGenericVariable(ov)
+		formVar := BuildGenericVariable(ov)
 		vars = append(vars, formVar)
 	}
 	// sort questions to keep ordering consistent ??
