@@ -96,21 +96,10 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"value": {
-								Type:     schema.TypeSet,
-								Optional: true,
-								MinItems: 1,
-								MaxItems: 1,
-								Elem: &schema.Resource{
-									Schema: map[string]*schema.Schema{
-										"option": optionItemSchema,
-									},
-								},
-							},
-							"static": {
 								Type:     schema.TypeString,
-								Optional: true,
+								Required: true,
 							},
-							// TODO: Update this field name to 'required_values' and implement the type based on the solution taken in EP-2769 (for example, using string type + jsonencode)
+							// TODO: [EP-2800] Update this field name to 'required_values' and implement the type based on the solution taken in EP-2769 (for example, using string type + jsonencode)
 							"required_list_values": {
 								Type:     schema.TypeList,
 								Optional: true,
@@ -530,35 +519,6 @@ func getConditionals(varOverrideMap *schema.Set) []ConditionalConfig {
 		}
 		conditionalContentMap := conditionalContentMapList[0].(map[string]interface{})
 
-		// length validated at schema level
-		var fieldOptions []FieldOption = make([]FieldOption, 0)
-		var staticValue *string
-
-		if staticVal, ok := conditionalContentMap["static"]; ok && staticVal != "" {
-			str, castOk := staticVal.(string)
-			if castOk {
-				staticValue = &str
-			}
-		}
-
-		if staticValue == nil {
-			conditionalValueMap := conditionalContentMap["value"].(*schema.Set).List()
-			if len(conditionalValueMap) > 0 {
-				fieldOptionList := conditionalValueMap[0].(map[string]interface{})["option"].(*schema.Set).List()
-
-				fieldOptions = make([]FieldOption, 0)
-				for _, vOption := range fieldOptionList {
-					optionMap := vOption.(map[string]interface{})
-					fo := FieldOption{
-						Label:   optionMap["label"].(string),
-						Value:   optionMap["value"].(string),
-						Checked: optionMap["checked"].(bool),
-					}
-					fieldOptions = append(fieldOptions, fo)
-				}
-			}
-		}
-
 		var requiredValues []string
 		if val, ok := conditionalContentMap["required_list_values"]; ok {
 			list := val.([]interface{})
@@ -569,8 +529,7 @@ func getConditionals(varOverrideMap *schema.Set) []ConditionalConfig {
 			Source:         conditionalMap["source"].(string),
 			Condition:      conditionalMap["condition"].(string),
 			Type:           conditionalMap["type"].(string),
-			Options:        fieldOptions,
-			Value:          staticValue,
+			Value:          conditionalContentMap["value"].(string),
 			RequiredValues: requiredValues,
 		}
 		conditionals = append(conditionals, c)

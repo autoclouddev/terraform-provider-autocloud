@@ -258,7 +258,7 @@ func CreateFakeOverride() (*blueprint_config.OverrideVariable, error) {
 	if err != nil {
 		fmt.Print(err)
 	}
-	conditional.Options = make([]blueprint_config.FieldOption, 0)
+	/*conditional.Options = make([]blueprint_config.FieldOption, 0)
 	for i := 0; i < 2; i++ {
 		var fieldOption blueprint_config.FieldOption
 		err := faker.FakeData(&fieldOption)
@@ -266,7 +266,7 @@ func CreateFakeOverride() (*blueprint_config.OverrideVariable, error) {
 			return nil, err
 		}
 		conditional.Options = append(conditional.Options, fieldOption)
-	}
+	}*/
 	var ov blueprint_config.OverrideVariable
 	err = faker.FakeData(&ov)
 	if err != nil {

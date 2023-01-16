@@ -9,7 +9,7 @@ import (
 type BluePrintConfig struct {
 	Id                string                      `json:"id"`
 	RefName           string                      `json:"refName"`
-	OmitVariables     []string                    `json:"ommitVariables"`
+	OmitVariables     []string                    `json:"omitVariables"`
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
 	Variables         []autocloudsdk.FormShape    `json:"variables"`
 	Children          map[string]BluePrintConfig  `json:"children"`
@@ -26,13 +26,13 @@ type OverrideVariable struct {
 }
 
 type ConditionalConfig struct {
-	Source         string        `json:"source" faker:"word"`
-	Condition      string        `json:"condition" faker:"word"`
-	Type           string        `json:"type" faker:"word"`
-	Options        []FieldOption `json:"options"`
-	Value          *string       `json:"value" faker:"word"`
-	RequiredValues []string      `json:"requiredValues" faker:"slice_len=2"`
+	Source         string   `json:"source" faker:"word"`
+	Condition      string   `json:"condition" faker:"word"`
+	Type           string   `json:"type" faker:"word"`
+	Value          string   `json:"value" faker:"word"`
+	RequiredValues []string `json:"requiredValues" faker:"slice_len=2"`
 }
+
 type FormConfig struct {
 	Type            string           `json:"type" faker:"oneof: checkbox, radio"`
 	FieldOptions    []FieldOption    `json:"fieldOptions"`
