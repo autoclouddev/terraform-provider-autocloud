@@ -26,13 +26,13 @@ type OverrideVariable struct {
 }
 
 type ConditionalConfig struct {
-	Source         string        `json:"source"`
-	Condition      string        `json:"condition"`
-	Type           string        `json:"type"`
-	Options        []FieldOption `json:"options"`
-	Value          *string       `json:"value"`
-	RequiredValues []string      `json:"requiredValues"`
+	Source         string   `json:"source"`
+	Condition      string   `json:"condition"`
+	Type           string   `json:"type"`
+	Value          string   `json:"value"`
+	RequiredValues []string `json:"requiredValues"`
 }
+
 type FormConfig struct {
 	Type            string           `json:"type"`
 	FieldOptions    []FieldOption    `json:"fieldOptions"`

@@ -117,21 +117,9 @@ func buildOverriddenVariable(iacModuleVar autocloudsdk.FormShape, overrideData O
 		}
 	}
 	for i, conditional := range overrideData.Conditionals {
-		log.Printf("buildOverridenVariable -> conditional: %v \n", conditional)
-		fieldOptions := make([]autocloudsdk.FieldOption, 0)
-		for _, option := range conditional.Options {
-			fo := autocloudsdk.FieldOption{
-				FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
-				Label:   option.Label,
-				Value:   option.Value,
-				Checked: option.Checked,
-			}
-			fieldOptions = append(fieldOptions, fo)
-		}
 		newIacModuleVar.Conditionals[i] = autocloudsdk.ConditionalConfig{
 			Source:         conditional.Source,
 			Condition:      conditional.Condition,
-			Options:        fieldOptions,
 			Value:          conditional.Value,
 			Type:           conditional.Type,
 			RequiredValues: conditional.RequiredValues,
@@ -215,19 +203,9 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 	}
 
 	for i, conditional := range ov.Conditionals {
-		fieldOptions := make([]autocloudsdk.FieldOption, len(conditional.Options))
-		for j, option := range conditional.Options {
-			fieldOptions[j] = autocloudsdk.FieldOption{
-				FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
-				Label:   option.Label,
-				Value:   option.Value,
-				Checked: option.Checked,
-			}
-		}
 		formVariable.Conditionals[i] = autocloudsdk.ConditionalConfig{
 			Source:         conditional.Source,
 			Condition:      conditional.Condition,
-			Options:        fieldOptions,
 			Value:          conditional.Value,
 			Type:           conditional.Type,
 			RequiredValues: conditional.RequiredValues,
