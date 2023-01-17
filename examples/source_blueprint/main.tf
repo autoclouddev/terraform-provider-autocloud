@@ -19,7 +19,7 @@ provider "autocloud" {
 data "autocloud_github_repos" "repos" {}
 
 ####
-# Local vara
+# Local vars
 locals {
   # Destination repos where generated code will be submitted
   dest_repos = [
@@ -39,7 +39,7 @@ data "autocloud_blueprint_config" "generic" {
     name         = "env"
     display_name = "environment target"
     helper_text  = "environment target description"
-    type = "radio"
+    type         = "radio"
     options {
       option {
         label   = "dev"
@@ -66,11 +66,11 @@ data "autocloud_blueprint_config" "generic" {
     name         = "resource_metadata"
     display_name = "resource metadata"
     helper_text  = "environment target description"
-    type = "map"
-    required_values = {
-      "managed-by" = "autocloud"
-      owner = null
-    }
+    type         = "map"
+    required_values = jsonencode({
+      "managed-by" = "autocloud3"
+      owner        = null
+    })
   }
 }
 
@@ -84,7 +84,7 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     name         = "description"
     display_name = "choose the usage of this kms"
     helper_text  = "select the corresponding team"
-    type = "radio"
+    type         = "radio"
     options {
       option {
         label   = "engineering"
@@ -119,7 +119,7 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     name         = "enable_key_rotation"
     display_name = "enable_key_rotation display name"
     helper_text  = "enable_key_rotation helper text"
-    type = "radio"
+    type         = "radio"
     options {
       option {
         label   = "ENABLE"
@@ -146,7 +146,7 @@ data "autocloud_blueprint_config" "kms_custom_form" {
     name         = "deletion_window_in_days"
     display_name = "deletion_window_in_days display name"
     helper_text  = "deletion_window_in_days helper text"
-    type = "radio"
+    type         = "radio"
     options {
       option {
         label   = "30 days"
