@@ -99,13 +99,9 @@ func DataSourceBlueprintConfig() *schema.Resource {
 								Type:     schema.TypeString,
 								Required: true,
 							},
-							// TODO: [EP-2800] Update this field name to 'required_values' and implement the type based on the solution taken in EP-2769 (for example, using string type + jsonencode)
-							"required_list_values": {
-								Type:     schema.TypeList,
+							"required_values": {
+								Type:     schema.TypeString,
 								Optional: true,
-								Elem: &schema.Schema{
-									Type: schema.TypeString,
-								},
 							},
 						},
 					},
@@ -161,20 +157,8 @@ func DataSourceBlueprintConfig() *schema.Resource {
 						},
 					},
 					"required_values": {
-						Description: "required_values",
-						Type:        schema.TypeMap,
-						Optional:    true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
-					},
-					// TODO: Update this field name to 'required_values' and implement the type based on the solution taken in EP-2769 (for example, using string type + jsonencode)
-					"required_list_values": {
-						Type:     schema.TypeList,
+						Type:     schema.TypeString,
 						Optional: true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
 					},
 					"conditional":     conditionalSchema,
 					"validation_rule": validationRulesSchema,
@@ -250,8 +234,12 @@ func ConvertMap(mapInterface map[string]interface{}) map[string]string {
 	mapString := make(map[string]string)
 
 	for key, value := range mapInterface {
+		mapValue := value
+		if value == nil {
+			mapValue = ""
+		}
 		strKey := fmt.Sprintf("%v", key)
-		strValue := fmt.Sprintf("%v", value)
+		strValue := fmt.Sprintf("%v", mapValue)
 
 		mapString[strKey] = strValue
 	}
@@ -305,11 +293,10 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 			varName := varOverrideMap["name"].(string)
 
 			// required values
-			var requiredValues []string
-			requiredValuesInput, requiredValuesInputExist := varOverrideMap["required_list_values"]
+			var requiredValues string
+			requiredValuesInput, requiredValuesInputExist := varOverrideMap["required_values"]
 			if requiredValuesInputExist {
-				list := requiredValuesInput.([]interface{})
-				requiredValues = utils.ToStringSlice(list)
+				requiredValues = requiredValuesInput.(string)
 			}
 
 			bp.OverrideVariables[varName] = OverrideVariable{
@@ -412,7 +399,13 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 
 			if variableType == MAP_TYPE {
 				if val, ok := varOverrideMap["required_values"]; ok {
-					var variablesMap = val.(map[string]interface{})
+					variablesMapJson := val.(string)
+					var variablesMap map[string]interface{}
+					err := json.Unmarshal([]byte(variablesMapJson), &variablesMap)
+					if err != nil {
+						fmt.Println(err)
+					}
+
 					ccc := ConvertMap(variablesMap)
 
 					pairs := make([]autocloudsdk.KeyValue, 0)
@@ -520,10 +513,9 @@ func getConditionals(varOverrideMap *schema.Set) []ConditionalConfig {
 		}
 		conditionalContentMap := conditionalContentMapList[0].(map[string]interface{})
 
-		var requiredValues []string
-		if val, ok := conditionalContentMap["required_list_values"]; ok {
-			list := val.([]interface{})
-			requiredValues = utils.ToStringSlice(list)
+		var requiredValues string
+		if val, ok := conditionalContentMap["required_values"]; ok {
+			requiredValues = val.(string)
 		}
 
 		c := ConditionalConfig{

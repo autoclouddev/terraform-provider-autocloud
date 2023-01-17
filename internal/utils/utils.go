@@ -273,6 +273,11 @@ func ToJsonString(obj any) (string, error) {
 	return jsonBuffer.String(), nil
 }
 
+func ToJsonStringNoError(obj any) string {
+	jsonStr, _ := ToJsonString(obj)
+	return jsonStr
+}
+
 // remove empty spaces from a JSON string
 //
 //nolint:golint,unused
