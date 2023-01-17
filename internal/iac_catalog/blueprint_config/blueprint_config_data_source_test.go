@@ -1,6 +1,7 @@
 package blueprint_config_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"testing"
@@ -658,10 +659,10 @@ func TestGetFormBuilder(t *testing.T) {
 						"error_message": "invalid",
 					},
 				},
-				"required_list_values": []interface{}{
+				"required_values": utils.ToJsonStringNoError([]interface{}{
 					"required-value-1",
 					"required-value-2",
-				},
+				}),
 				"options": []interface{}{
 					map[string]interface{}{
 						"option": []interface{}{
@@ -692,11 +693,11 @@ func TestGetFormBuilder(t *testing.T) {
 							map[string]interface{}{
 								"source":    "generic.variable.environment",
 								"condition": "nonprod",
-								"required_list_values": []interface{}{
+								"required_values": utils.ToJsonStringNoError([]interface{}{
 									"required-value-1",
 									"required-value-2",
 									"required-value-3",
-								},
+								}),
 							},
 						},
 					},
@@ -730,12 +731,19 @@ func TestGetFormBuilder(t *testing.T) {
 		t.Errorf("BlueprintConfig.OverrideVariables is not 2 is: %d", len(blueprintConfig.OmitVariables))
 	}
 
-	requiredValuesCount := len(blueprintConfig.OverrideVariables["great_name"].RequiredValues)
+	var requiredValues []string
+	err = json.Unmarshal([]byte(blueprintConfig.OverrideVariables["great_name"].RequiredValues), &requiredValues)
+	assert.Nil(t, err)
+
+	requiredValuesCount := len(requiredValues)
 	if requiredValuesCount != 2 {
 		t.Errorf("BlueprintConfig.OverrideVariables RequiredValues is not 2 is: %d", requiredValuesCount)
 	}
 
-	conditionalRequiredValuesCount := len(blueprintConfig.OverrideVariables["some-var"].Conditionals[0].RequiredValues)
+	var conditionalRequiredValues []string
+	err = json.Unmarshal([]byte(blueprintConfig.OverrideVariables["some-var"].Conditionals[0].RequiredValues), &conditionalRequiredValues)
+	assert.Nil(t, err)
+	conditionalRequiredValuesCount := len(conditionalRequiredValues)
 	if conditionalRequiredValuesCount != 3 {
 		t.Errorf("BlueprintConfig.OverrideVariables Conditional RequiredValues is not 3 is: %d", conditionalRequiredValuesCount)
 	}

@@ -1,3 +1,24 @@
+# [0.3.0-pre.37](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.36...0.3.0-pre.37) (2023-01-17)
+
+
+### Features
+
+* **ep-2617:** iac conditionals ([af2d03d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/af2d03dbe822e1b667be1c8b374583c727e48afe))
+
+# [0.3.0-pre.36](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.35...0.3.0-pre.36) (2023-01-17)
+
+
+### Features
+
+* **eks_demo:** provisional eks demo ([6c185a9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/6c185a9aad91c71c676d241669c20992e614bd02))
+
+# [0.3.0-pre.35](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.34...0.3.0-pre.35) (2023-01-16)
+
+
+### Features
+
+* **ep-2770:** iac conditionals content value ([fdaef35](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/fdaef3564f000b9fb3d4360628c8c8ed6df32d0f))
+
 # [0.3.0-pre.34](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.33...0.3.0-pre.34) (2023-01-13)
 
 

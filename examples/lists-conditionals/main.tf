@@ -116,10 +116,10 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     display_name = "ecs subnet ids"
     helper_text  = "select the ecs subnet ids"
     type         = "checkbox"
-    required_list_values = [
+    required_values = jsonencode([
       "required-subnet-1",
       "required-subnet-2"
-    ]
+    ])
 
     conditional {
       source    = "generic.env"
@@ -127,11 +127,11 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
       type      = "checkbox"
 
       content {
-        required_list_values = [
+        required_values = jsonencode([
           "required-dev-subnet-1",
           "required-dev-subnet-2",
           local.sample_string_var
-        ]
+        ])
 
         value = jsonencode(
           {
@@ -163,10 +163,10 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
 
 
       content {
-        required_list_values = [
+        required_values = jsonencode([
           "required-prod-subnet-1",
           "required-prod-subnet-2"
-        ]
+        ])
 
         value = jsonencode(
           {
@@ -197,11 +197,11 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     display_name = "hello work ports"
     helper_text  = "select the hello work ports"
     type         = "checkbox"
-    required_list_values = [
+    required_values = jsonencode([
       "8080", // NOTE / TODO: same problem as the value field (can only assign 1 field type, in this case TypeString)
       "8081",
       "8082",
-    ]
+    ])
 
     conditional {
       source    = "generic.env"
@@ -209,10 +209,10 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
       type      = "checkbox"
 
       content {
-        required_list_values = [
+        required_values = jsonencode([
           "3000",
           "3001",
-        ]
+        ])
 
         value = jsonencode(
           {
@@ -241,10 +241,10 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
 
 
       content {
-        required_list_values = [
+        required_values = jsonencode([
           "2000",
           "2001",
-        ]
+        ])
 
         value = jsonencode(
           {

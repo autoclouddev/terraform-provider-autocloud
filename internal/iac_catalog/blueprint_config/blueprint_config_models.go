@@ -18,7 +18,7 @@ type BluePrintConfig struct {
 type OverrideVariable struct {
 	VariableName   string              `json:"variableName" faker:"word"`
 	Value          string              `json:"value" faker:"word"`
-	RequiredValues []string            `json:"requiredValues" faker:"slice_len=2"`
+	RequiredValues string              `json:"requiredValues" faker:"slice_len=2"`
 	DisplayName    string              `json:"displayName" faker:"word"`
 	HelperText     string              `json:"helperText" faker:"word"`
 	FormConfig     FormConfig          `json:"formConfig"`
@@ -26,11 +26,11 @@ type OverrideVariable struct {
 }
 
 type ConditionalConfig struct {
-	Source         string   `json:"source" faker:"word"`
-	Condition      string   `json:"condition" faker:"word"`
-	Type           string   `json:"type" faker:"word"`
-	Value          string   `json:"value" faker:"word"`
-	RequiredValues []string `json:"requiredValues" faker:"slice_len=2"`
+	Source         string `json:"source" faker:"word"`
+	Condition      string `json:"condition" faker:"word"`
+	Type           string `json:"type" faker:"word"`
+	Value          string `json:"value" faker:"word"`
+	RequiredValues string `json:"requiredValues" `
 }
 
 type FormConfig struct {
