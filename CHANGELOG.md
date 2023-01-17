@@ -1,3 +1,10 @@
+# [0.3.0-pre.38](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.37...0.3.0-pre.38) (2023-01-17)
+
+
+### Features
+
+* **variable_override:** modify children's variables by reference ([a1a40aa](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/a1a40aaf61e8522befc78bcecbe7491859c9c23f))
+
 # [0.3.0-pre.37](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.36...0.3.0-pre.37) (2023-01-17)
 
 
