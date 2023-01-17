@@ -1,3 +1,10 @@
+# [0.3.0-pre.36](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.35...0.3.0-pre.36) (2023-01-17)
+
+
+### Features
+
+* **eks_demo:** provisional eks demo ([6c185a9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/6c185a9aad91c71c676d241669c20992e614bd02))
+
 # [0.3.0-pre.35](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.34...0.3.0-pre.35) (2023-01-16)
 
 
