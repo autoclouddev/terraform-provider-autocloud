@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-faker/faker/v4"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
@@ -27,6 +28,9 @@ func fakeFormShape() autocloudsdk.FormShape {
 }
 
 func TestTreeTransversal(t *testing.T) {
+	closer := acctest.EnvSetter(map[string]string{
+		"TF_LOG": "INFO", // to see the DEBUG logs
+	})
 	//     tree
 	//      A
 	//    /   \
@@ -38,31 +42,45 @@ func TestTreeTransversal(t *testing.T) {
 	CVariables := []autocloudsdk.FormShape{fakeFormShape(), fakeFormShape()}
 	DVariables := []autocloudsdk.FormShape{fakeFormShape()}
 
+	cVar := CVariables[1]
+	cVar.ID = "cloudfront.name"
+	overrideInB, err := CreateFakeOverride()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	overrideInB.DisplayName = "cloudfront.name is overrided!"
+	overrideInB.VariableName = "C.variables.name"
+	CVariables[1] = cVar
 	tree := blueprint_config.BluePrintConfig{
-		Id:        "root",
+		Id:        "A",
 		Variables: AVariables,
-		Children: []blueprint_config.BluePrintConfig{
-			{
-				Id:        "root.1",
+		Children: map[string]blueprint_config.BluePrintConfig{
+			"B": {
+				Id:        "B.1",
 				Variables: BVariables,
-				Children: []blueprint_config.BluePrintConfig{{
-					Id:        "root.1.1",
-					Variables: CVariables,
-				}},
+				OverrideVariables: map[string]blueprint_config.OverrideVariable{
+					overrideInB.VariableName: *overrideInB,
+				},
+				Children: map[string]blueprint_config.BluePrintConfig{
+					"C": {
+						Id:        "C.1",
+						Variables: CVariables,
+					}},
 			},
-			{
-				Id:        "root.2",
+			"D": {
+				Id:        "D.1",
 				Variables: DVariables,
-				Children:  []blueprint_config.BluePrintConfig{},
+				Children:  map[string]blueprint_config.BluePrintConfig{},
 			},
 		},
 	}
-	form := blueprint_config.GetFormShape(tree)
+
+	form, _ := blueprint_config.GetFormShape(tree)
 	//expectedOrder := []string{"A", "B", "C", "D"}
 	expectedOrder := append(append(append(AVariables, BVariables...), CVariables...), DVariables...)
 
 	if len(form) != len(expectedOrder) {
-		t.Fatalf("expected form has different length")
+		t.Fatalf("expected form has different length, len(form): %v  len(expectedOrder): %v", len(form), len(expectedOrder))
 	}
 
 	fmt.Printf("Avariables: %s\n", printFormShapeVarsIds(AVariables))
@@ -77,7 +95,12 @@ func TestTreeTransversal(t *testing.T) {
 		if form[i].ID != v.ID {
 			t.Fatalf("expected form has different order")
 		}
+		if i == 4 && form[i].FormQuestion.FieldLabel != overrideInB.DisplayName {
+			t.Fatalf("Override by referece did not work")
+		}
 	}
+
+	t.Cleanup(closer)
 }
 
 func printFormShapeVarsIds(form []autocloudsdk.FormShape) string {

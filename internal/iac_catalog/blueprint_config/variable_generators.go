@@ -3,10 +3,13 @@ package blueprint_config
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	//"log"
 	"regexp"
 
+	"github.com/apex/log"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/logger"
 )
 
 // it creates an iac question format from override var data
@@ -14,7 +17,8 @@ import (
 TODO: create a test over this function, perhaps it is worth it to rethink the inputs,
 We need as an output a FormShape
 */
-func buildOverriddenVariable(iacModuleVar autocloudsdk.FormShape, overrideData OverrideVariable) autocloudsdk.FormShape {
+func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData OverrideVariable) autocloudsdk.FormShape {
+	var log = logger.Create(log.Fields{"fn": "BuildOverridenVariable()"})
 	fieldID := iacModuleVar.ID
 
 	// map validation rules
@@ -27,7 +31,7 @@ func buildOverriddenVariable(iacModuleVar autocloudsdk.FormShape, overrideData O
 		}
 	}
 
-	fieldLabel := overrideData.VariableName
+	fieldLabel := iacModuleVar.FormQuestion.FieldLabel
 	if overrideData.DisplayName != "" {
 		fieldLabel = overrideData.DisplayName
 	}
@@ -116,6 +120,8 @@ func buildOverriddenVariable(iacModuleVar autocloudsdk.FormShape, overrideData O
 			}
 		}
 	}
+	log.Debugf("conditionalLen: %v \n", len(overrideData.Conditionals))
+
 	for i, conditional := range overrideData.Conditionals {
 		newIacModuleVar.Conditionals[i] = autocloudsdk.ConditionalConfig{
 			Source:         conditional.Source,
@@ -124,14 +130,15 @@ func buildOverriddenVariable(iacModuleVar autocloudsdk.FormShape, overrideData O
 			Type:           conditional.Type,
 			RequiredValues: conditional.RequiredValues,
 		}
+		str, _ := json.MarshalIndent(newIacModuleVar.Conditionals[i], "", "    ")
+		log.Debugf("created conditional: %s", string(str))
 	}
 	str, _ := json.MarshalIndent(newIacModuleVar, "", "    ")
-	log.Printf("formVariable: %s", string(str))
-
+	log.Debugf("New var result: %s", str)
 	return newIacModuleVar
 }
 
-func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
+func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 	fieldID := fmt.Sprintf("%s.%s", GENERIC, ov.VariableName)
 
 	validationRules := make([]autocloudsdk.ValidationRule, len(ov.FormConfig.ValidationRules))
@@ -211,7 +218,7 @@ func buildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 			RequiredValues: conditional.RequiredValues,
 		}
 	}
-	str, _ := json.MarshalIndent(formVariable, "", "    ")
-	log.Printf("formVariable: %s", string(str))
+	//str, _ := json.MarshalIndent(formVariable, "", "    ")
+	//log.Printf("formVariable: %s", string(str))
 	return formVariable
 }

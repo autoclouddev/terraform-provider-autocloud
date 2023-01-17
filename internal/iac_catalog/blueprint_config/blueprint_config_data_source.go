@@ -198,7 +198,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	}
 	log.Println("INPUT BLUEPRINTCONFIG->", pretty)
 	// new form variables (as JSON)
-	formVariables := GetFormShape(*blueprintConfig)
+	formVariables, err := GetFormShape(*blueprintConfig)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -254,12 +254,12 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	bp := &BluePrintConfig{}
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
 	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
+	bp.Children = make(map[string]BluePrintConfig)
 	if v, ok := d.GetOk("source"); ok {
-		mapString := make(map[string]BluePrintConfig)
 		for key, value := range v.(map[string]interface{}) {
 			strKey := fmt.Sprintf("%v", key)
 			strValue := fmt.Sprintf("%v", value)
-			log.Printf("SOURCE_INPUT_KEY: %v/n", key)
+			log.Printf("SOURCE_INPUT_KEY: %v\n", key)
 			formattedValue, _ := utils.PrettyString(strValue)
 			log.Printf("SOURCE_INPUT_VALUE: %v", formattedValue)
 			bc := BluePrintConfig{}
@@ -267,8 +267,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 			if err != nil {
 				return nil, errors.New("invalid conversion to BluePrintConfig")
 			}
-			mapString[strKey] = bc
-			bp.Children = append(bp.Children, bc)
+			bp.Children[strKey] = bc
 		}
 	}
 	if v, ok := d.GetOk("omit_variables"); ok {
