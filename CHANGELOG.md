@@ -1,3 +1,10 @@
+# [0.3.0-pre.40](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.39...0.3.0-pre.40) (2023-01-18)
+
+
+### Bug Fixes
+
+* **ep-2768:** iac file block vars ([73e63e5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/73e63e545d021da68fa052221d891c90e2db0e35))
+
 # [0.3.0-pre.39](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.38...0.3.0-pre.39) (2023-01-18)
 
 
