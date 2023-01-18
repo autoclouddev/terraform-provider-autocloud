@@ -1,3 +1,10 @@
+# [0.3.0-pre.39](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.38...0.3.0-pre.39) (2023-01-18)
+
+
+### Bug Fixes
+
+* **makefile:** comment version ([e87f68c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e87f68cb2002d0e050bbadf664601bd4f2657139))
+
 # [0.3.0-pre.38](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.37...0.3.0-pre.38) (2023-01-17)
 
 
