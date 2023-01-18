@@ -4,6 +4,7 @@ package provider_test
 
 import (
 	"github.com/stretchr/testify/assert"
+
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 
