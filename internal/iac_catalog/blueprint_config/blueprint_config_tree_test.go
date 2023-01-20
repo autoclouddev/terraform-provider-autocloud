@@ -127,7 +127,7 @@ func TestOmitVars(t *testing.T) {
 		varname, _ := utils.GetVariableID(vars[pick.Int64()].ID)
 		omits = append(omits, varname)
 	}
-	result := blueprint_config.OmitVars(vars, omits)
+	result := blueprint_config.OmitVars(vars, omits, &(map[string]blueprint_config.OverrideVariable{}))
 	fmt.Printf("original: %s\n", printFormShapeVarsIds(vars))
 	fmt.Print("OMITTED\n")
 	fmt.Println(omits)
