@@ -23,6 +23,7 @@ type OverrideVariable struct {
 	HelperText     string              `json:"helperText" faker:"word"`
 	FormConfig     FormConfig          `json:"formConfig"`
 	Conditionals   []ConditionalConfig `json:"conditionals"`
+	IsHidden       bool                `json:"isHidden"` // based on omit variables
 }
 
 type ConditionalConfig struct {

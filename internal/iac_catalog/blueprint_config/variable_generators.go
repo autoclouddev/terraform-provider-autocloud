@@ -3,6 +3,7 @@ package blueprint_config
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	//"log"
 	"regexp"
@@ -61,7 +62,8 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		FieldValue:          iacModuleVar.FieldValue,
 		RequiredValues:      overrideData.RequiredValues,
 		AllowConsumerToEdit: true,
-		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(overrideData.Conditionals)),
+		IsHidden:            overrideData.IsHidden,
+		Conditionals:        iacModuleVar.Conditionals,
 	}
 
 	if overrideData.Value != "" {
@@ -71,6 +73,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		newIacModuleVar.FieldValue = overrideData.Value
 		newIacModuleVar.FieldDefaultValue = overrideData.Value
 		newIacModuleVar.AllowConsumerToEdit = false
+		newIacModuleVar.IsHidden = overrideData.IsHidden
 		if r.MatchString(overrideData.Value) {
 			newIacModuleVar.FieldDataType = "hcl-expression"
 		} else {
@@ -96,6 +99,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 					}
 				}
 				newIacModuleVar.AllowConsumerToEdit = !isChecked
+				newIacModuleVar.IsHidden = overrideData.IsHidden
 			} else {
 				value := "default"
 				newIacModuleVar.FormQuestion.FieldOptions = []autocloudsdk.FieldOption{
@@ -122,15 +126,24 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 	}
 	log.Debugf("conditionalLen: %v \n", len(overrideData.Conditionals))
 
-	for i, conditional := range overrideData.Conditionals {
-		newIacModuleVar.Conditionals[i] = autocloudsdk.ConditionalConfig{
-			Source:         conditional.Source,
+	// add conditionals to the pre-existent conditionals
+	for _, conditional := range overrideData.Conditionals {
+		conditionalSource := conditional.Source
+
+		// if it's not a multipart id, attach the conditionl to the current question
+		if len(strings.Split(conditional.Source, ".")) == 1 {
+			conditionalSource = fmt.Sprintf("%s.%s", iacModuleVar.Module, conditional.Source)
+		}
+
+		newConditional := autocloudsdk.ConditionalConfig{
+			Source:         conditionalSource,
 			Condition:      conditional.Condition,
 			Value:          conditional.Value,
 			Type:           conditional.Type,
 			RequiredValues: conditional.RequiredValues,
 		}
-		str, _ := json.MarshalIndent(newIacModuleVar.Conditionals[i], "", "    ")
+		newIacModuleVar.Conditionals = append(newIacModuleVar.Conditionals, newConditional)
+		str, _ := json.MarshalIndent(newConditional, "", "    ")
 		log.Debugf("created conditional: %s", string(str))
 	}
 	str, _ := json.MarshalIndent(newIacModuleVar, "", "    ")
@@ -179,6 +192,7 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 			ExplainingText:  ov.HelperText,
 		},
 		AllowConsumerToEdit: true,
+		IsHidden:            ov.IsHidden,
 		RequiredValues:      ov.RequiredValues,
 		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(ov.Conditionals)),
 	}
