@@ -151,30 +151,32 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
   # object - object({ arn = string name = string })
   variable {
     name  = "ecs_cluster"
-    value = jsonencode({ arn = "dummy-ecs-cluster-arn-value", name = "dummy-ecs-cluster-arn-name" })
+    required_values = jsonencode({ arn = "dummy-ecs-cluster-arn-value", name = "dummy-ecs-cluster-arn-name" })
   }
 
+  // TODO: Support for references values
   # list(object) - list( object({ name = string }) )
   variable {
     name  = "container_volumes"
-    value = jsonencode([{ name = "dummy-volume-1" }, { name = "dummy-volume-2" }, { name = autocloud_module.s3_bucket.outputs["s3_bucket_id"] }])
+    required_values = jsonencode([{ name = "dummy-volume-1" }, { name = "dummy-volume-2" }])
+    # required_values = jsonencode([{ name = "dummy-volume-1" }, { name = "dummy-volume-2" }, { name = autocloud_module.s3_bucket.outputs["s3_bucket_id"] }])
   }
 
   # list(object) - list( object({ container_port = number container_health_check_port = number lb_target_group_arn = string } ) )
   variable {
     name = "lb_target_groups"
-    value = jsonencode([
+    required_values = jsonencode([
       { container_port = "10000", container_health_check_port = "10001", lb_target_group_arn = "dummy-arn-1" },
-      { container_port = "20000", container_health_check_port = "20001", lb_target_group_arn = autocloud_module.s3_bucket.outputs["s3_bucket_id"] }
+      # { container_port = "20000", container_health_check_port = "20001", lb_target_group_arn = autocloud_module.s3_bucket.outputs["s3_bucket_id"] }
     ])
   }
 
   # list(object) - list(object({ registry_arn = string container_name = string container_port = number port = number }))
   variable {
     name = "service_registries"
-    value = jsonencode([
+    required_values = jsonencode([
       { registry_arn = "dummy-registry-arn-1", container_name = "dummy-container-name-1", container_port = "2000", port = "2001" },
-      { registry_arn = "dummy-registry-arn-2", container_name = "dummy-container-name-2", container_port = "2000", port = autocloud_module.s3_bucket.outputs["s3_bucket_id"] }
+      # { registry_arn = "dummy-registry-arn-2", container_name = "dummy-container-name-2", container_port = "2000", port = autocloud_module.s3_bucket.outputs["s3_bucket_id"] }
     ])
   }
 
