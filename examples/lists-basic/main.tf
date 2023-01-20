@@ -38,7 +38,7 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
   }
 
   omit_variables = [
-    "ecs_cluster",                       // object({ arn = string name = string })
+    // "ecs_cluster",                       // object({ arn = string name = string })
     //"ecs_subnet_ids",                  // list(string)
     "ecs_vpc_id",                        // string
     "environment",                       // string
@@ -79,6 +79,20 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     "tasks_maximum_percent",             // number
     "tasks_minimum_healthy_percent",     // number
   ]
+
+  variable {
+    name         = "ecs_cluster"
+    required_values = jsonencode({
+      "managed-by" = "autocloud"
+      owner = null
+      "business-unit" = [
+        "finance",
+        "legal",
+        "engineering",
+        "sales"
+      ]
+    })
+  }
 
   variable {
     name         = "ecs_subnet_ids"
