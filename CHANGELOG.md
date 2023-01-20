@@ -1,3 +1,10 @@
+# [0.3.0-pre.41](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.40...0.3.0-pre.41) (2023-01-20)
+
+
+### Features
+
+* Added examples with simple objects fields ([f733591](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f733591eccb6e261247d9a8526758035b503bc69))
+
 # [0.3.0-pre.40](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.39...0.3.0-pre.40) (2023-01-18)
 
 
