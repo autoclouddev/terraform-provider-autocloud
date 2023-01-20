@@ -1,3 +1,10 @@
+# [0.3.0-pre.42](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.41...0.3.0-pre.42) (2023-01-20)
+
+
+### Bug Fixes
+
+* **ep-2773:** iac shared overridden variables ([10ab06a](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/10ab06aa1a7bcfaaac52aaa3dd05d69c5f04646a))
+
 # [0.3.0-pre.41](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.40...0.3.0-pre.41) (2023-01-20)
 
 
