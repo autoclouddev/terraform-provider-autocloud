@@ -1,3 +1,10 @@
+# [0.3.0-pre.43](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.42...0.3.0-pre.43) (2023-01-25)
+
+
+### Features
+
+* **ep-2838:** iac override value ([c5d1b90](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/c5d1b900be4dce375b61c1455bf836b61445d917))
+
 # [0.3.0-pre.42](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.41...0.3.0-pre.42) (2023-01-20)
 
 
