@@ -1,3 +1,10 @@
+# [0.3.0-pre.44](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.43...0.3.0-pre.44) (2023-01-26)
+
+
+### Bug Fixes
+
+* **conditionals:** use the same content shape as variable for conditionals ([d3072c3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/d3072c3a1e1650236450d3fb10b9d2ee20da6d56))
+
 # [0.3.0-pre.43](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.42...0.3.0-pre.43) (2023-01-25)
 
 
