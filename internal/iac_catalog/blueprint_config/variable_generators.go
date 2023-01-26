@@ -158,8 +158,17 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 			Source:         conditionalSource,
 			Condition:      conditional.Condition,
 			Value:          conditional.Value,
-			Type:           conditional.Type,
+			Type:           conditional.FormConfig.Type,
 			RequiredValues: conditional.RequiredValues,
+			Options:        make([]autocloudsdk.FieldOption, 0), //conditional.FormConfig.FieldOptions,
+		}
+		for _, c := range conditional.FormConfig.FieldOptions {
+			ao := autocloudsdk.FieldOption{
+				Label:   c.Label,
+				Value:   c.Value,
+				Checked: c.Checked,
+			}
+			newConditional.Options = append(newConditional.Options, ao)
 		}
 		newIacModuleVar.Conditionals = append(newIacModuleVar.Conditionals, newConditional)
 		str, _ := json.MarshalIndent(newConditional, "", "    ")
@@ -222,7 +231,7 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 			FieldLabel:      fieldLabel,
 			ExplainingText:  ov.HelperText,
 		},
-		AllowConsumerToEdit: true,
+		AllowConsumerToEdit: len(fieldValue) == 0,
 		IsHidden:            ov.IsHidden,
 		RequiredValues:      ov.RequiredValues,
 		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(ov.Conditionals)),
@@ -251,7 +260,7 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 			Source:         conditional.Source,
 			Condition:      conditional.Condition,
 			Value:          conditional.Value,
-			Type:           conditional.Type,
+			Type:           conditional.FormConfig.Type,
 			RequiredValues: conditional.RequiredValues,
 		}
 	}

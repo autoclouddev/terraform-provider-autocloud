@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
@@ -686,13 +688,12 @@ func TestGetFormBuilder(t *testing.T) {
 			},
 			map[string]interface{}{
 				"name": "some-var",
-				"type": "radio",
 				"conditional": []interface{}{
 					map[string]interface{}{
+						"source":    "generic.variable.environment",
+						"condition": "nonprod",
 						"content": []interface{}{
 							map[string]interface{}{
-								"source":    "generic.variable.environment",
-								"condition": "nonprod",
 								"required_values": utils.ToJsonStringNoError([]interface{}{
 									"required-value-1",
 									"required-value-2",
@@ -789,4 +790,150 @@ func TestBlueprintConfigConditionalsReading(t *testing.T) {
 
 	jsonBlueprintConfig, _ := utils.ToJsonString(blueprintConfig)
 	fmt.Printf("blueprint config: [%v]\n", jsonBlueprintConfig)
+}
+
+func TestBuildVariableContent(t *testing.T) {
+	variableContentVars := map[string]blueprint_config.VariableContent{
+		"radio": {
+			DisplayName: "this is display",
+			HelperText:  "helper text",
+			FormConfig: blueprint_config.FormConfig{
+				Type: "radio",
+				ValidationRules: []blueprint_config.ValidationRule{
+					{
+						Rule:         "isRequired",
+						ErrorMessage: "invalid",
+					},
+				},
+				FieldOptions: []blueprint_config.FieldOption{
+					{
+						Label:   "dev",
+						Value:   "some-dev-prefix",
+						Checked: true,
+					},
+					{
+						Label:   "prod",
+						Value:   "some-prod-prefix",
+						Checked: false,
+					},
+					{
+						Label:   "non-prod",
+						Value:   "some-non-prod-prefix",
+						Checked: false,
+					},
+				},
+			},
+		},
+		"inputText": {
+			DisplayName: "this is display",
+			HelperText:  "helper text",
+			FormConfig: blueprint_config.FormConfig{
+				Type: "shortText",
+				ValidationRules: []blueprint_config.ValidationRule{
+					{
+						Rule:         "isRequired",
+						ErrorMessage: "invalid",
+					},
+				},
+				FieldOptions: []blueprint_config.FieldOption{},
+			},
+		},
+		// "map": {
+		// 	DisplayName: "this is display",
+		// 	HelperText:  "helper text",
+		// 	FormConfig: blueprint_config.FormConfig{
+		// 		Type: "map",
+		// 		ValidationRules: []blueprint_config.ValidationRule{
+		// 			{
+		// 				Rule:         "isRequired",
+		// 				ErrorMessage: "invalid",
+		// 			},
+		// 		},
+		// 		FieldOptions: []blueprint_config.FieldOption{},
+		// 	},
+		// 	//SHOULD THAT BE ARRAY??
+		// 	RequiredValues: `[{
+		// 		"arn": "dummy-ecs-cluster-arn-value",
+		// 		"name": "dummy-ecs-cluster-arn-name"
+		// 	}]`,
+		// },
+	}
+	//this part of the code is bulding the test tables
+	type test struct {
+		input map[string]interface{}
+		want  blueprint_config.VariableContent
+	}
+	tests := make(map[string]test)
+	for testName, vc := range variableContentVars {
+		tests[testName] = test{
+			input: map[string]interface{}{
+				"variable": []interface{}{
+					// map[string]interface{}{
+					// 	"name":         "great_name", // out of the scope of this test
+					// },
+					createRawVariableContentSchema(vc),
+				},
+			},
+			want: vc,
+		}
+	}
+	// Helps in sorting the labels for field options, so the order is correct in cmp.Diff
+	trans := cmp.Transformer("SortFieldOptionsByLabel", func(in blueprint_config.VariableContent) blueprint_config.VariableContent {
+		sort.Slice(in.FormConfig.FieldOptions, func(i, j int) bool {
+			return in.FormConfig.FieldOptions[i].Label < in.FormConfig.FieldOptions[j].Label
+		})
+		return in
+	})
+	//running the test tables
+	for name, tc := range tests {
+		blueprintConfigDataSource := blueprint_config.DataSourceBlueprintConfig()
+		testDataBlueprintResourceSchema := blueprintConfigDataSource.Schema
+		d := schema.TestResourceDataRaw(t, testDataBlueprintResourceSchema, tc.input)
+		v, _ := d.GetOk("variable")
+		varsList := v.([]interface{})
+
+		for _, currentVar := range varsList {
+			varOverrideMap := currentVar.(map[string]interface{})
+			got, _ := blueprint_config.BuildVariableFromSchema(varOverrideMap)
+
+			if diff := cmp.Diff(&tc.want, got, trans); diff != "" {
+				t.Fatalf("TESTNAME: %s BuildVariableFromSchema() mismatch (-want +got):\n%s", name, diff)
+			}
+		}
+	}
+}
+
+// creates a raw schema from a VariableContent, mostly used for testing
+func createRawVariableContentSchema(content blueprint_config.VariableContent) map[string]interface{} {
+	ud := make(map[string]interface{})
+	ud["display_name"] = content.DisplayName
+	ud["helper_text"] = content.HelperText
+	ud["type"] = content.FormConfig.Type
+	vRules := make([]interface{}, 0)
+	for _, rule := range content.FormConfig.ValidationRules {
+		rawRule := map[string]interface{}{
+			"rule":          rule.Rule,
+			"error_message": rule.ErrorMessage,
+			"value":         rule.Value,
+		}
+		vRules = append(vRules, rawRule)
+	}
+	ud["validation_rule"] = vRules
+	options := make([]interface{}, 0)
+	for _, option := range content.FormConfig.FieldOptions {
+		op := map[string]interface{}{
+			"label":   option.Label,
+			"value":   option.Value,
+			"checked": option.Checked,
+		}
+		options = append(options, op)
+	}
+	ud["options"] = []interface{}{
+		map[string]interface{}{
+			"option": options,
+		},
+	}
+	ud["required_values"] = content.RequiredValues
+
+	return ud
 }

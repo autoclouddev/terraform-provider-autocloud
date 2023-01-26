@@ -160,11 +160,11 @@ func createBp() *blueprint_config.BluePrintConfig {
 	}
 	ov := blueprint_config.OverrideVariable{
 		VariableName: "bucket",
-		Value:        "Bucket name",
-		DisplayName:  "display",
-		HelperText:   "help",
-		FormConfig:   fmConfig,
 	}
+	ov.Value = "Bucket name"
+	ov.DisplayName = "display"
+	ov.HelperText = "help"
+	ov.FormConfig = fmConfig
 	bp.OverrideVariables["bucket"] = ov
 	return bp
 }

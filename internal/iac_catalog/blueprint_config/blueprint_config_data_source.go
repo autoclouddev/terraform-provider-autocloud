@@ -71,6 +71,44 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		},
 	}
 
+	variableSchema := map[string]*schema.Schema{
+
+		//"form_config": formConfigSchema,
+		"display_name": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"helper_text": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"value": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"type": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE}, false),
+		},
+		"options": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"option": optionItemSchema,
+				},
+			},
+		},
+		"required_values": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		//"conditional":     conditionalSchema,
+		"validation_rule": validationRulesSchema,
+	}
+
 	conditionalSchema := &schema.Schema{
 		Type:     schema.TypeSet,
 		Optional: true,
@@ -84,26 +122,13 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					Type:     schema.TypeString,
 					Required: true,
 				},
-				"type": {
-					Type:     schema.TypeString,
-					Optional: true,
-				},
 				"content": {
 					Type:     schema.TypeSet,
 					Required: true,
 					MinItems: 1,
 					MaxItems: 1,
 					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"value": {
-								Type:     schema.TypeString,
-								Required: true,
-							},
-							"required_values": {
-								Type:     schema.TypeString,
-								Optional: true,
-							},
-						},
+						Schema: utils.MergeSchemas(variableSchema, map[string]*schema.Schema{}),
 					},
 				},
 			},
@@ -123,46 +148,13 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
+				Schema: utils.MergeSchemas(variableSchema, map[string]*schema.Schema{
 					"name": {
 						Type:     schema.TypeString,
 						Required: true,
 					},
-					//"form_config": formConfigSchema,
-					"display_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"helper_text": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"value": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"type": {
-						Type:         schema.TypeString,
-						Optional:     true,
-						ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE}, false),
-					},
-					"options": {
-						Type:     schema.TypeSet,
-						Optional: true,
-						MaxItems: 1,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"option": optionItemSchema,
-							},
-						},
-					},
-					"required_values": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"conditional":     conditionalSchema,
-					"validation_rule": validationRulesSchema,
-				},
+					"conditional": conditionalSchema,
+				}),
 			},
 		},
 		"config": { // the form as json to replace the default variables
@@ -285,173 +277,19 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 
 	if v, ok := d.GetOk("variable"); ok {
 		varsList := v.([]interface{})
-		log.Println(varsList...)
 		// override vars loop
 		for _, currentVar := range varsList {
 			varOverrideMap := currentVar.(map[string]interface{})
+			//create variable
 			varName := varOverrideMap["name"].(string)
-
-			// required values
-			var requiredValues string
-			requiredValuesInput, requiredValuesInputExist := varOverrideMap["required_values"]
-			if requiredValuesInputExist {
-				requiredValues = requiredValuesInput.(string)
+			vc, err := BuildVariableFromSchema(varOverrideMap)
+			if err != nil {
+				return nil, errors.New("invalid conversion to BluePrintConfig")
 			}
 
 			bp.OverrideVariables[varName] = OverrideVariable{
-				VariableName:   varName,
-				DisplayName:    varOverrideMap["display_name"].(string),
-				HelperText:     varOverrideMap["helper_text"].(string),
-				RequiredValues: requiredValues,
-			}
-			// Note: if it has a value, then it can NOT have form options "options"
-			valueIsDefined := false
-			value, valueExist := varOverrideMap["value"]
-			valueStr, valueIsString := value.(string)
-			valueIsDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
-			if valueExist && valueIsString && valueIsDefined {
-				// refactor op, if entry, ok could be a function
-				if entry, ok := bp.OverrideVariables[varName]; ok {
-					entry.Value = valueStr
-
-					bp.OverrideVariables[varName] = entry
-				} else {
-					return nil, errors.New("cant define blueprint config")
-				}
-				continue // no options or validation rules required, validation rules are for webform
-			}
-
-			optionsFromSchema := varOverrideMap["options"].(*schema.Set)
-			//conditionalsInput, conditionalsExist := varOverrideMap["conditionals"]
-			/*
-				// I think this code is not reacheable
-				if valueIsDefined {
-					if len(optionsFromSchema.List()) != 0 {
-						return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w Var name: [%s], var value [%v]", ErrSetValueInForm, varName, value)
-					}
-
-					// if the value is set and there's no form options, then we're ok to continue processing the next variable override
-					continue
-				}
-			*/
-			if len(optionsFromSchema.List()) > 1 {
-				// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
-				return nil, errors.New("exactly one \"options\" must be defined")
-			}
-			/*
-				// I think this conditional is wrong
-				conditionalsDefined := conditionalsExist && len(conditionalsInput.(*schema.Set).List()) > 0
-				if len(optionsFromSchema.List()) == 0 {
-
-					if conditionalsDefined {
-						// if we don't have any conditionals, we should have at least 1 form options
-						return nil, fmt.Errorf("a options must be defined for the variable [%s]", varName)
-					}
-				}
-			*/
-			rawVariableType := varOverrideMap["type"]
-			variableType := rawVariableType.(string)
-
-			if variableType == "shortText" && len(optionsFromSchema.List()) > 0 {
-				return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrShortTextCantHaveOptions)
-			}
-
-			if entry, ok := bp.OverrideVariables[varName]; ok {
-				entry.FormConfig = FormConfig{
-					Type:            variableType,
-					ValidationRules: make([]ValidationRule, 0),
-					FieldOptions:    make([]FieldOption, 0),
-				}
-				bp.OverrideVariables[varName] = entry
-			} else {
-				return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
-			}
-
-			if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
-				if len(optionsFromSchema.List()) > 1 {
-					return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrOneBlockOptionsRequied)
-				}
-
-				if len(optionsFromSchema.List()) == 1 {
-					rawOptionsCluster := optionsFromSchema.List()[0] // "options key in schema options {}"
-					rawOptions := rawOptionsCluster.(map[string]interface{})
-
-					optionSchema := rawOptions["option"].(*schema.Set)
-
-					for _, option := range optionSchema.List() {
-						options := option.(map[string]interface{})
-						fieldOption := FieldOption{
-							Label:   options["label"].(string),
-							Value:   options["value"].(string),
-							Checked: options["checked"].(bool),
-						}
-						// refactor op, if entry, ok could be a function
-						if entry, ok := bp.OverrideVariables[varName]; ok {
-							entry.FormConfig.FieldOptions = append(entry.FormConfig.FieldOptions, fieldOption)
-							bp.OverrideVariables[varName] = entry
-						} else {
-							return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
-						}
-					}
-				}
-			}
-
-			if variableType == MAP_TYPE {
-				if val, ok := varOverrideMap["required_values"]; ok {
-					variablesMapJson := val.(string)
-					var variablesMap map[string]interface{}
-					err := json.Unmarshal([]byte(variablesMapJson), &variablesMap)
-					if err != nil {
-						fmt.Println(err)
-					}
-
-					ccc := ConvertMap(variablesMap)
-
-					pairs := make([]autocloudsdk.KeyValue, 0)
-
-					for key, value := range ccc {
-						pair := autocloudsdk.KeyValue{Key: key, Value: value}
-						pairs = append(pairs, pair)
-					}
-					mapValue, err := json.Marshal(pairs)
-					if err != nil {
-						fmt.Println(err)
-					}
-
-					if entry, ok := bp.OverrideVariables[varName]; ok {
-						entry.Value = string(mapValue)
-
-						bp.OverrideVariables[varName] = entry
-					} else {
-						return nil, errors.New("cant define blueprint config")
-					}
-				}
-			}
-
-			// validation rules
-			validationRulesList := varOverrideMap["validation_rule"].(*schema.Set).List()
-
-			for _, validationRule := range validationRulesList {
-				validationRuleMap := validationRule.(map[string]interface{})
-
-				rule := validationRuleMap["rule"].(string)
-				ruleValue := validationRuleMap["value"].(string)
-
-				if rule == "isRequired" && ruleValue != "" {
-					return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrIsRequiredCantHaveValue)
-				}
-				vr := ValidationRule{
-					Rule:         rule,
-					Value:        ruleValue,
-					ErrorMessage: validationRuleMap["error_message"].(string),
-				}
-
-				if entry, ok := bp.OverrideVariables[varName]; ok {
-					entry.FormConfig.ValidationRules = append(entry.FormConfig.ValidationRules, vr)
-					bp.OverrideVariables[varName] = entry
-				} else {
-					return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
-				}
+				VariableName:    varName,
+				VariableContent: *vc,
 			}
 
 			// Conditionals
@@ -459,7 +297,11 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 			log.Printf("CONDITIONALS: %v \n", conditionals)
 			if conditionalExists {
 				if entry, ok := bp.OverrideVariables[varName]; ok {
-					entry.Conditionals = getConditionals(conditionals)
+					conditionals, err := getConditionals(conditionals)
+					if err != nil {
+						return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
+					}
+					entry.Conditionals = conditionals
 					bp.OverrideVariables[varName] = entry
 				} else {
 					return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
@@ -495,12 +337,112 @@ func validateConditionals(variables []autocloudsdk.FormShape) error {
 	return nil
 }
 
-func getConditionals(varOverrideMap *schema.Set) []ConditionalConfig {
+func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent, error) {
+	content := &VariableContent{}
+	var requiredValues string
+	requiredValuesInput, requiredValuesInputExist := rawSchema["required_values"]
+	if requiredValuesInputExist {
+		requiredValues = requiredValuesInput.(string)
+	}
+
+	content.DisplayName = rawSchema["display_name"].(string)
+	content.HelperText = rawSchema["helper_text"].(string)
+	content.RequiredValues = requiredValues
+
+	// Note: if it has a value, then it can NOT have form options "options"
+	valueIsDefined := false
+	value, valueExist := rawSchema["value"]
+	valueStr, valueIsString := value.(string)
+	valueIsDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
+
+	if valueExist && valueIsString && valueIsDefined {
+		content.Value = valueStr
+		return content, nil
+	}
+	// variableContent with form options
+
+	optionsFromSchema := rawSchema["options"].(*schema.Set)
+	if len(optionsFromSchema.List()) > 1 {
+		// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
+		return nil, errors.New("exactly one \"options\" must be defined")
+	}
+
+	variableType := rawSchema["type"].(string)
+
+	if variableType == "shortText" && len(optionsFromSchema.List()) > 0 {
+		return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrShortTextCantHaveOptions)
+	}
+	content.FormConfig = FormConfig{
+		Type:            variableType,
+		ValidationRules: make([]ValidationRule, 0),
+		FieldOptions:    make([]FieldOption, 0),
+	}
+	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
+		rawOptionsCluster := optionsFromSchema.List() // "options key in schema options {}" should always have 1 elem
+		if len(optionsFromSchema.List()) == 1 {
+			rawOptions := rawOptionsCluster[0].(map[string]interface{})
+			optionSchema := rawOptions["option"].(*schema.Set)
+
+			for _, option := range optionSchema.List() {
+				options := option.(map[string]interface{})
+				fieldOption := FieldOption{
+					Label:   options["label"].(string),
+					Value:   options["value"].(string),
+					Checked: options["checked"].(bool),
+				}
+				content.FormConfig.FieldOptions = append(content.FormConfig.FieldOptions, fieldOption)
+			}
+		}
+	}
+
+	if variableType == MAP_TYPE {
+		var variablesMap map[string]interface{}
+		err := json.Unmarshal([]byte(requiredValues), &variablesMap)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		ccc := ConvertMap(variablesMap)
+
+		pairs := make([]autocloudsdk.KeyValue, 0)
+
+		for key, value := range ccc {
+			pair := autocloudsdk.KeyValue{Key: key, Value: value}
+			pairs = append(pairs, pair)
+		}
+		mapValue, err := json.Marshal(pairs)
+		if err != nil {
+			fmt.Println(err)
+		}
+		content.RequiredValues = string(mapValue)
+	}
+	validationRulesList := rawSchema["validation_rule"].(*schema.Set).List()
+
+	for _, validationRule := range validationRulesList {
+		validationRuleMap := validationRule.(map[string]interface{})
+
+		rule := validationRuleMap["rule"].(string)
+		ruleValue := validationRuleMap["value"].(string)
+
+		if rule == "isRequired" && ruleValue != "" {
+			return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrIsRequiredCantHaveValue)
+		}
+		vr := ValidationRule{
+			Rule:         rule,
+			Value:        ruleValue,
+			ErrorMessage: validationRuleMap["error_message"].(string),
+		}
+		content.FormConfig.ValidationRules = append(content.FormConfig.ValidationRules, vr)
+	}
+	return content, nil
+}
+
+func getConditionals(varOverrideMap *schema.Set) ([]ConditionalConfig, error) {
 	conditionalLen := varOverrideMap.Len()
 
 	conditionals := make([]ConditionalConfig, 0)
 	if conditionalLen == 0 {
-		return conditionals
+		return conditionals, nil
 	}
 	conditionalsList := varOverrideMap.List()
 
@@ -511,21 +453,18 @@ func getConditionals(varOverrideMap *schema.Set) []ConditionalConfig {
 			continue
 		}
 		conditionalContentMap := conditionalContentMapList[0].(map[string]interface{})
-
-		var requiredValues string
-		if val, ok := conditionalContentMap["required_values"]; ok {
-			requiredValues = val.(string)
+		vc, err := BuildVariableFromSchema(conditionalContentMap)
+		if err != nil {
+			return nil, err
 		}
-
 		c := ConditionalConfig{
-			Source:         conditionalMap["source"].(string),
-			Condition:      conditionalMap["condition"].(string),
-			Type:           conditionalMap["type"].(string),
-			Value:          conditionalContentMap["value"].(string),
-			RequiredValues: requiredValues,
+			Source:          conditionalMap["source"].(string),
+			Condition:       conditionalMap["condition"].(string),
+			VariableContent: *vc,
 		}
+
 		conditionals = append(conditionals, c)
 	}
 
-	return conditionals
+	return conditionals, nil
 }
