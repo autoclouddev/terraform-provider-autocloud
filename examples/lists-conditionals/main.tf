@@ -124,70 +124,68 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     conditional {
       source    = "generic.env"
       condition = "dev"
-      type      = "checkbox"
 
       content {
+        type = "checkbox"
         required_values = jsonencode([
           "required-dev-subnet-1",
           "required-dev-subnet-2",
           local.sample_string_var
         ])
 
-        value = jsonencode(
-          {
-            options = [
-              {
-                label = "dev subnet option 1"
-                value = "dev-subnet-option-1"
-              },
-              {
-                label   = "dev subnet option 2"
-                value   = "dev-subnet-option-2"
-                checked = true
-              },
-              {
-                label   = "dev subnet option 3"
-                value   = "dev-subnet-option-3"
-                checked = true
-              }
-            ]
+        options {
+
+          option {
+            label = "dev subnet option 1"
+            value = "dev-subnet-option-1"
           }
-        )
+          option {
+            label   = "dev subnet option 2"
+            value   = "dev-subnet-option-2"
+            checked = true
+          }
+          option {
+            label   = "dev subnet option 3"
+            value   = "dev-subnet-option-3"
+            checked = true
+          }
+        }
+
+
       }
     }
 
     conditional {
       source    = "generic.env"
       condition = "prod"
-      type      = "checkbox"
 
 
       content {
+        type = "checkbox"
         required_values = jsonencode([
           "required-prod-subnet-1",
           "required-prod-subnet-2"
         ])
 
-        value = jsonencode(
-          {
-            options = [
-              {
-                label = "prod subnet option 1"
-                value = "prod-subnet-option-1"
-              },
-              {
-                label   = "prod subnet option 2"
-                value   = "prod-subnet-option-2"
-                checked = true
-              },
-              {
-                label   = "prod subnet option 3"
-                value   = "prod-subnet-option-3"
-                checked = true
-              }
-            ]
+        options {
+
+          option {
+            label = "prod subnet option 1"
+            value = "prod-subnet-option-1"
           }
-        )
+          option {
+            label   = "prod subnet option 2"
+            value   = "prod-subnet-option-2"
+            checked = true
+          }
+          option {
+            label   = "prod subnet option 3"
+            value   = "prod-subnet-option-3"
+            checked = true
+          }
+
+        }
+
       }
     }
   }
@@ -206,30 +204,27 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     conditional {
       source    = "generic.env"
       condition = "dev"
-      type      = "checkbox"
 
       content {
+        type = "checkbox"
         required_values = jsonencode([
           "3000",
           "3001",
         ])
-
-        value = jsonencode(
-          {
-            options = [
-              {
-                label   = "PORT 30000 (dev)"
-                value   = 30000
-                checked = true
-              },
-              {
-                label   = "PORT 30001 (dev)"
-                value   = 30001
-                checked = false
-              },
-            ]
+        options {
+          option {
+            label   = "PORT 30000 (dev)"
+            value   = 30000
+            checked = true
           }
-        )
+          option {
+            label   = "PORT 30001 (dev)"
+            value   = 30001
+            checked = false
+          }
+        }
+
+
 
       }
     }
@@ -237,31 +232,28 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     conditional {
       source    = "generic.env"
       condition = "prod"
-      type      = "checkbox"
 
 
       content {
+        type = "checkbox"
         required_values = jsonencode([
           "2000",
           "2001",
         ])
 
-        value = jsonencode(
-          {
-            options = [
-              {
-                label   = "PORT 20000 (prod)"
-                value   = 20000
-                checked = true
-              },
-              {
-                label   = "PORT 20001 (prod)"
-                value   = 20001
-                checked = false
-              },
-            ]
+        options {
+          option {
+            label   = "PORT 20000 (prod)"
+            value   = 20000
+            checked = true
           }
-        )
+          option {
+            label   = "PORT 20001 (prod)"
+            value   = 20001
+            checked = false
+          }
+        }
+
 
       }
     }
@@ -270,7 +262,7 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
 }
 
 resource "autocloud_blueprint" "example" {
-  name = "ECS string and number lists (conditionals)"
+  name = "ECS string and number lists (conditionals) change"
 
   ###
   # UI Configuration
