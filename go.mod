@@ -7,13 +7,13 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/joho/godotenv v1.4.0
 	github.com/stretchr/testify v1.8.1
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20230120170342-4a41b4374013
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20230131195729-f1fee1f7e02f
 )
 
 require github.com/pkg/errors v0.9.1 // indirect
 
 //uncomment the following line when working with local setup
-//replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../terraform-provider-sdk/
+replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../tfp-sdk/
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
