@@ -1,3 +1,11 @@
+# [0.3.0-pre.45](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.44...0.3.0-pre.45) (2023-02-01)
+
+
+### Features
+
+* **ep-2845:** iac blueprint module ids ([58bcf01](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/58bcf01bfa0ad4d024fc0a61a6f43db365cfeff9))
+* **ep-2845:** iac blueprint module ids ([1ce8f34](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1ce8f341effc437bf01b3ed5478d54db06f1965e))
+
 # [0.3.0-pre.44](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.43...0.3.0-pre.44) (2023-01-26)
 
 
