@@ -13,7 +13,7 @@ require (
 require github.com/pkg/errors v0.9.1 // indirect
 
 //uncomment the following line when working with local setup
-replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../tfp-sdk/
+//replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../terraform-provider-sdk/
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
