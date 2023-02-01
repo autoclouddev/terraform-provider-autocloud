@@ -167,6 +167,12 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"variables": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			}},
 	}
 
 	return &schema.Resource{
@@ -207,11 +213,11 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	/*bpOutput, err := utils.ToJsonString(blueprintConfig)
-	//log.Println(bpOutput)
+	varsMap := FormShapeToMap(formVariables)
+	err = d.Set("variables", varsMap)
 	if err != nil {
 		return diag.FromErr(err)
-	}*/
+	}
 
 	err = d.Set("blueprint_config", pretty)
 	if err != nil {

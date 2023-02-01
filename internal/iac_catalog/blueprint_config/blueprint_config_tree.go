@@ -11,6 +11,31 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
+func FormShapeToMap(formShape []autocloudsdk.FormShape) map[string]string {
+	varsMap := make(map[string]string)
+
+	for _, form := range formShape {
+		varName, err := utils.GetVariableID(form.ID)
+		if err != nil {
+			continue
+		}
+
+		// initialize with empty string
+		varsMap[varName] = ""
+
+		// set default value
+		if form.FieldDefaultValue != "" {
+			varsMap[varName] = form.FieldDefaultValue
+		}
+
+		// set value
+		if form.FieldValue != "" {
+			varsMap[varName] = form.FieldValue
+		}
+	}
+	return varsMap
+}
+
 func GetFormShape(root BluePrintConfig) ([]autocloudsdk.FormShape, error) {
 	var log = logger.Create(log.Fields{"fn": "GetFormShape()"})
 	str, _ := json.MarshalIndent(root, "", "    ")
@@ -161,7 +186,6 @@ func OverrideVariables(vars []autocloudsdk.FormShape, overrides map[string]Overr
 		if !utils.Contains(usedOverrides[varName], iacVar.ID) {
 			usedOverrides[varName] = append(usedOverrides[varName], iacVar.ID)
 		}
-		log.Debugf("ok? %v", ok)
 	}
 	for varName, overridenVarIds := range usedOverrides {
 		log.Debugf("the [%v] variable overrides %d question(s): [%v]", varName, len(overridenVarIds), overridenVarIds)
