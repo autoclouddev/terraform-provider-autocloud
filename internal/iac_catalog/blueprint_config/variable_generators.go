@@ -48,8 +48,9 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 	}
 
 	newIacModuleVar := autocloudsdk.FormShape{
-		ID:     iacModuleVar.ID,
-		Module: iacModuleVar.Module,
+		ID:       iacModuleVar.ID,
+		Module:   iacModuleVar.Module,
+		ModuleID: iacModuleVar.ModuleID,
 		FormQuestion: autocloudsdk.FormQuestion{
 			FieldID:         fieldID,
 			FieldType:       variableType,

@@ -211,6 +211,13 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	// populate vars' module id
+	for i, v := range variables {
+		if v.ModuleID == "" {
+			variables[i].ModuleID = iacModuleID
+		}
+	}
 	config := blueprint_config.BluePrintConfig{
 		Id:        iacModule.ID,
 		Variables: variables,
