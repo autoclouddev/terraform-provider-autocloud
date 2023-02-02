@@ -64,6 +64,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		RequiredValues:      overrideData.RequiredValues,
 		AllowConsumerToEdit: true,
 		IsHidden:            overrideData.IsHidden,
+		UsedInHCL:           overrideData.UsedInHCL,
 		Conditionals:        iacModuleVar.Conditionals,
 	}
 
@@ -234,6 +235,7 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		},
 		AllowConsumerToEdit: len(fieldValue) == 0,
 		IsHidden:            ov.IsHidden,
+		UsedInHCL:           ov.UsedInHCL,
 		RequiredValues:      ov.RequiredValues,
 		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(ov.Conditionals)),
 	}

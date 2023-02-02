@@ -27,6 +27,7 @@ type OverrideVariable struct {
 	VariableContent
 	Conditionals []ConditionalConfig `json:"conditionals"`
 	IsHidden     bool                `json:"isHidden"` // based on omit variables
+	UsedInHCL    bool                `json:"usedInHCL"`
 }
 
 type ConditionalConfig struct {
