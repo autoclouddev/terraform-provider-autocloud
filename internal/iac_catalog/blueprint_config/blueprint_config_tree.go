@@ -45,7 +45,7 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 		}
 		return true
 	}
-	keys := make([]string, 0, len(root.OverrideVariables))
+	keys := make([]string, 0)
 	for k := range root.OverrideVariables {
 		keys = append(keys, k)
 	}
@@ -56,7 +56,7 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 		child := keyValue[0]
 		varName := keyValue[2]
 		idx := findIdx(root.Children[child].Variables, varName)
-		if idx <= 0 {
+		if idx < 0 {
 			return []autocloudsdk.FormShape{}, fmt.Errorf("Variable Reference is not matching any children variable: %s", key)
 		}
 		// build override in place
@@ -86,18 +86,23 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 func OmitVars(vars []autocloudsdk.FormShape, omits []string, overrideVariables *map[string]OverrideVariable) []autocloudsdk.FormShape {
 	addmittedVars := vars
 	for _, omit := range omits {
-		// if the blueprint config overrides an omitted variable, then it's an admitted var as we have to modify its behavior
-		if overrideVariable, isVarOverriden := (*overrideVariables)[omit]; isVarOverriden {
-			overrideVariable.IsHidden = true // we don't want to show omitted vars
-			(*overrideVariables)[omit] = overrideVariable
-			continue
-		}
-
 		idx := findIdx(addmittedVars, omit)
 		if idx == -1 {
 			continue
 		}
-		addmittedVars = remove(addmittedVars, idx)
+		omittedVar := addmittedVars[idx]
+		omittedVar.IsHidden = true
+		omittedVar.UsedInHCL = false
+		addmittedVars[idx] = omittedVar
+		//addmittedVars = remove(addmittedVars, idx)
+
+		// if the blueprint config overrides an omitted variable, then it's an admitted var as we have to modify its behavior
+		if overrideVariable, isVarOverriden := (*overrideVariables)[omit]; isVarOverriden {
+			overrideVariable.IsHidden = true // we don't want to show omitted vars
+			overrideVariable.UsedInHCL = true
+			(*overrideVariables)[omit] = overrideVariable
+			continue
+		}
 	}
 	return addmittedVars
 }
@@ -106,20 +111,16 @@ func findIdx(vars []autocloudsdk.FormShape, varname string) int {
 	for i, v := range vars {
 		varName, err := utils.GetVariableID(v.ID)
 		if err != nil {
-			log.Debugf("the [%s] variable not found", varName)
+			log.Debugf("the [%s] variable not found\n", varName)
 			return -1
 		}
 		if varName == varname {
-			log.Debugf("the [%s] variable was omitted", varName)
+			log.Debugf("the [%s] variable was omitted\n", varName)
 			return i
 		}
 	}
-	log.Debugf("the [%s] omitted value not found in vars", varname)
+	log.Debugf("the [%s] omitted value not found in vars\n", varname)
 	return -1
-}
-
-func remove(slice []autocloudsdk.FormShape, s int) []autocloudsdk.FormShape {
-	return append(slice[:s], slice[s+1:]...)
 }
 
 // vars => form shapes coming from leaves
