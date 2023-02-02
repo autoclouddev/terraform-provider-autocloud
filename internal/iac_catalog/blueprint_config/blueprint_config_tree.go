@@ -63,6 +63,13 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 		root.Children[child].Variables[idx] = BuildOverridenVariable(root.Children[child].Variables[idx], root.OverrideVariables[key])
 		// delete from overrides
 		delete(root.OverrideVariables, key)
+		// remove from omits
+		for i, omitName := range root.OmitVariables {
+			if varName == omitName {
+				root.OmitVariables = append(root.OmitVariables[:i], root.OmitVariables[i+1:]...)
+				break
+			}
+		}
 	}
 
 	for _, v := range root.Children {

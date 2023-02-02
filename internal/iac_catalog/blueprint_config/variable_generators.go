@@ -76,6 +76,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		newIacModuleVar.FieldDefaultValue = overrideData.Value
 		newIacModuleVar.AllowConsumerToEdit = false
 		newIacModuleVar.IsHidden = overrideData.IsHidden
+		newIacModuleVar.UsedInHCL = true
 		if r.MatchString(overrideData.Value) {
 			newIacModuleVar.FieldDataType = "hcl-expression"
 		} else {
