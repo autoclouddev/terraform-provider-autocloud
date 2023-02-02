@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/joho/godotenv v1.4.0
 	github.com/stretchr/testify v1.8.1
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20230131195729-f1fee1f7e02f
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.0.0-20230202040350-5674ce4165e6
 )
 
 require github.com/pkg/errors v0.9.1 // indirect
