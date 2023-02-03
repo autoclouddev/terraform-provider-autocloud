@@ -45,7 +45,7 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 		}
 		return true
 	}
-	keys := make([]string, 0, len(root.OverrideVariables))
+	keys := make([]string, 0)
 	for k := range root.OverrideVariables {
 		keys = append(keys, k)
 	}
@@ -56,13 +56,20 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 		child := keyValue[0]
 		varName := keyValue[2]
 		idx := findIdx(root.Children[child].Variables, varName)
-		if idx <= 0 {
+		if idx < 0 {
 			return []autocloudsdk.FormShape{}, fmt.Errorf("Variable Reference is not matching any children variable: %s", key)
 		}
 		// build override in place
 		root.Children[child].Variables[idx] = BuildOverridenVariable(root.Children[child].Variables[idx], root.OverrideVariables[key])
 		// delete from overrides
 		delete(root.OverrideVariables, key)
+		// remove from omits
+		for i, omitName := range root.OmitVariables {
+			if varName == omitName {
+				root.OmitVariables = append(root.OmitVariables[:i], root.OmitVariables[i+1:]...)
+				break
+			}
+		}
 	}
 
 	for _, v := range root.Children {
@@ -74,20 +81,35 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 		vars = append(vars, childrenvars...)
 	}
 	log.Debugf("current node omit vars, %s", root.OmitVariables)
-	admittedVars := OmitVars(vars, root.OmitVariables)
+	admittedVars := OmitVars(vars, root.OmitVariables, &root.OverrideVariables)
 	log.Debugf("the [%v] addmited vars", admittedVars)
 	log.Debugf("current override vars, %v", root.OverrideVariables)
 	return OverrideVariables(admittedVars, root.OverrideVariables)
 }
 
-func OmitVars(vars []autocloudsdk.FormShape, omitts []string) []autocloudsdk.FormShape {
+// vars => variables coming from leaves (for example: a s3 autocloud_module variables)
+// omits => current blueprint config vars to omit (a var will be discarded in case there are no overrides in the current blueprint config)
+// overrideVariables ==> current blueprint config var overrides
+func OmitVars(vars []autocloudsdk.FormShape, omits []string, overrideVariables *map[string]OverrideVariable) []autocloudsdk.FormShape {
 	addmittedVars := vars
-	for _, omit := range omitts {
+	for _, omit := range omits {
 		idx := findIdx(addmittedVars, omit)
 		if idx == -1 {
 			continue
 		}
-		addmittedVars = remove(addmittedVars, idx)
+		omittedVar := addmittedVars[idx]
+		omittedVar.IsHidden = true
+		omittedVar.UsedInHCL = false
+		addmittedVars[idx] = omittedVar
+		//addmittedVars = remove(addmittedVars, idx)
+
+		// if the blueprint config overrides an omitted variable, then it's an admitted var as we have to modify its behavior
+		if overrideVariable, isVarOverriden := (*overrideVariables)[omit]; isVarOverriden {
+			overrideVariable.IsHidden = true // we don't want to show omitted vars
+			overrideVariable.UsedInHCL = true
+			(*overrideVariables)[omit] = overrideVariable
+			continue
+		}
 	}
 	return addmittedVars
 }
@@ -96,25 +118,23 @@ func findIdx(vars []autocloudsdk.FormShape, varname string) int {
 	for i, v := range vars {
 		varName, err := utils.GetVariableID(v.ID)
 		if err != nil {
-			log.Debugf("the [%s] variable not found", varName)
+			log.Debugf("the [%s] variable not found\n", varName)
 			return -1
 		}
 		if varName == varname {
-			log.Debugf("the [%s] variable was omitted", varName)
+			log.Debugf("the [%s] variable was omitted\n", varName)
 			return i
 		}
 	}
-	log.Debugf("the [%s] omitted value not found in vars", varname)
+	log.Debugf("the [%s] omitted value not found in vars\n", varname)
 	return -1
 }
 
-func remove(slice []autocloudsdk.FormShape, s int) []autocloudsdk.FormShape {
-	return append(slice[:s], slice[s+1:]...)
-}
-
+// vars => form shapes coming from leaves
+// overrides => new vars definitions + modifications to vars from leaves
 func OverrideVariables(vars []autocloudsdk.FormShape, overrides map[string]OverrideVariable) ([]autocloudsdk.FormShape, error) {
 	var log = logger.Create(log.Fields{"fn": "OverrideVariables()"})
-	usedOverrides := make([]string, 0)
+	usedOverrides := make(map[string][]string, 0)
 	// transform all original Variables to its overrides
 	for i, iacVar := range vars {
 		varName, err := utils.GetVariableID(iacVar.ID)
@@ -130,10 +150,18 @@ func OverrideVariables(vars []autocloudsdk.FormShape, overrides map[string]Overr
 			log.Debugf("data -> %s", string(str))
 			vars[i] = BuildOverridenVariable(iacVar, overrideVariableData)
 		}
-		usedOverrides = append(usedOverrides, varName)
+
+		// check if we already have overridden a variable
+		if _, isAlreadyOverridden := usedOverrides[varName]; !isAlreadyOverridden {
+			usedOverrides[varName] = make([]string, 0)
+		}
+		if !utils.Contains(usedOverrides[varName], iacVar.ID) {
+			usedOverrides[varName] = append(usedOverrides[varName], iacVar.ID)
+		}
 		log.Debugf("ok? %v", ok)
 	}
-	for _, varName := range usedOverrides {
+	for varName, overridenVarIds := range usedOverrides {
+		log.Debugf("the [%v] variable overrides %d question(s): [%v]", varName, len(overridenVarIds), overridenVarIds)
 		delete(overrides, varName)
 	}
 	// on this point only generics remain, no original variables

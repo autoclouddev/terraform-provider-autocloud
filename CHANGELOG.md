@@ -1,3 +1,53 @@
+# [0.3.0-pre.45](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.44...0.3.0-pre.45) (2023-02-01)
+
+
+### Features
+
+* **ep-2845:** iac blueprint module ids ([58bcf01](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/58bcf01bfa0ad4d024fc0a61a6f43db365cfeff9))
+* **ep-2845:** iac blueprint module ids ([1ce8f34](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1ce8f341effc437bf01b3ed5478d54db06f1965e))
+
+# [0.3.0-pre.44](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.43...0.3.0-pre.44) (2023-01-26)
+
+
+### Bug Fixes
+
+* **conditionals:** use the same content shape as variable for conditionals ([d3072c3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/d3072c3a1e1650236450d3fb10b9d2ee20da6d56))
+
+# [0.3.0-pre.43](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.42...0.3.0-pre.43) (2023-01-25)
+
+
+### Features
+
+* **ep-2838:** iac override value ([c5d1b90](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/c5d1b900be4dce375b61c1455bf836b61445d917))
+
+# [0.3.0-pre.42](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.41...0.3.0-pre.42) (2023-01-20)
+
+
+### Bug Fixes
+
+* **ep-2773:** iac shared overridden variables ([10ab06a](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/10ab06aa1a7bcfaaac52aaa3dd05d69c5f04646a))
+
+# [0.3.0-pre.41](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.40...0.3.0-pre.41) (2023-01-20)
+
+
+### Features
+
+* Added examples with simple objects fields ([f733591](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f733591eccb6e261247d9a8526758035b503bc69))
+
+# [0.3.0-pre.40](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.39...0.3.0-pre.40) (2023-01-18)
+
+
+### Bug Fixes
+
+* **ep-2768:** iac file block vars ([73e63e5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/73e63e545d021da68fa052221d891c90e2db0e35))
+
+# [0.3.0-pre.39](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.38...0.3.0-pre.39) (2023-01-18)
+
+
+### Bug Fixes
+
+* **makefile:** comment version ([e87f68c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e87f68cb2002d0e050bbadf664601bd4f2657139))
+
 # [0.3.0-pre.38](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.37...0.3.0-pre.38) (2023-01-17)
 
 

@@ -127,7 +127,7 @@ func TestOmitVars(t *testing.T) {
 		varname, _ := utils.GetVariableID(vars[pick.Int64()].ID)
 		omits = append(omits, varname)
 	}
-	result := blueprint_config.OmitVars(vars, omits)
+	result := blueprint_config.OmitVars(vars, omits, &(map[string]blueprint_config.OverrideVariable{}))
 	fmt.Printf("original: %s\n", printFormShapeVarsIds(vars))
 	fmt.Print("OMITTED\n")
 	fmt.Println(omits)
@@ -160,11 +160,11 @@ func createBp() *blueprint_config.BluePrintConfig {
 	}
 	ov := blueprint_config.OverrideVariable{
 		VariableName: "bucket",
-		Value:        "Bucket name",
-		DisplayName:  "display",
-		HelperText:   "help",
-		FormConfig:   fmConfig,
 	}
+	ov.Value = "Bucket name"
+	ov.DisplayName = "display"
+	ov.HelperText = "help"
+	ov.FormConfig = fmConfig
 	bp.OverrideVariables["bucket"] = ov
 	return bp
 }
