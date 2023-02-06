@@ -1,3 +1,11 @@
+# [0.3.0-pre.47](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.46...0.3.0-pre.47) (2023-02-06)
+
+
+### Features
+
+* **plugin:** Add flag to gate the new blueprintconfig ([34960e3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/34960e3fff554baf4821db1df0097f24b1568690))
+* **plugin:** EXPERIMENTAL first approach to support low level lib ([15513bc](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/15513bc789e3f74af7ea8da0d321aa31ebd969be))
+
 # [0.3.0-pre.46](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.45...0.3.0-pre.46) (2023-02-06)
 
 
