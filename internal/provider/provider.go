@@ -9,13 +9,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/autocloud_module"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint"
-	blueprint_config "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/repositories"
 )
 
 // entry point
-func New(version string) func() *schema.Provider {
+func New(version string, experimental bool) func() *schema.Provider {
 	return func() *schema.Provider {
+		dataSourcesMap := make(map[string]*schema.Resource)
+		dataSourcesMap["autocloud_github_repos"] = repositories.DataSourceRepositories()
+		dataSourcesMap["autocloud_module"] = autocloud_module.DataSourceAutocloudModule()
+
+		if !experimental {
+			dataSourcesMap["autocloud_blueprint_config"] = blueprint_config.DataSourceBlueprintConfig()
+		}
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
 				"token": {
@@ -35,11 +42,7 @@ func New(version string) func() *schema.Provider {
 				"autocloud_blueprint": blueprint.ResourceAutocloudBlueprint(),
 				"autocloud_module":    autocloud_module.ResourceAutocloudModule(),
 			},
-			DataSourcesMap: map[string]*schema.Resource{
-				"autocloud_github_repos":     repositories.DataSourceRepositories(),
-				"autocloud_module":           autocloud_module.DataSourceAutocloudModule(),
-				"autocloud_blueprint_config": blueprint_config.DataSourceBlueprintConfig(),
-			},
+			DataSourcesMap: dataSourcesMap,
 		}
 		p.ConfigureContextFunc = configure(version, p)
 		return p

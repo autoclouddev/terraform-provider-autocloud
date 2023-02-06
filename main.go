@@ -14,26 +14,18 @@ import (
 )
 
 // Generate the Terraform provider documentation using `tfplugindocs`:
+//
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
-/*
-func main() {
-	plugin.Serve(&plugin.ServeOpts{
-		ProviderFunc: func() *schema.Provider {
-			return provider.New("dev")()
-		},
-	})
-}
-*/
 func main() {
 	debugFlag := flag.Bool("debug", false, "Start provider in debug mode.")
+	experimental := flag.Bool("experimental", false, "allows experimental capabilities")
 	flag.Parse()
 
 	ctx := context.Background()
 	providers := []func() tfprotov5.ProviderServer{
 		// Example terraform-plugin-sdk/v2 providers
-		provider.New("dev")().GRPCProvider,
-		provider_go.PluginProviderServer,
-		//providerserver.NewProtocol5(provider_go.PluginProviderServer),
+		provider.New("dev", *experimental)().GRPCProvider,
+		provider_go.WithFlagGate(*experimental),
 	}
 
 	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)

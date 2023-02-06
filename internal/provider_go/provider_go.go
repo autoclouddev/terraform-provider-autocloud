@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
 
 type pluginProviderServer struct {
@@ -151,63 +150,44 @@ func (r resourceRouter) ImportResourceState(ctx context.Context, req *tfprotov5.
 	return res.ImportResourceState(ctx, req)
 }
 
-// PluginProviderServer returns the implementation of an interface for a lower
-// level usage of the Provider to Terraform protocol.
-// This relies on the terraform-plugin-go library, which provides low level
-// bindings for the Terraform plugin protocol.
-func PluginProviderServer() tfprotov5.ProviderServer {
-	return &pluginProviderServer{
-		providerSchema: &tfprotov5.Schema{
-			Block: &tfprotov5.SchemaBlock{
-				Attributes: []*tfprotov5.SchemaAttribute{
-					{
-						Name: "endpoint",
-						Type: tftypes.String,
-						//Description: "API endpoint",
-						Optional:  true,
-						Sensitive: true,
-					},
-					{
-						Name: "token",
-						Type: tftypes.String,
-						//Description: "Access token",
-						Optional:  true,
-						Sensitive: true,
-					},
-				},
-			},
-		},
-		dataSourceSchemas: map[string]*tfprotov5.Schema{
-			"autocloud_dummy": {
-				Version: 1,
+// WithFlagGate returns a PluginProviderServer, the main entry point for muxing
+// it receives a flag to allow resources to be included, so they cant collide with
+// other framework implementations
+func WithFlagGate(experimental bool) func() tfprotov5.ProviderServer {
+	dataSourceSchemas := make(map[string]*tfprotov5.Schema)
+	dataSourceRouter := make(map[string]func() tfprotov5.DataSourceServer)
+	//tmp removing lint
+	// nolint:all
+	if experimental {
+		// in here we include the resources we want to add to dataSourceSchema and router
+	}
+	// PluginProviderServer returns the implementation of an interface for a lower
+	// level usage of the Provider to Terraform protocol.
+	// This relies on the terraform-plugin-go library, which provides low level
+	// bindings for the Terraform plugin protocol.
+	return func() tfprotov5.ProviderServer {
+		return &pluginProviderServer{
+			providerSchema: &tfprotov5.Schema{
 				Block: &tfprotov5.SchemaBlock{
-					Version: 1,
 					Attributes: []*tfprotov5.SchemaAttribute{
 						{
-							Name:     "id",
-							Type:     tftypes.String,
-							Computed: true,
+							Name:      "endpoint",
+							Type:      tftypes.String,
+							Optional:  true,
+							Sensitive: true,
 						},
 						{
-							Name:            "name",
-							Type:            tftypes.String,
-							Description:     "some name to input",
-							DescriptionKind: tfprotov5.StringKindPlain,
-							Required:        true,
-						},
-						{
-							Name:     "values",
-							Type:     tftypes.DynamicPseudoType,
-							Optional: true,
-							//Computed: true,
+							Name:      "token",
+							Type:      tftypes.String,
+							Optional:  true,
+							Sensitive: true,
 						},
 					},
 				},
 			},
-		},
-		dataSourceRouter: map[string]func() tfprotov5.DataSourceServer{
-			"autocloud_dummy": blueprint_config.NewDataSourceDummy,
-		},
+			dataSourceSchemas: dataSourceSchemas,
+			dataSourceRouter:  dataSourceRouter,
+		}
 	}
 }
 

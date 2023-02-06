@@ -27,30 +27,18 @@ import (
 //nolint:unparam // The error result is required, but intentionally always nil here
 var ProviderFactories = map[string]func() (*schema.Provider, error){
 	"autocloud": func() (*schema.Provider, error) {
-		return provider.New("dev")(), nil
+		return provider.New("dev", false)(), nil
 	},
-	/*
-		"tfe": func() (tfprotov5.ProviderServer, error) {
-			ctx := context.Background()
-			mux, err := tfmux.NewMuxServer(
-				ctx, provider.PluginProviderServer, testAccProvider.GRPCProvider,
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			return mux.ProviderServer(), nil
-		},*/
 }
 
-func CreateMuxFactories() map[string]func() (tfprotov5.ProviderServer, error) {
+func CreateMuxFactories(experimental bool) map[string]func() (tfprotov5.ProviderServer, error) {
 	prov := map[string]func() (tfprotov5.ProviderServer, error){
 		"autocloud": func() (tfprotov5.ProviderServer, error) {
 			ctx := context.Background()
 			providers := []func() tfprotov5.ProviderServer{
 				// Example terraform-plugin-sdk/v2 providers
-				provider.New("dev")().GRPCProvider,
-				provider_go.PluginProviderServer,
+				provider.New("dev", experimental)().GRPCProvider,
+				provider_go.WithFlagGate(experimental),
 			}
 
 			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)

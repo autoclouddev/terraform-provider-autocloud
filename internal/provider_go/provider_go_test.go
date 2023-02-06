@@ -73,6 +73,5 @@ func TestPluginProvider_providerMeta(t *testing.T) {
 		if tc.token != "" && meta.Token != tc.token {
 			t.Fatalf("Test %s: token was set in config and input token %s  does not have the same value in meta %s", name, tc.token, meta.Token)
 		}
-
 	}
 }
