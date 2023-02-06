@@ -167,6 +167,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		}
 		for _, c := range conditional.FormConfig.FieldOptions {
 			ao := autocloudsdk.FieldOption{
+				FieldID: fmt.Sprintf("%s-%s", fieldID, c.Value),
 				Label:   c.Label,
 				Value:   c.Value,
 				Checked: c.Checked,

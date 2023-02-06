@@ -116,7 +116,9 @@ func TestOmitVars(t *testing.T) {
 	varCount := 10
 	pickedCount := 3
 	for i := 0; i < varCount; i++ {
-		vars = append(vars, fakeFormShape())
+		fk := fakeFormShape()
+		fk.IsHidden = false
+		vars = append(vars, fk)
 	}
 	omits := []string{}
 	for i := 0; i < pickedCount; i++ {
@@ -133,7 +135,15 @@ func TestOmitVars(t *testing.T) {
 	fmt.Println(omits)
 	fmt.Printf("result: %s\n", printFormShapeVarsIds(result))
 
-	if len(result) != varCount-pickedCount {
+	hiddenVars := 0
+	for _, v := range result {
+		fmt.Println(v.ID, v.IsHidden)
+		if !v.IsHidden {
+			hiddenVars++
+		}
+	}
+
+	if hiddenVars != varCount-pickedCount {
 		t.Fatalf("vars were not omitted")
 	}
 }

@@ -65,3 +65,4 @@ var ErrOneBlockOptionsRequied = errors.New("No more than 1 \"options\" blocks ar
 var ErrShortTextCantHaveOptions = errors.New("ShortText variables can not have options")
 var ErrIsRequiredCantHaveValue = errors.New("'isRequired' validation rule can not have a value")
 var ErrVariableNotFound = errors.New("ERROR: no variable ID found")
+var ErrMapCantBeParsed = errors.New("Map type cant be created")

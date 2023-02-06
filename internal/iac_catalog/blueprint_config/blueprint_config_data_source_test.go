@@ -22,9 +22,11 @@ import (
 func TestAccBlueprintConfig_sourceValidation(t *testing.T) {
 	var blueprintConfig blueprint_config.BluePrintConfig
 	resourceName := "data.autocloud_blueprint_config.test"
+	experimental := false
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.TestAccPreCheck(t) },
-		ProviderFactories: acctest.ProviderFactories,
+		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
+		ProtoV5ProviderFactories: acctest.CreateMuxFactories(experimental),
+		//ProviderFactories: acctest.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccBlueprintConfig_basicSource(),

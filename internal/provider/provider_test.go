@@ -4,6 +4,7 @@ package provider_test
 
 import (
 	"github.com/stretchr/testify/assert"
+
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 
@@ -15,7 +16,7 @@ import (
 )
 
 func TestProvider(t *testing.T) {
-	if err := provider.New("dev")().InternalValidate(); err != nil {
+	if err := provider.New("dev", false)().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
@@ -26,7 +27,7 @@ func TestProviderEndpoint(t *testing.T) {
 	emptyResourceConfig := terraform.NewResourceConfigRaw(map[string]interface{}{})
 
 	// 1 - initialize the provider WITHOUT an endpoint value in the .env file or in the provider configuration
-	autocloudProvider := provider.New("dev")()
+	autocloudProvider := provider.New("dev", false)()
 	diags := autocloudProvider.Configure(context.Background(), emptyResourceConfig)
 
 	assert.NotNil(t, diags)
@@ -36,7 +37,7 @@ func TestProviderEndpoint(t *testing.T) {
 	acctest.TestAccPreCheck(t)
 
 	// 2 - initialize the provider WITHOUT a given endpoint but WITH a value in the .env
-	autocloudProvider = provider.New("dev")()
+	autocloudProvider = provider.New("dev", false)()
 	diags = autocloudProvider.Configure(context.Background(), emptyResourceConfig)
 	sdkClient := autocloudProvider.Meta().(*autocloudsdk.Client)
 

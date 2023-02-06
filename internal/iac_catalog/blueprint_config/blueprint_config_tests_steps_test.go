@@ -58,13 +58,12 @@ func testAccCheckCorrectVariablesLength(resourceName string, formVariables *[]au
 
 func testAccCheckOmitCorrectness(omitted []string, formVars *[]autocloudsdk.FormShape) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		//fmt.Println(s)
 		for _, v := range *formVars {
 			id, err := utils.GetVariableID(v.ID)
 			if err != nil {
 				return fmt.Errorf("error getting varID: %s", err)
 			}
-			if utils.Contains(omitted, id) {
+			if utils.Contains(omitted, id) && v.IsHidden != true {
 				return fmt.Errorf("var: %s not omitted correctly", id)
 			}
 			fmt.Printf("included variable: %s\n", v.ID)
