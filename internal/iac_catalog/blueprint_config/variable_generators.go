@@ -64,7 +64,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		RequiredValues:      overrideData.RequiredValues,
 		AllowConsumerToEdit: true,
 		IsHidden:            overrideData.IsHidden,
-		UsedInHCL:           overrideData.UsedInHCL,
+		UsedInHCL:           true, //if a user overrides, then it is used,
 		Conditionals:        iacModuleVar.Conditionals,
 	}
 
