@@ -1,3 +1,11 @@
+# [0.3.0-pre.49](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.48...0.3.0-pre.49) (2023-02-08)
+
+
+### Bug Fixes
+
+* **hcl:** when a user overrides a variable, should be always used in hcl ([dae126c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/dae126c22fb6432864e605e1aa1945119cb902f1))
+* **omits:** double omits are not impacting usedHCL if is overriden ([9b4a8ef](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9b4a8efa95f3debf01b1867a9a31de8dd1e217f7))
+
 # [0.3.0-pre.48](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.47...0.3.0-pre.48) (2023-02-08)
 
 
