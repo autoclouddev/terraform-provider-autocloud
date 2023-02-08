@@ -290,6 +290,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 			bp.OverrideVariables[varName] = OverrideVariable{
 				VariableName:    varName,
 				VariableContent: *vc,
+				UsedInHCL:       true,
 			}
 
 			// Conditionals
