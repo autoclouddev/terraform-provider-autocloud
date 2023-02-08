@@ -213,7 +213,10 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	varsMap := FormShapeToMap(formVariables)
+	varsMap, err := FormShapeToMap(formVariables)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	err = d.Set("variables", varsMap)
 	if err != nil {
 		return diag.FromErr(err)

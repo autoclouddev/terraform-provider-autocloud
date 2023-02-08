@@ -11,29 +11,17 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
-func FormShapeToMap(formShape []autocloudsdk.FormShape) map[string]string {
+func FormShapeToMap(formShape []autocloudsdk.FormShape) (map[string]string, error) {
 	varsMap := make(map[string]string)
 
 	for _, form := range formShape {
 		varName, err := utils.GetVariableID(form.ID)
 		if err != nil {
-			continue
+			return varsMap, err
 		}
-
-		// initialize with empty string
-		varsMap[varName] = ""
-
-		// set default value
-		if form.FieldDefaultValue != "" {
-			varsMap[varName] = form.FieldDefaultValue
-		}
-
-		// set value
-		if form.FieldValue != "" {
-			varsMap[varName] = form.FieldValue
-		}
+		varsMap[varName] = fmt.Sprintf("data_autocloud_blueprint_config.%s", form.ID)
 	}
-	return varsMap
+	return varsMap, nil
 }
 
 func GetFormShape(root BluePrintConfig) ([]autocloudsdk.FormShape, error) {
