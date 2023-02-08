@@ -66,52 +66,38 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		IsHidden:            overrideData.IsHidden,
 		UsedInHCL:           true, //if a user overrides, then it is used,
 		Conditionals:        iacModuleVar.Conditionals,
-	}
-
-	if overrideData.Value != "" {
-		// starting with the naive approach to see if an string is a module
-		// we will replace this introducing the notion of all outputs involved at the API process
-		r := regexp.MustCompile("module[.]([A-Za-z0-9_]+)[.]outputs[.]([A-Za-z0-9_]+)")
-		newIacModuleVar.FieldValue = overrideData.Value
-		newIacModuleVar.FieldDefaultValue = overrideData.Value
-		newIacModuleVar.AllowConsumerToEdit = false
-		newIacModuleVar.IsHidden = overrideData.IsHidden
-		newIacModuleVar.UsedInHCL = true
-		if r.MatchString(overrideData.Value) {
-			newIacModuleVar.FieldDataType = "hcl-expression"
-		} else {
-			newIacModuleVar.FieldDataType = "string"
-		}
+		IsOverriden:         true,
 	}
 
 	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
 		// try to map the value to an array of strings (options)
-		var fieldOptions []string
-		useValueFieldOptions := false
-		if overrideData.Value != "" {
-			err := json.Unmarshal([]byte(overrideData.Value), &fieldOptions)
-			useValueFieldOptions = err == nil
-		}
+		// var fieldOptions []string
+		// useValueFieldOptions := false
+
+		// if overrideData.Value != "" {
+		// 	err := json.Unmarshal([]byte(overrideData.Value), &fieldOptions)
+		// 	useValueFieldOptions = err == nil
+		// }
 
 		// if there's an override with a value for this variable, we replace its value and mark it as uneditable
 		switch {
-		case useValueFieldOptions:
-			if len(fieldOptions) > 0 {
-				newIacModuleVar.FormQuestion.FieldOptions = make([]autocloudsdk.FieldOption, len(fieldOptions))
+		// case useValueFieldOptions:
+		// 	if len(fieldOptions) > 0 {
+		// 		newIacModuleVar.FormQuestion.FieldOptions = make([]autocloudsdk.FieldOption, len(fieldOptions))
 
-				for i, option := range fieldOptions {
-					newIacModuleVar.FormQuestion.FieldOptions[i] = autocloudsdk.FieldOption{
-						Label:   option,
-						FieldID: fmt.Sprintf("%s-%s", fieldID, option),
-						Value:   option,
-						Checked: true,
-					}
-				}
-				newIacModuleVar.AllowConsumerToEdit = false
-				newIacModuleVar.IsHidden = overrideData.IsHidden
-			} else {
-				newIacModuleVar.FormQuestion.FieldOptions = getDefaultFieldOptions(fieldID)
-			}
+		// 		for i, option := range fieldOptions {
+		// 			newIacModuleVar.FormQuestion.FieldOptions[i] = autocloudsdk.FieldOption{
+		// 				Label:   option,
+		// 				FieldID: fmt.Sprintf("%s-%s", fieldID, option),
+		// 				Value:   option,
+		// 				Checked: true,
+		// 			}
+		// 		}
+		// 		newIacModuleVar.AllowConsumerToEdit = false
+		// 		newIacModuleVar.IsHidden = overrideData.IsHidden
+		// 	} else {
+		// 		newIacModuleVar.FormQuestion.FieldOptions = getDefaultFieldOptions(fieldID)
+		// 	}
 
 		case len(overrideData.FormConfig.FieldOptions) == 0: // if the list is empty, set a default value
 			// Use module default values
@@ -129,7 +115,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 					}
 				}
 				newIacModuleVar.AllowConsumerToEdit = !isChecked
-				newIacModuleVar.IsHidden = overrideData.IsHidden
+				//newIacModuleVar.IsHidden = overrideData.IsHidden
 			} else {
 				newIacModuleVar.FormQuestion.FieldOptions = getDefaultFieldOptions(fieldID)
 			}
@@ -144,6 +130,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 					Checked: option.Checked,
 				}
 			}
+			//newIacModuleVar.IsHidden = false
 		}
 	}
 	log.Debugf("conditionalLen: %v \n", len(overrideData.Conditionals))
@@ -177,6 +164,22 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		newIacModuleVar.Conditionals = append(newIacModuleVar.Conditionals, newConditional)
 		str, _ := json.MarshalIndent(newConditional, "", "    ")
 		log.Debugf("created conditional: %s", string(str))
+	}
+	if overrideData.Value != "" {
+		// starting with the naive approach to see if an string is a module
+		// we will replace this introducing the notion of all outputs involved at the API process
+		r := regexp.MustCompile("module[.]([A-Za-z0-9_]+)[.]outputs[.]([A-Za-z0-9_]+)")
+		newIacModuleVar.FieldValue = overrideData.Value
+		newIacModuleVar.FieldDefaultValue = overrideData.Value
+		newIacModuleVar.AllowConsumerToEdit = false
+		//newIacModuleVar.IsHidden = overrideData.IsHidden
+		newIacModuleVar.UsedInHCL = true
+		if r.MatchString(overrideData.Value) {
+			newIacModuleVar.FieldDataType = "hcl-expression"
+			newIacModuleVar.IsHidden = true
+		} else {
+			newIacModuleVar.FieldDataType = "string"
+		}
 	}
 	str, _ := json.MarshalIndent(newIacModuleVar, "", "    ")
 	log.Debugf("New var result: %s", str)

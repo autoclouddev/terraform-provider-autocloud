@@ -290,6 +290,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 			bp.OverrideVariables[varName] = OverrideVariable{
 				VariableName:    varName,
 				VariableContent: *vc,
+				dirty:           false,
 			}
 
 			// Conditionals
@@ -399,7 +400,8 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 		var variablesMap map[string]interface{}
 		err := json.Unmarshal([]byte(requiredValues), &variablesMap)
 		if err != nil {
-			return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrMapCantBeParsed)
+			//return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrMapCantBeParsed)
+			fmt.Println(err)
 		}
 
 		ccc := ConvertMap(variablesMap)
@@ -412,7 +414,8 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 		}
 		mapValue, err := json.Marshal(pairs)
 		if err != nil {
-			return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrMapCantBeParsed)
+			//return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrMapCantBeParsed)
+			fmt.Println(err)
 		}
 		content.RequiredValues = string(mapValue)
 	}

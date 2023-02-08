@@ -100,9 +100,11 @@ func OmitVars(vars []autocloudsdk.FormShape, omits []string, overrideVariables *
 		omittedVar := addmittedVars[idx]
 		omittedVar.IsHidden = true
 		omittedVar.UsedInHCL = false
+		if omittedVar.IsOverriden {
+			omittedVar.UsedInHCL = true
+		}
 		addmittedVars[idx] = omittedVar
 		//addmittedVars = remove(addmittedVars, idx)
-
 		// if the blueprint config overrides an omitted variable, then it's an admitted var as we have to modify its behavior
 		if overrideVariable, isVarOverriden := (*overrideVariables)[omit]; isVarOverriden {
 			overrideVariable.IsHidden = true // we don't want to show omitted vars
