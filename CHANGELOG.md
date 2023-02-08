@@ -1,3 +1,10 @@
+# [0.3.0-pre.48](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.47...0.3.0-pre.48) (2023-02-08)
+
+
+### Features
+
+* **ep-2914:** iac list of objects ([52eaf11](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/52eaf116183ed534b317f247eaf54db334edbb47))
+
 # [0.3.0-pre.47](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.46...0.3.0-pre.47) (2023-02-06)
 
 

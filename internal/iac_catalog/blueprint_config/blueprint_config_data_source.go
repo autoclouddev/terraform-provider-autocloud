@@ -291,6 +291,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 				VariableName:    varName,
 				VariableContent: *vc,
 				dirty:           false,
+				//UsedInHCL:       true,
 			}
 
 			// Conditionals

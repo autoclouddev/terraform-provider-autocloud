@@ -100,6 +100,7 @@ func OmitVars(vars []autocloudsdk.FormShape, omits []string, overrideVariables *
 		omittedVar := addmittedVars[idx]
 		omittedVar.IsHidden = true
 		omittedVar.UsedInHCL = false
+
 		if omittedVar.IsOverriden {
 			omittedVar.UsedInHCL = true
 		}
