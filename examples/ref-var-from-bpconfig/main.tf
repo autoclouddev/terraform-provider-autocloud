@@ -42,43 +42,6 @@ data "autocloud_blueprint_config" "kms_custom_form" {
   source = {
     kms = autocloud_module.kms.blueprint_config
   }
-
-
-  variable {
-    name         = "environment"
-    display_name = "environment target"
-    helper_text  = "environment target description"
-    type         = "radio"
-    options {
-      option {
-        label   = "dev"
-        value   = "dev"
-        checked = true
-      }
-      option {
-        label = "nonprod"
-        value = "nonprod"
-      }
-      option {
-        label = "prod"
-        value = "prod"
-      }
-    }
-    validation_rule {
-      rule          = "isRequired"
-      error_message = "invalid"
-    }
-  }
-
-  variable {
-    name  = "name"
-    value = "this-is-the-name"
-  }
-
-  variable {
-    name  = "namespace"
-    value = "this-is-the-namespace"
-  }
 }
 
 data "autocloud_blueprint_config" "s3_custom_form" {
@@ -120,11 +83,6 @@ data "autocloud_blueprint_config" "s3_custom_form" {
     // reference to kms_custom_form blueprint config
     value        = data.autocloud_blueprint_config.kms_custom_form.variables["enable_key_rotation"] 
   }
-
-  variable {
-    name  = "s3_bucket_name"
-    value = data.autocloud_blueprint_config.kms_custom_form.variables["namespace"] 
-  }
 }
 
 data "autocloud_blueprint_config" "final" {
@@ -132,10 +90,16 @@ data "autocloud_blueprint_config" "final" {
     kms        = data.autocloud_blueprint_config.kms_custom_form.blueprint_config,
     s3         = data.autocloud_blueprint_config.s3_custom_form.blueprint_config
   }
+
+  variable {
+    name         = "enabled"
+    // reference to kms_custom_form blueprint config
+    value        = data.autocloud_blueprint_config.kms_custom_form.variables["enable_key_rotation"] 
+  }
 }
 
 resource "autocloud_blueprint" "example" {
-  name = "KMS and S3 (reference from bc)"
+  name = "KMS and S3 reference values"
 
   ###
   # UI Configuration
@@ -149,18 +113,19 @@ resource "autocloud_blueprint" "example" {
   # Destination repository git configuraiton
   #
   git_config {
-    destination_branch = "main"
+    destination_branch = data.autocloud_blueprint_config.s3_custom_form.variables["bucket"]
 
     git_url_options = local.dest_repos
     git_url_default = length(local.dest_repos) != 0 ? local.dest_repos[0] : "" # Choose the first in the list by default
 
     pull_request {
-      title                   = "[AutoCloud] new EKS generator (testing file vars), created by {{authorName}}"
-      commit_message_template = "[AutoCloud] new EKS generator (testing file vars), created by {{authorName}}"
+      title                   = "[AutoCloud] new generator ({{namespace}}), created by {{authorName}}"
+      commit_message_template = "[AutoCloud] new generator ({{namespace}}), created by {{authorName}}"
       body                    = file("../files/pull_request.md.tpl")
       variables = {
         authorName  = "generic.authorName"
         clusterName = "kms.name"
+        namespace =  data.autocloud_blueprint_config.kms_custom_form.variables["namespace"]
       }
     }
   }
@@ -182,7 +147,8 @@ resource "autocloud_blueprint" "example" {
     }
 
     modules = [
-      autocloud_module.kms.name
+      autocloud_module.kms.name,
+      autocloud_module.s3_bucket.name,
     ]
   }
   config = data.autocloud_blueprint_config.final.config
