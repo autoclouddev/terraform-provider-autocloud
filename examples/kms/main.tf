@@ -34,13 +34,22 @@ data "autocloud_blueprint_config" "kms_key_processor" {
   omit_variables = [
     # Use defaults in the module (don't collect)
     "customer_master_key_spec",
-    "description",
-    "enable_key_rotation",
-    "key_usage",
     "policies",
-    "tags"
+
+    # Hard Coded
+    "enable_key_rotation",
   ]
 
+  ###
+  # Set description
+  variable {
+    name = "kms.variables.description"
+    display_name = "Description"
+    helper_text = "Description for key that appears in AWS console"
+
+    type = "shortText"
+  }
+  
   ###
   # Force key rotation
   variable {
@@ -52,25 +61,63 @@ data "autocloud_blueprint_config" "kms_key_processor" {
   }
 
   ###
-  # Set description
+  # Set key deletion window
   variable {
-    name = "kms.variables.description"
-    display_name = "KMS Key description"
-    value = format("KMS key for symmetric encryption")
-  }
-
-  variable {
-    name = "kms.variables.deletion_window_in_days"
+    name         = "kms.variables.deletion_window_in_days"
+    display_name = "Deletion Window"
+    helper_text  = "Number of days to wait before deleting key permanently, defaults to 10 days"
+    
     type = "shortText"
-
-    value = 14
   }
 
+  ###
+  # Choose regionality
   variable {
     name = "kms.variables.multi_region"
-    type = "shortText"
+    display_name = "Multi Region Key"
+    helper_text  = "Whether or not the KMS key will be deployed as a multi region key"
 
-    value = false
+    type = "radio"
+
+    options {
+      option {
+        label   = "Single region key"
+        value   = "true"
+        checked = false
+      }
+      option {
+        label   = "Multi region key"
+        value   = "false"
+        checked = true
+      }
+    }
+  }
+
+  ###
+  # Choose key usage
+  variable {
+    name = "kms.variables.key_usage"
+    display_name = "Key Usage"
+
+    type = "radio"
+
+    options {
+      option {
+        label   = "Symmetric Encrypt/Decrypt"
+        value   = "ENCRYPT_DECRYPT"
+        checked = true
+      }
+      option {
+        label   = "Signing/Verification"
+        value   = "SIGN_VERIFY"
+        checked = false
+      }
+      option {
+        label   = "HMAC"
+        value   = "GENERATE_VERIFY_MAC"
+        checked = false
+      }
+    }
   }
 }
 
@@ -92,10 +139,10 @@ data "autocloud_blueprint_config" "final" {
     "enabled",
     
     # KMS Key
-    "enable_key_rotation",
-    "description",
-    "deletion_window_in_days",
-    "multi_region",
+    # "enable_key_rotation",
+    # "description",
+    # "deletion_window_in_days",
+    # "multi_region",
   ]
 
   ###
