@@ -137,12 +137,6 @@ data "autocloud_blueprint_config" "final" {
   omit_variables = [
     # Global
     "enabled",
-    
-    # KMS Key
-    # "enable_key_rotation",
-    # "description",
-    # "deletion_window_in_days",
-    # "multi_region",
   ]
 
   ###
@@ -185,10 +179,10 @@ data "autocloud_blueprint_config" "final" {
       }
     }
 
-    # validation_rule {
-    #   rule          = "isRequired"
-    #   error_message = "invalid"
-    # }
+    validation_rule {
+      rule          = "isRequired"
+      error_message = "invalid"
+    }
   }
 
   ###
