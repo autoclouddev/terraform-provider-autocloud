@@ -1,3 +1,13 @@
+# [0.3.0-pre.50](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.49...0.3.0-pre.50) (2023-02-17)
+
+
+### Features
+
+* Added reference from blueprint variables example ([fe03d65](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/fe03d65d3f856c1b230206773c3a54fc7f2fc2d0))
+* Exposed variables from blueprint_config ([94bb92c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/94bb92c1d935ef703687ecff226f3bdc3c41e643))
+* set variables map ([c3d2a65](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/c3d2a651efdd2cd7318bd5e2f5f0aff330bc1545))
+* Updated reference example ([3132e94](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/3132e940e64d90e0d6bea60d8951460c33aa1904))
+
 # [0.3.0-pre.49](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.48...0.3.0-pre.49) (2023-02-08)
 
 
