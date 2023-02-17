@@ -1,3 +1,10 @@
+# [0.3.0-pre.51](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.50...0.3.0-pre.51) (2023-02-17)
+
+
+### Features
+
+* **iac:** introduce lowlevel blueprintconfig ([3782d56](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/3782d56d0136a96cd93d6c6357b55e247e335e64))
+
 # [0.3.0-pre.50](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.49...0.3.0-pre.50) (2023-02-17)
 
 
