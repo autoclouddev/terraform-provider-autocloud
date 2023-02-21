@@ -177,8 +177,6 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		if r.MatchString(overrideData.Value) {
 			newIacModuleVar.FieldDataType = "hcl-expression"
 			newIacModuleVar.IsHidden = true
-		} else {
-			newIacModuleVar.FieldDataType = "string"
 		}
 	}
 	str, _ := json.MarshalIndent(newIacModuleVar, "", "    ")
