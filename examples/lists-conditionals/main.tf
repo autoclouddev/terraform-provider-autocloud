@@ -33,6 +33,15 @@ resource "autocloud_module" "ecs" {
   version = "6.6.0"
 }
 
+# ####
+# # CloudFront Distribution
+# #
+# # Serves the content to the public internet and configures access to the private S3 bucket
+resource "autocloud_module" "cloudfront" {
+  name   = "cloudfront"
+  source = "git@github.com:autoclouddev/infrastructure-modules-demo.git//aws/network/cloudfront/distro?ref=0.4.0"
+}
+
 data "autocloud_blueprint_config" "generic" {
   variable {
     name         = "env"
@@ -65,6 +74,7 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
   source = {
     ecs     = autocloud_module.ecs.blueprint_config
     generic = data.autocloud_blueprint_config.generic.blueprint_config
+    cloudfront = autocloud_module.cloudfront.blueprint_config
   }
 
   omit_variables = [
@@ -98,16 +108,27 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     "fargate_task_memory",               // number
     "health_check_grace_period_seconds", // number
     //"hello_world_container_ports",     // list(number)
-    "lb_target_groups",              // list( object({ container_port = number container_health_check_port = number lb_target_group_arn = string } ) )
+    // "lb_target_groups",              // list( object({ container_port = number container_health_check_port = number lb_target_group_arn = string } ) )
     "logs_cloudwatch_group",         // string
     "logs_cloudwatch_retention",     // number
     "manage_ecs_security_group",     // bool
     "nlb_subnet_cidr_blocks",        // list(string)
-    "service_registries",            // list(object({ registry_arn = string container_name = string container_port = number port = number }))
+    // "service_registries",            // list(object({ registry_arn = string container_name = string container_port = number port = number }))
     "target_container_name",         // string
     "tasks_desired_count",           // number
     "tasks_maximum_percent",         // number
     "tasks_minimum_healthy_percent", // number
+    "alternate_domain_names",
+    "comment",
+    "default_root_object",
+    "enable_compression",
+    "http_version",
+    "ipv6_enabled",
+    "price_class",
+    "s3_bucket_name",
+    "s3_bucket_domain_name",
+    "ssl_certificate_arn",
+    "ssl_policy"
   ]
 
 
@@ -259,10 +280,18 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     }
   }
 
+  # list(object) Static value
+  variable {
+    name = "lambda_functions"
+    value = jsonencode([
+      { event_type = "delete", include_body = false, lambda_arn = "abc:123:lambda" },
+      { event_type = "create", include_body = false, lambda_arn = "def:456:lambda" }
+    ])
+  }
 }
 
 resource "autocloud_blueprint" "example" {
-  name = "ECS string and number lists (conditionals) change"
+  name = "ECS object, string and number lists (conditionals) change"
 
   ###
   # UI Configuration
@@ -303,7 +332,8 @@ resource "autocloud_blueprint" "example" {
     }
 
     modules = [
-      autocloud_module.ecs.name
+      autocloud_module.ecs.name,
+      autocloud_module.cloudfront.name,
     ]
   }
   config = data.autocloud_blueprint_config.ecs_custom_form.config
