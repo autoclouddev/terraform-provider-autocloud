@@ -122,7 +122,6 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     name         = "hello_world_container_ports"
     display_name = "hello work ports"
     helper_text  = "select the hello work ports"
-    type         = "checkbox"
     options {
       option {
         label   = "PORT 8080"
@@ -140,6 +139,10 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
         checked = false
       }
     }
+    required_values = jsonencode([
+      "3002",
+      "3001",
+    ])
   }
 }
 
