@@ -69,7 +69,7 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		IsOverriden:         true,
 	}
 
-	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
+	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE || variableType == LIST_TYPE {
 		// try to map the value to an array of strings (options)
 		// var fieldOptions []string
 		// useValueFieldOptions := false
@@ -243,7 +243,7 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(ov.Conditionals)),
 	}
 
-	if ov.FormConfig.Type == RADIO_TYPE || ov.FormConfig.Type == CHECKBOX_TYPE {
+	if ov.FormConfig.Type == RADIO_TYPE || ov.FormConfig.Type == CHECKBOX_TYPE || ov.FormConfig.Type == LIST_TYPE {
 		// if the list is empty, set a default value
 		if len(ov.FormConfig.FieldOptions) == 0 {
 			formVariable.FormQuestion.FieldOptions = getDefaultFieldOptions(fieldID)

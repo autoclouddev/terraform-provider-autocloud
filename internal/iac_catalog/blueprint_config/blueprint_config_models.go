@@ -58,6 +58,7 @@ type FieldOption struct {
 const GENERIC = "generic"
 const RADIO_TYPE = "radio"
 const CHECKBOX_TYPE = "checkbox"
+const LIST_TYPE = "list"
 const SHORTTEXT_TYPE = "shortText"
 const MAP_TYPE = "map"
 
