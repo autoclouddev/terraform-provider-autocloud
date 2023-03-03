@@ -1,3 +1,11 @@
+# [0.3.0-pre.53](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.52...0.3.0-pre.53) (2023-03-03)
+
+
+### Features
+
+* Defined list type for default cases ([9c87d25](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9c87d250a1dde6ec887b015aa311683a067265e6))
+* Updated basic list example ([f775914](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f775914be41bc2a07428c915782d3aad7b64b84f))
+
 # [0.3.0-pre.52](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.51...0.3.0-pre.52) (2023-02-27)
 
 
