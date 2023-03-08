@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -328,9 +329,9 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	return bp, nil
 }
 
-func validateConditionals(variables []autocloudsdk.FormShape) error {
+func validateConditionals(variables []generator.FormShape) error {
 	// vars to map
-	var varsMap = make(map[string]autocloudsdk.FormShape, len(variables))
+	var varsMap = make(map[string]generator.FormShape, len(variables))
 	for _, variable := range variables {
 		varsMap[variable.ID] = variable
 	}

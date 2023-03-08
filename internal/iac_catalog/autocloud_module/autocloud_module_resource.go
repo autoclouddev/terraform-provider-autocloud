@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 
@@ -206,7 +207,7 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	variables := []autocloudsdk.FormShape{}
+	variables := []generator.FormShape{}
 	err = json.Unmarshal([]byte(iacModule.Variables), &variables)
 	if err != nil {
 		return diag.FromErr(err)

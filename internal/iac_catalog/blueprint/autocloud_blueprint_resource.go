@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -68,12 +69,12 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 						"destination_branch": {
 							Description: "destination_branch",
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 						},
 						"git_url_options": {
 							Description: "git_url_options",
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -107,7 +108,7 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 									"variables": {
 										Description: "variables",
 										Type:        schema.TypeMap,
-										Required:    true,
+										Optional:    true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
@@ -177,7 +178,7 @@ func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 	c := meta.(*autocloudsdk.Client)
 	log.Printf("sending data: %v ", generator)
-	o, err := c.CreateGenerator(*generator)
+	o, err := c.IacGenerator.Create(*generator)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
 		if resp != nil {
@@ -202,7 +203,7 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 
 	generatorID := d.Id()
 
-	generator, err := c.GetGenerator(generatorID)
+	generator, err := c.IacGenerator.Get(generatorID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -259,7 +260,7 @@ func autocloudBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	updatedGen.ID = d.Id()
 	log.Println("UPDATING GENERATOR REQUEST")
 	log.Println(updatedGen)
-	_, err = c.UpdateGenerator(*updatedGen)
+	_, err = c.IacGenerator.Update(*updatedGen)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
 		if resp != nil {
@@ -281,7 +282,7 @@ func autocloudBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta 
 
 	generatorID := d.Id()
 
-	err := c.DeleteGenerator(generatorID)
+	err := c.IacGenerator.Delete(generatorID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -293,7 +294,7 @@ func autocloudBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta 
 	return diags
 }
 
-func lowercaseFileDefs(files []autocloudsdk.IacCatalogFile) []interface{} {
+func lowercaseFileDefs(files []generator.IacCatalogFile) []interface{} {
 	var out = make([]interface{}, 0)
 	for _, file := range files {
 		m := make(map[string]interface{})
@@ -307,13 +308,13 @@ func lowercaseFileDefs(files []autocloudsdk.IacCatalogFile) []interface{} {
 	return out
 }
 
-func GetSdkIacCatalog(d *schema.ResourceData) (*autocloudsdk.IacCatalog, error) {
+func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
 		list := labelValues.([]interface{})
 		labels = utils.ToStringSlice(list)
 	}
-	var formShape []autocloudsdk.FormShape
+	var formShape []generator.FormShape
 	if config, configExist := d.GetOk("config"); configExist {
 		configstr := config.(string)
 		err := json.Unmarshal([]byte(configstr), &formShape)
@@ -323,17 +324,19 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*autocloudsdk.IacCatalog, error) 
 		}
 	}
 
+	gc := utils.GetSdkIacCatalogGitConfig(d)
+
 	// TODO: convert tree to array
 	// read from leaves to root all variables and make a huge array of variables
 	// process overrides and conditionals
-	generator := autocloudsdk.IacCatalog{
+	generator := generator.IacCatalog{
 		Name:            d.Get("name").(string),
 		Author:          d.Get("author").(string),
 		Description:     d.Get("description").(string),
 		Instructions:    d.Get("instructions").(string),
 		Labels:          labels,
 		FileDefinitions: utils.GetSdkIacCatalogFileDefinitions(d),
-		GitConfig:       utils.GetSdkIacCatalogGitConfig(d),
+		GitConfig:       gc,
 		FormQuestions:   formShape,
 	}
 

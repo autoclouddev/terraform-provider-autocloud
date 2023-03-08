@@ -3,7 +3,7 @@ package blueprint_config
 import (
 	"errors"
 
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 )
 
 type BluePrintConfig struct {
@@ -11,7 +11,7 @@ type BluePrintConfig struct {
 	RefName           string                      `json:"refName"`
 	OmitVariables     []string                    `json:"omitVariables"`
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
-	Variables         []autocloudsdk.FormShape    `json:"variables"`
+	Variables         []generator.FormShape       `json:"variables"`
 	Children          map[string]BluePrintConfig  `json:"children"`
 }
 

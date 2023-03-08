@@ -6,12 +6,12 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/logger"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
-func FormShapeToMap(formShape []autocloudsdk.FormShape) (map[string]string, error) {
+func FormShapeToMap(formShape []generator.FormShape) (map[string]string, error) {
 	varsMap := make(map[string]string)
 
 	for _, form := range formShape {
@@ -24,13 +24,13 @@ func FormShapeToMap(formShape []autocloudsdk.FormShape) (map[string]string, erro
 	return varsMap, nil
 }
 
-func GetFormShape(root BluePrintConfig) ([]autocloudsdk.FormShape, error) {
+func GetFormShape(root BluePrintConfig) ([]generator.FormShape, error) {
 	var log = logger.Create(log.Fields{"fn": "GetFormShape()"})
 	str, _ := json.MarshalIndent(root, "", "    ")
 	log.Debugf("root bc: %s", string(str))
 	formShape, err := postOrderTransversal(&root)
 	if err != nil {
-		return []autocloudsdk.FormShape{}, err
+		return []generator.FormShape{}, err
 	}
 	return formShape, nil
 }
@@ -38,8 +38,8 @@ func GetFormShape(root BluePrintConfig) ([]autocloudsdk.FormShape, error) {
 // transverses the tree from leaves to root,
 // passing current level variables to its parent after
 // processing the current level overrides and generics
-func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, error) {
-	var vars []autocloudsdk.FormShape = root.Variables
+func postOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) {
+	var vars []generator.FormShape = root.Variables
 	// first, make sure we override all variables that have reference
 	// a reference consist in the following code
 	// variable = {
@@ -70,7 +70,7 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 		varName := keyValue[2]
 		idx := findIdx(root.Children[child].Variables, varName)
 		if idx < 0 {
-			return []autocloudsdk.FormShape{}, fmt.Errorf("Variable Reference is not matching any children variable: %s", key)
+			return []generator.FormShape{}, fmt.Errorf("Variable Reference is not matching any children variable: %s", key)
 		}
 		// build override in place
 		root.Children[child].Variables[idx] = BuildOverridenVariable(root.Children[child].Variables[idx], root.OverrideVariables[key])
@@ -89,7 +89,7 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 		v := v                                        // avoid implicit memory aliasing
 		childrenvars, err := postOrderTransversal(&v) // this &v now the address of the inner v
 		if err != nil {
-			return []autocloudsdk.FormShape{}, err
+			return []generator.FormShape{}, err
 		}
 		vars = append(vars, childrenvars...)
 	}
@@ -103,7 +103,7 @@ func postOrderTransversal(root *BluePrintConfig) ([]autocloudsdk.FormShape, erro
 // vars => variables coming from leaves (for example: a s3 autocloud_module variables)
 // omits => current blueprint config vars to omit (a var will be discarded in case there are no overrides in the current blueprint config)
 // overrideVariables ==> current blueprint config var overrides
-func OmitVars(vars []autocloudsdk.FormShape, omits []string, overrideVariables *map[string]OverrideVariable) []autocloudsdk.FormShape {
+func OmitVars(vars []generator.FormShape, omits []string, overrideVariables *map[string]OverrideVariable) []generator.FormShape {
 	addmittedVars := vars
 	for _, omit := range omits {
 		idx := findIdx(addmittedVars, omit)
@@ -130,7 +130,7 @@ func OmitVars(vars []autocloudsdk.FormShape, omits []string, overrideVariables *
 	return addmittedVars
 }
 
-func findIdx(vars []autocloudsdk.FormShape, varname string) int {
+func findIdx(vars []generator.FormShape, varname string) int {
 	for i, v := range vars {
 		varName, err := utils.GetVariableID(v.ID)
 		if err != nil {
@@ -148,7 +148,7 @@ func findIdx(vars []autocloudsdk.FormShape, varname string) int {
 
 // vars => form shapes coming from leaves
 // overrides => new vars definitions + modifications to vars from leaves
-func OverrideVariables(vars []autocloudsdk.FormShape, overrides map[string]OverrideVariable) ([]autocloudsdk.FormShape, error) {
+func OverrideVariables(vars []generator.FormShape, overrides map[string]OverrideVariable) ([]generator.FormShape, error) {
 	var log = logger.Create(log.Fields{"fn": "OverrideVariables()"})
 	usedOverrides := make(map[string][]string, 0)
 	// transform all original Variables to its overrides
@@ -158,7 +158,7 @@ func OverrideVariables(vars []autocloudsdk.FormShape, overrides map[string]Overr
 		if err != nil {
 			log.Debugf("WARNING: no variable ID found -> %v, evaluated value : %v", err, iacVar)
 			// consider returning an error instead
-			return []autocloudsdk.FormShape{}, fmt.Errorf("%w -> %v, evaluated value : %v", ErrVariableNotFound, err, iacVar)
+			return []generator.FormShape{}, fmt.Errorf("%w -> %v, evaluated value : %v", ErrVariableNotFound, err, iacVar)
 		}
 		overrideVariableData, ok := overrides[varName]
 		if ok {

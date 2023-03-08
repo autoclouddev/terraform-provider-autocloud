@@ -1,24 +1,3 @@
-# [0.3.0-pre.53](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.52...0.3.0-pre.53) (2023-03-03)
-
-
-### Features
-
-* Defined list type for default cases ([9c87d25](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9c87d250a1dde6ec887b015aa311683a067265e6))
-* Updated basic list example ([f775914](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f775914be41bc2a07428c915782d3aad7b64b84f))
-
-# [0.3.0-pre.52](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.51...0.3.0-pre.52) (2023-02-27)
-
-
-### Bug Fixes
-
-* Does not rewrite fielddatatype ([b5df9c3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b5df9c3bf17cc543112dfb2c65e84ad12409d308))
-
-
-### Features
-
-* Added list-objects example ([3417e00](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/3417e00e8ea7496b11c2062cb0ec876123e3b097))
-* Extended list-conditionals example ([9416c59](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9416c59450d24752f554c3490a9b3e051a2312bb))
-
 # [0.3.0-pre.51](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.50...0.3.0-pre.51) (2023-02-17)
 
 

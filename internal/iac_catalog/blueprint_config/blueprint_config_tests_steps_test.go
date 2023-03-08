@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
@@ -36,7 +36,7 @@ func testAccCheckBlueprintConfigExist(resourceName string, blueprintConfig *blue
 	}
 }
 
-func testAccCheckCorrectVariablesLength(resourceName string, formVariables *[]autocloudsdk.FormShape) resource.TestCheckFunc {
+func testAccCheckCorrectVariablesLength(resourceName string, formVariables *[]generator.FormShape) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -56,7 +56,7 @@ func testAccCheckCorrectVariablesLength(resourceName string, formVariables *[]au
 	}
 }
 
-func testAccCheckOmitCorrectness(omitted []string, formVars *[]autocloudsdk.FormShape) resource.TestCheckFunc {
+func testAccCheckOmitCorrectness(omitted []string, formVars *[]generator.FormShape) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, v := range *formVars {
 			id, err := utils.GetVariableID(v.ID)
