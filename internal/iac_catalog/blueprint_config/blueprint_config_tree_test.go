@@ -9,15 +9,15 @@ import (
 	"testing"
 
 	"github.com/go-faker/faker/v4"
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
-func fakeFormShape() autocloudsdk.FormShape {
+func fakeFormShape() generator.FormShape {
 	moduleName := "s3"
-	a := autocloudsdk.FormShape{}
+	a := generator.FormShape{}
 	err := faker.FakeData(&a)
 	if err != nil {
 		log.Fatalln(err)
@@ -37,10 +37,10 @@ func TestTreeTransversal(t *testing.T) {
 	//   B     D
 	//  /
 	// C
-	AVariables := []autocloudsdk.FormShape{fakeFormShape()}
-	BVariables := []autocloudsdk.FormShape{fakeFormShape(), fakeFormShape()}
-	CVariables := []autocloudsdk.FormShape{fakeFormShape(), fakeFormShape()}
-	DVariables := []autocloudsdk.FormShape{fakeFormShape()}
+	AVariables := []generator.FormShape{fakeFormShape()}
+	BVariables := []generator.FormShape{fakeFormShape(), fakeFormShape()}
+	CVariables := []generator.FormShape{fakeFormShape(), fakeFormShape()}
+	DVariables := []generator.FormShape{fakeFormShape()}
 
 	cVar := CVariables[1]
 	cVar.ID = "cloudfront.name"
@@ -103,7 +103,7 @@ func TestTreeTransversal(t *testing.T) {
 	t.Cleanup(closer)
 }
 
-func printFormShapeVarsIds(form []autocloudsdk.FormShape) string {
+func printFormShapeVarsIds(form []generator.FormShape) string {
 	r := ""
 	for _, v := range form {
 		r += fmt.Sprintf(" %s", v.ID)
@@ -112,7 +112,7 @@ func printFormShapeVarsIds(form []autocloudsdk.FormShape) string {
 }
 
 func TestOmitVars(t *testing.T) {
-	vars := make([]autocloudsdk.FormShape, 0)
+	vars := make([]generator.FormShape, 0)
 	varCount := 10
 	pickedCount := 3
 	for i := 0; i < varCount; i++ {

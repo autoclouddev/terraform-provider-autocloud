@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-faker/faker/v4"
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
@@ -16,36 +16,36 @@ func TestOverrideVariable(t *testing.T) {
 	closer := acctest.EnvSetter(map[string]string{
 		"TF_LOG": "DEBUG", // to see the DEBUG logs
 	})
-	originalVars := []autocloudsdk.FormShape{
+	originalVars := []generator.FormShape{
 		{
 			ID:                  "module1.Id",
 			Module:              "module1",
-			FormQuestion:        autocloudsdk.FormQuestion{},
+			FormQuestion:        generator.FormQuestion{},
 			FieldDataType:       "string",
 			FieldDefaultValue:   "string",
 			FieldValue:          "string",
 			AllowConsumerToEdit: true,
-			Conditionals:        []autocloudsdk.ConditionalConfig{},
+			Conditionals:        []generator.ConditionalConfig{},
 		},
 		{
 			ID:                  "module1.OtherId",
 			Module:              "module1",
-			FormQuestion:        autocloudsdk.FormQuestion{},
+			FormQuestion:        generator.FormQuestion{},
 			FieldDataType:       "string",
 			FieldDefaultValue:   "string",
 			FieldValue:          "string",
 			AllowConsumerToEdit: true,
-			Conditionals:        []autocloudsdk.ConditionalConfig{},
+			Conditionals:        []generator.ConditionalConfig{},
 		},
 		{
 			ID:                  "module2.Id2",
 			Module:              "module2",
-			FormQuestion:        autocloudsdk.FormQuestion{},
+			FormQuestion:        generator.FormQuestion{},
 			FieldDataType:       "string",
 			FieldDefaultValue:   "string",
 			FieldValue:          "string",
 			AllowConsumerToEdit: true,
-			Conditionals:        []autocloudsdk.ConditionalConfig{},
+			Conditionals:        []generator.ConditionalConfig{},
 		},
 	}
 
@@ -92,16 +92,16 @@ func TestOverrideVariableError(t *testing.T) {
 		"TF_LOG": "DEBUG", // to see the DEBUG logs
 	})
 	var expectedError = blueprint_config.ErrVariableNotFound
-	originalVars := []autocloudsdk.FormShape{
+	originalVars := []generator.FormShape{
 		{
 			ID:                  "module1Id",
 			Module:              "module1",
-			FormQuestion:        autocloudsdk.FormQuestion{},
+			FormQuestion:        generator.FormQuestion{},
 			FieldDataType:       "string",
 			FieldDefaultValue:   "string",
 			FieldValue:          "string",
 			AllowConsumerToEdit: true,
-			Conditionals:        []autocloudsdk.ConditionalConfig{},
+			Conditionals:        []generator.ConditionalConfig{},
 		},
 	}
 
@@ -132,15 +132,15 @@ func TestBuildOverride(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	original := autocloudsdk.FormShape{
+	original := generator.FormShape{
 		ID:                  "s3_module.someId",
 		Module:              "s3_module",
-		FormQuestion:        autocloudsdk.FormQuestion{},
+		FormQuestion:        generator.FormQuestion{},
 		FieldDataType:       "string",
 		FieldDefaultValue:   "string",
 		FieldValue:          "string",
 		AllowConsumerToEdit: true,
-		Conditionals:        []autocloudsdk.ConditionalConfig{},
+		Conditionals:        []generator.ConditionalConfig{},
 	}
 
 	newVar := blueprint_config.BuildOverridenVariable(original, *ov)
@@ -180,7 +180,7 @@ func TestBuildGenericVar(t *testing.T) {
 	t.Cleanup(closer)
 }
 
-func checkFormConfig(formShape autocloudsdk.FormShape, override blueprint_config.OverrideVariable, t *testing.T) {
+func checkFormConfig(formShape generator.FormShape, override blueprint_config.OverrideVariable, t *testing.T) {
 	// FormConfig.FieldOptions
 	for i, option := range formShape.FormQuestion.FieldOptions {
 		if option.FieldID != fmt.Sprintf("%s-%s", formShape.ID, override.FormConfig.FieldOptions[i].Value) {
@@ -197,7 +197,7 @@ func checkFormConfig(formShape autocloudsdk.FormShape, override blueprint_config
 	}
 }
 
-func checkConditionals(formShape autocloudsdk.FormShape, override blueprint_config.OverrideVariable, t *testing.T) {
+func checkConditionals(formShape generator.FormShape, override blueprint_config.OverrideVariable, t *testing.T) {
 	// CONDITIONALS
 
 	if len(formShape.Conditionals) != len(override.Conditionals) {
@@ -216,7 +216,7 @@ func checkConditionals(formShape autocloudsdk.FormShape, override blueprint_conf
 	}
 }
 
-func checkAllowConsumerToEdit(formShape autocloudsdk.FormShape, override blueprint_config.OverrideVariable, t *testing.T) {
+func checkAllowConsumerToEdit(formShape generator.FormShape, override blueprint_config.OverrideVariable, t *testing.T) {
 	isValueSet := len(override.Value) != 0
 	if isValueSet {
 		UserCANNOTEdit := false

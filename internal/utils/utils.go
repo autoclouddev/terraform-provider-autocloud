@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -87,15 +88,15 @@ func GetSdkIacCatalogModules(d *schema.ResourceData) []autocloudsdk.IacCatalogMo
 	return iacModules
 }
 
-func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacCatalogFile {
-	var fileDefinitions []autocloudsdk.IacCatalogFile
+func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []generator.IacCatalogFile {
+	var fileDefinitions []generator.IacCatalogFile
 	if fileDefinitionsValues, ok := d.GetOk("file"); ok {
 		list := fileDefinitionsValues.(*schema.Set).List()
-		fileDefinitions = make([]autocloudsdk.IacCatalogFile, len(list))
+		fileDefinitions = make([]generator.IacCatalogFile, len(list))
 		for i, fileDefinitionsValue := range list {
 			var fileDefinitionMap = fileDefinitionsValue.(map[string]interface{})
 
-			var fileDefinition = autocloudsdk.IacCatalogFile{}
+			var fileDefinition = generator.IacCatalogFile{}
 
 			if val, ok := fileDefinitionMap["action"]; ok {
 				fileDefinition.Action = val.(string)
@@ -121,8 +122,8 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []autocloudsdk.IacC
 	return fileDefinitions
 }
 
-func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) autocloudsdk.IacCatalogGitConfigPR {
-	var pullRequestConfig autocloudsdk.IacCatalogGitConfigPR
+func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) generator.IacCatalogGitConfigPR {
+	var pullRequestConfig generator.IacCatalogGitConfigPR
 	list := pullRequestConfigValues.(*schema.Set).List()
 	for _, pullRequestConfigValue := range list {
 		var pullRequestConfigMap, ok = pullRequestConfigValue.(map[string]interface{})
@@ -154,8 +155,8 @@ func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) autoclouds
 	return pullRequestConfig
 }
 
-func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGitConfig {
-	var gitConfig autocloudsdk.IacCatalogGitConfig
+func GetSdkIacCatalogGitConfig(d *schema.ResourceData) *generator.IacCatalogGitConfig {
+	var gitConfig generator.IacCatalogGitConfig
 	if gitConfigValues, ok := d.GetOk("git_config"); ok {
 		list := gitConfigValues.(*schema.Set).List()
 		for _, gitConfigValue := range list {
@@ -184,12 +185,15 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) autocloudsdk.IacCatalogGi
 			}
 
 			if val, ok := gitConfigMap["pull_request"]; ok {
-				gitConfig.PullRequest = GetSdkIacCatalogGitConfigPR(val)
+				pr := GetSdkIacCatalogGitConfigPR(val)
+				gitConfig.PullRequest = &pr
 			}
 		}
+	} else {
+		return nil
 	}
 
-	return gitConfig
+	return &gitConfig
 }
 
 func GetSdkIacModule(d *schema.ResourceData) autocloudsdk.IacModule {
@@ -222,8 +226,8 @@ func MergeSchemas(a, b map[string]*schema.Schema) map[string]*schema.Schema {
 	return merged
 }
 
-func ParseVariables(str string) ([]autocloudsdk.FormShape, error) {
-	vars := []autocloudsdk.FormShape{}
+func ParseVariables(str string) ([]generator.FormShape, error) {
+	vars := []generator.FormShape{}
 	err := json.Unmarshal([]byte(str), &vars)
 	if err != nil {
 		return nil, err

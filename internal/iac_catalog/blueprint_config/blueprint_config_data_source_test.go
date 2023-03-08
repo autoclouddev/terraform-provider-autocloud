@@ -10,11 +10,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
@@ -91,7 +91,7 @@ func testAccBlueprintConfig_empty() string {
 }
 
 func TestAccBlueprintConfig_createConfig(t *testing.T) {
-	var formVariables []autocloudsdk.FormShape
+	var formVariables []generator.FormShape
 	resourceName := "autocloud_blueprint.test"
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.TestAccPreCheck(t) },
@@ -183,7 +183,7 @@ func testAccBlueprintConfig_createConfig() string {
 }
 
 func TestAccBlueprintConfig_OverrideVars(t *testing.T) {
-	var formVariables []autocloudsdk.FormShape
+	var formVariables []generator.FormShape
 	omitted := []string{
 		"request_payer",
 		"attach_deny_insecure_transport_policy",

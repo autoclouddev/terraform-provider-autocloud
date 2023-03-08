@@ -9,7 +9,7 @@ import (
 	"regexp"
 
 	"github.com/apex/log"
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/logger"
 )
 
@@ -18,14 +18,14 @@ import (
 TODO: create a test over this function, perhaps it is worth it to rethink the inputs,
 We need as an output a FormShape
 */
-func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData OverrideVariable) autocloudsdk.FormShape {
+func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData OverrideVariable) generator.FormShape {
 	var log = logger.Create(log.Fields{"fn": "BuildOverridenVariable()"})
 	fieldID := iacModuleVar.ID
 
 	// map validation rules
-	validationRules := make([]autocloudsdk.ValidationRule, len(overrideData.FormConfig.ValidationRules))
+	validationRules := make([]generator.ValidationRule, len(overrideData.FormConfig.ValidationRules))
 	for i, vr := range overrideData.FormConfig.ValidationRules {
-		validationRules[i] = autocloudsdk.ValidationRule{
+		validationRules[i] = generator.ValidationRule{
 			Rule:         vr.Rule,
 			Value:        vr.Value,
 			ErrorMessage: vr.ErrorMessage,
@@ -47,11 +47,11 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		variableType = overrideData.FormConfig.Type
 	}
 
-	newIacModuleVar := autocloudsdk.FormShape{
+	newIacModuleVar := generator.FormShape{
 		ID:       iacModuleVar.ID,
 		Module:   iacModuleVar.Module,
 		ModuleID: iacModuleVar.ModuleID,
-		FormQuestion: autocloudsdk.FormQuestion{
+		FormQuestion: generator.FormQuestion{
 			FieldID:         fieldID,
 			FieldType:       variableType,
 			FieldLabel:      fieldLabel,
@@ -83,10 +83,10 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		switch {
 		// case useValueFieldOptions:
 		// 	if len(fieldOptions) > 0 {
-		// 		newIacModuleVar.FormQuestion.FieldOptions = make([]autocloudsdk.FieldOption, len(fieldOptions))
+		// 		newIacModuleVar.FormQuestion.FieldOptions = make([]generator.FieldOption, len(fieldOptions))
 
 		// 		for i, option := range fieldOptions {
-		// 			newIacModuleVar.FormQuestion.FieldOptions[i] = autocloudsdk.FieldOption{
+		// 			newIacModuleVar.FormQuestion.FieldOptions[i] = generator.FieldOption{
 		// 				Label:   option,
 		// 				FieldID: fmt.Sprintf("%s-%s", fieldID, option),
 		// 				Value:   option,
@@ -102,12 +102,12 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 		case len(overrideData.FormConfig.FieldOptions) == 0: // if the list is empty, set a default value
 			// Use module default values
 			if len(iacModuleVar.FormQuestion.FieldOptions) > 0 {
-				newIacModuleVar.FormQuestion.FieldOptions = make([]autocloudsdk.FieldOption, len(iacModuleVar.FormQuestion.FieldOptions))
+				newIacModuleVar.FormQuestion.FieldOptions = make([]generator.FieldOption, len(iacModuleVar.FormQuestion.FieldOptions))
 
 				isChecked := false
 				for i, option := range iacModuleVar.FormQuestion.FieldOptions {
 					isChecked = option.Value == overrideData.Value || isChecked
-					newIacModuleVar.FormQuestion.FieldOptions[i] = autocloudsdk.FieldOption{
+					newIacModuleVar.FormQuestion.FieldOptions[i] = generator.FieldOption{
 						Label:   option.Label,
 						FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
 						Value:   option.Value,
@@ -120,10 +120,10 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 				newIacModuleVar.FormQuestion.FieldOptions = getDefaultFieldOptions(fieldID)
 			}
 		default:
-			newIacModuleVar.FormQuestion.FieldOptions = make([]autocloudsdk.FieldOption, len(overrideData.FormConfig.FieldOptions))
+			newIacModuleVar.FormQuestion.FieldOptions = make([]generator.FieldOption, len(overrideData.FormConfig.FieldOptions))
 
 			for i, option := range overrideData.FormConfig.FieldOptions {
-				newIacModuleVar.FormQuestion.FieldOptions[i] = autocloudsdk.FieldOption{
+				newIacModuleVar.FormQuestion.FieldOptions[i] = generator.FieldOption{
 					Label:   option.Label,
 					FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
 					Value:   option.Value,
@@ -144,16 +144,16 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 			conditionalSource = fmt.Sprintf("%s.%s", iacModuleVar.Module, conditional.Source)
 		}
 
-		newConditional := autocloudsdk.ConditionalConfig{
+		newConditional := generator.ConditionalConfig{
 			Source:         conditionalSource,
 			Condition:      conditional.Condition,
 			Value:          conditional.Value,
 			Type:           conditional.FormConfig.Type,
 			RequiredValues: conditional.RequiredValues,
-			Options:        make([]autocloudsdk.FieldOption, 0), //conditional.FormConfig.FieldOptions,
+			Options:        make([]generator.FieldOption, 0), //conditional.FormConfig.FieldOptions,
 		}
 		for _, c := range conditional.FormConfig.FieldOptions {
-			ao := autocloudsdk.FieldOption{
+			ao := generator.FieldOption{
 				FieldID: fmt.Sprintf("%s-%s", fieldID, c.Value),
 				Label:   c.Label,
 				Value:   c.Value,
@@ -186,9 +186,9 @@ func BuildOverridenVariable(iacModuleVar autocloudsdk.FormShape, overrideData Ov
 	return newIacModuleVar
 }
 
-func getDefaultFieldOptions(fieldID string) []autocloudsdk.FieldOption {
+func getDefaultFieldOptions(fieldID string) []generator.FieldOption {
 	value := "default"
-	return []autocloudsdk.FieldOption{
+	return []generator.FieldOption{
 		{
 			Label:   "Autogenerated Option. Please update this value",
 			FieldID: fmt.Sprintf("%s-%s", fieldID, value),
@@ -198,12 +198,12 @@ func getDefaultFieldOptions(fieldID string) []autocloudsdk.FieldOption {
 	}
 }
 
-func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
+func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 	fieldID := fmt.Sprintf("%s.%s", GENERIC, ov.VariableName)
 
-	validationRules := make([]autocloudsdk.ValidationRule, len(ov.FormConfig.ValidationRules))
+	validationRules := make([]generator.ValidationRule, len(ov.FormConfig.ValidationRules))
 	for i, vr := range ov.FormConfig.ValidationRules {
-		validationRules[i] = autocloudsdk.ValidationRule{
+		validationRules[i] = generator.ValidationRule{
 			Rule:         vr.Rule,
 			Value:        vr.Value,
 			ErrorMessage: vr.ErrorMessage,
@@ -227,11 +227,11 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		}
 	}
 
-	formVariable := autocloudsdk.FormShape{
+	formVariable := generator.FormShape{
 		ID:         fieldID,
 		Module:     GENERIC,
 		FieldValue: fieldValue,
-		FormQuestion: autocloudsdk.FormQuestion{
+		FormQuestion: generator.FormQuestion{
 			FieldID:         fieldID,
 			FieldType:       ov.FormConfig.Type,
 			ValidationRules: validationRules,
@@ -242,7 +242,7 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		IsHidden:            ov.IsHidden,
 		UsedInHCL:           ov.UsedInHCL,
 		RequiredValues:      ov.RequiredValues,
-		Conditionals:        make([]autocloudsdk.ConditionalConfig, len(ov.Conditionals)),
+		Conditionals:        make([]generator.ConditionalConfig, len(ov.Conditionals)),
 	}
 
 	if ov.FormConfig.Type == RADIO_TYPE || ov.FormConfig.Type == CHECKBOX_TYPE {
@@ -250,10 +250,10 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 		if len(ov.FormConfig.FieldOptions) == 0 {
 			formVariable.FormQuestion.FieldOptions = getDefaultFieldOptions(fieldID)
 		} else {
-			formVariable.FormQuestion.FieldOptions = make([]autocloudsdk.FieldOption, len(ov.FormConfig.FieldOptions))
+			formVariable.FormQuestion.FieldOptions = make([]generator.FieldOption, len(ov.FormConfig.FieldOptions))
 
 			for i, option := range ov.FormConfig.FieldOptions {
-				formVariable.FormQuestion.FieldOptions[i] = autocloudsdk.FieldOption{
+				formVariable.FormQuestion.FieldOptions[i] = generator.FieldOption{
 					Label:   option.Label,
 					FieldID: fmt.Sprintf("%s-%s", fieldID, option.Value),
 					Value:   option.Value,
@@ -264,7 +264,7 @@ func BuildGenericVariable(ov OverrideVariable) autocloudsdk.FormShape {
 	}
 
 	for i, conditional := range ov.Conditionals {
-		formVariable.Conditionals[i] = autocloudsdk.ConditionalConfig{
+		formVariable.Conditionals[i] = generator.ConditionalConfig{
 			Source:         conditional.Source,
 			Condition:      conditional.Condition,
 			Value:          conditional.Value,
