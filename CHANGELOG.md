@@ -1,3 +1,10 @@
+# [0.3.0-pre.54](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.53...0.3.0-pre.54) (2023-03-08)
+
+
+### Features
+
+* **gitconfig:** do not force github configuration ([b8542bb](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b8542bbea114e71ef704a1203762644d501ea69a))
+
 # [0.3.0-pre.51](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.50...0.3.0-pre.51) (2023-02-17)
 
 
