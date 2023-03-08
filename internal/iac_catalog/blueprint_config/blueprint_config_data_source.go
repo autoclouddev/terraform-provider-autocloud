@@ -384,12 +384,17 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 	if variableType == "shortText" && len(optionsFromSchema.List()) > 0 {
 		return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrShortTextCantHaveOptions)
 	}
+
+	if variableType == "" && len(optionsFromSchema.List()) > 0 {
+		variableType = LIST_TYPE
+	}
+
 	content.FormConfig = FormConfig{
 		Type:            variableType,
 		ValidationRules: make([]ValidationRule, 0),
 		FieldOptions:    make([]FieldOption, 0),
 	}
-	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
+	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE || variableType == LIST_TYPE {
 		rawOptionsCluster := optionsFromSchema.List() // "options key in schema options {}" should always have 1 elem
 		if len(optionsFromSchema.List()) == 1 {
 			rawOptions := rawOptionsCluster[0].(map[string]interface{})

@@ -69,12 +69,12 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 						"destination_branch": {
 							Description: "destination_branch",
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 						},
 						"git_url_options": {
 							Description: "git_url_options",
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -108,7 +108,7 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 									"variables": {
 										Description: "variables",
 										Type:        schema.TypeMap,
-										Required:    true,
+										Optional:    true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},

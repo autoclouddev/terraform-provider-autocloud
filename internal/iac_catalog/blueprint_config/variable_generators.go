@@ -69,7 +69,7 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 		IsOverriden:         true,
 	}
 
-	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE {
+	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE || variableType == LIST_TYPE {
 		// try to map the value to an array of strings (options)
 		// var fieldOptions []string
 		// useValueFieldOptions := false
@@ -177,8 +177,6 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 		if r.MatchString(overrideData.Value) {
 			newIacModuleVar.FieldDataType = "hcl-expression"
 			newIacModuleVar.IsHidden = true
-		} else {
-			newIacModuleVar.FieldDataType = "string"
 		}
 	}
 	str, _ := json.MarshalIndent(newIacModuleVar, "", "    ")
@@ -245,7 +243,7 @@ func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 		Conditionals:        make([]generator.ConditionalConfig, len(ov.Conditionals)),
 	}
 
-	if ov.FormConfig.Type == RADIO_TYPE || ov.FormConfig.Type == CHECKBOX_TYPE {
+	if ov.FormConfig.Type == RADIO_TYPE || ov.FormConfig.Type == CHECKBOX_TYPE || ov.FormConfig.Type == LIST_TYPE {
 		// if the list is empty, set a default value
 		if len(ov.FormConfig.FieldOptions) == 0 {
 			formVariable.FormQuestion.FieldOptions = getDefaultFieldOptions(fieldID)
