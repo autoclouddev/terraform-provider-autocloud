@@ -1,6 +1,8 @@
 ---
 branches:
   - main
+  - name: develop
+    prerelease: "pre"
 
 plugins:
   - "@semantic-release/commit-analyzer"
@@ -27,4 +29,4 @@ publish:
 success: false
 fail: false
 
-tagFormat: "${version}"
+tagFormat: "v${version}"

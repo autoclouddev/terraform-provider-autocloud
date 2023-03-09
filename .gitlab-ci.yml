@@ -3,25 +3,56 @@ workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_MESSAGE =~ /^docs\(CHANGELOG\)/'
       when: never
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE =~ /^docs\(CHANGELOG\)/'
+      when: never
     - when: always
 
 stages:
+  - init
   - validate
   - create tag
+  - build
+  - publish
   - notify
+
+variables:
+  GOPATH: $CI_PROJECT_DIR/.go
+  VERSION: $CI_COMMIT_TAG
 
 .before_script_template: &private_golang_access
   - echo -e "machine gitlab.com\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
   - go env -w GOPRIVATE=gitlab.com/${CI_PROJECT_NAMESPACE}
+  - mkdir -p .go
+
+vendor:
+  image: golang:1.19-alpine
+  stage: init
+  rules:
+    - when: always
+  cache:
+    key: "${CI_COMMIT_REF_NAME}-godeps"
+    paths:
+      - .go/pkg/mod/
+    policy: pull-push
+  before_script:
+    - *private_golang_access
+    - apk add --no-cache git make zip
+  script:
+    - go mod vendor
 
 golangci-lint:
   image: golangci/golangci-lint:v1.50.0
   stage: validate
   cache:
-    key: $CI_COMMIT_BRANCH
-    paths:
-      - .lint-cache/
-    policy: pull-push
+    - key: "${CI_COMMIT_REF_NAME}-golint-cache"
+      paths:
+        - .lint-cache/
+      policy: pull-push
+    - key: "${CI_COMMIT_REF_NAME}-godeps"
+      paths:
+        - .go/pkg/mod/
+      policy: pull
+
   variables:
     GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.lint-cache/"
   rules:
@@ -31,7 +62,6 @@ golangci-lint:
   before_script:
     - *private_golang_access
     - mkdir -p .lint-cache
-    - go mod vendor
   script:
     - golangci-lint run --color never -j $(getconf _NPROCESSORS_ONLN)
 
@@ -48,6 +78,147 @@ create tag:
     - semantic-release
   only:
     - main
+    - develop
+
+.build:
+  image: golang:1.19-alpine
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: always
+    - when: never
+  cache:
+    key: "${CI_COMMIT_REF_NAME}-godeps"
+    paths:
+      - .go/pkg/mod/
+    policy: pull
+  artifacts:
+    paths:
+      - binaries/autoclouddev-autocloud_${VERSION}_${ARCH}.zip
+  before_script:
+    - *private_golang_access
+    - apk add --no-cache git make zip
+  script:
+    - make release-${ARCH}
+    - ls -al ./binaries
+
+build darwin_amd64:
+  extends: .build
+  variables:
+    ARCH: darwin_amd64
+
+build darwin_arm:
+  extends: .build
+  variables:
+    ARCH: darwin_arm
+
+build darwin_arm64:
+  extends: .build
+  variables:
+    ARCH: darwin_arm64
+
+build freebsd_386:
+  extends: .build
+  variables:
+    ARCH: freebsd_386
+
+build freebsd_amd64:
+  extends: .build
+  variables:
+    ARCH: freebsd_amd64
+
+build freebsd_arm:
+  extends: .build
+  variables:
+    ARCH: freebsd_arm
+
+build freebsd_arm64:
+  extends: .build
+  variables:
+    ARCH: freebsd_arm64
+
+build linux_386:
+  extends: .build
+  variables:
+    ARCH: linux_386
+
+build linux_amd64:
+  extends: .build
+  variables:
+    ARCH: linux_amd64
+
+build linux_arm:
+  extends: .build
+  variables:
+    ARCH: linux_arm
+
+build linux_arm64:
+  extends: .build
+  variables:
+    ARCH: linux_arm64
+
+build openbsd_386:
+  extends: .build
+  variables:
+    ARCH: openbsd_386
+
+build openbsd_amd64:
+  extends: .build
+  variables:
+    ARCH: openbsd_amd64
+
+build openbsd_arm:
+  extends: .build
+  variables:
+    ARCH: openbsd_arm
+
+build openbsd_arm64:
+  extends: .build
+  variables:
+    ARCH: openbsd_arm64
+
+build windows_386:
+  extends: .build
+  variables:
+    ARCH: windows_386
+
+build windows_amd64:
+  extends: .build
+  variables:
+    ARCH: windows_amd64
+
+build windows_arm:
+  extends: .build
+  variables:
+    ARCH: windows_arm
+
+build windows_arm64:
+  extends: .build
+  variables:
+    ARCH: windows_arm64
+
+publish:
+  # image: harbor.tools.autocloud.dev/autocloud/registry:latest
+  image: autocloudiac/registry:0.6.0
+  stage: publish
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: always
+    - when: never
+  variables:
+    # These values will be superseded by any variables defined in the group and project settings
+    CITIZEN_ADDR: https://citizen.tools.autocloud.dev
+    CITIZEN_DATABASE_TYPE: mongodb
+    CITIZEN_GPG_PASSPHRASE: $GPG_PASSPHRASE
+    SECURE_FILES_DOWNLOAD_PATH: "./gpg"
+  before_script:
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/load-secure-files/-/raw/main/installer" | bash
+    - gpg --import ./gpg/tf_reg_sign_public.key
+    - gpg --import --pinentry-mode=loopback --passphrase "${CITIZEN_GPG_PASSPHRASE}" ./gpg/tf_reg_sign_private.key
+  script:
+    - cd binaries
+    - ls -1
+    - citizen provider autoclouddev autocloud ${CI_COMMIT_TAG} -g D59E9C37
 
 .curlcmd: &curlcmd >
   curl

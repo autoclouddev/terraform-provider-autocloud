@@ -21,7 +21,9 @@
 
 # Dependency directories (remove the comment below to include it)
 **/vendor/*
+**/.terraform/*
 **/Godeps/*
+vendor/
 
 # Go workspace file
 go.work
@@ -62,3 +64,11 @@ override.tf.json
 
 # Ignore VSCode settings
 .vscode
+examples/**/.terraform.lock.hcl
+examples/**/*.tfstate.*
+examples/**/*.tfstate
+examples/**/.terraform
+
+# Ignore binary outputs
+binaries/**
+!binaries/.gitkeep
