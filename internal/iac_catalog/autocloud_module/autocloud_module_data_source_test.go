@@ -1,5 +1,9 @@
 package autocloud_module_test
 
+/*
+
+// Commented until we have a definition for this feature, this is about the data resource, not the "resource" resource of iac_module
+
 import (
 	"os"
 	"regexp"
@@ -105,3 +109,4 @@ func TestAccDataSourceAutocloudModule(t *testing.T) {
 		},
 	})
 }
+*/
