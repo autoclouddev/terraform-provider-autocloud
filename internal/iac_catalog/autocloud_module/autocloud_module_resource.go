@@ -55,6 +55,16 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 			Type: schema.TypeString,
 		},
 	},
+	"template_config": {
+		Description: "Template config",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
+	"config": {
+		Description: "Form config",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
 	"tags_variable": {
 		Description: "Tags variable name",
 		Type:        schema.TypeString,
@@ -94,7 +104,6 @@ func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any
 	var diags diag.Diagnostics
 
 	moduleInput := utils.GetSdkIacModuleInput(d)
-	fmt.Println("moduleInput", moduleInput)
 	c := meta.(*autocloudsdk.Client)
 	//o, err := c.CreateModule(&iacModule)
 
@@ -158,7 +167,7 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = d.Set("blueprint_config", iacModule.Variables)
+	err = d.Set("config", iacModule.Variables)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -196,7 +205,6 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	//fmt.Println(string(jsonconf))
 	err = d.Set("blueprint_config", string(jsonconf))
 	if err != nil {
 		return diag.FromErr(err)
