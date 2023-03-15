@@ -1,3 +1,10 @@
+# [0.3.0-pre.55](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0-pre.54...v0.3.0-pre.55) (2023-03-15)
+
+
+### Bug Fixes
+
+* Exposed config for autocloud_module ([f740194](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f74019465224e243525bf843e82ae67ce2707552))
+
 # [0.3.0-pre.54](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/0.3.0-pre.53...0.3.0-pre.54) (2023-03-08)
 
 
