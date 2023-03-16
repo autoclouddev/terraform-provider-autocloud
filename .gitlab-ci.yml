@@ -107,11 +107,6 @@ build darwin_amd64:
   variables:
     ARCH: darwin_amd64
 
-build darwin_arm:
-  extends: .build
-  variables:
-    ARCH: darwin_arm
-
 build darwin_arm64:
   extends: .build
   variables:
@@ -197,7 +192,7 @@ build windows_arm64:
   variables:
     ARCH: windows_arm64
 
-publish:
+publish to citizen:
   # image: harbor.tools.autocloud.dev/autocloud/registry:latest
   image: autocloudiac/registry:0.6.0
   stage: publish
@@ -218,7 +213,8 @@ publish:
   script:
     - cd binaries
     - ls -1
-    - citizen provider autoclouddev autocloud ${CI_COMMIT_TAG} -g D59E9C37
+    - export VERSION=${CI_COMMIT_TAG##v}
+    - citizen provider autoclouddev autocloud ${VERSION} -g D59E9C37
 
 .curlcmd: &curlcmd >
   curl

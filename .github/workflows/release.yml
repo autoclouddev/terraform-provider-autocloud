@@ -28,13 +28,22 @@ jobs:
         name: Unshallow
         run: git fetch --prune --unshallow
       -
+        name: Set up Gitlab access to private repos
+        env:
+          GITLAB_USER: ${{ secrets.GITLAB_USER }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: echo -e "machine gitlab.com\nlogin ${GITLAB_USER}\npassword ${GITLAB_TOKEN}" > ~/.netrc
+      -
+        name: Set Go context for private repos
+        run: go env -w GOPRIVATE=gitlab.com/auto-cloud
+      -
         name: Set up Go
         uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
         with:
           go-version-file: 'go.mod'
           cache: true
       -
-        name: Import GPG key
+        name: Import GPG key for artifact signing
         uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549 # v5.2.0
         id: import_gpg
         with:
