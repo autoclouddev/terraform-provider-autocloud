@@ -1,3 +1,10 @@
+# [0.3.0-pre.57](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0-pre.56...v0.3.0-pre.57) (2023-03-16)
+
+
+### Bug Fixes
+
+* **Makefile:** version vs binary version ([434a311](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/434a311f4ebeee477f65cfcc1eeeca20f2764cbb))
+
 # [0.3.0-pre.56](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0-pre.55...v0.3.0-pre.56) (2023-03-16)
 
 
