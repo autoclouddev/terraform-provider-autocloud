@@ -107,11 +107,6 @@ build darwin_amd64:
   variables:
     ARCH: darwin_amd64
 
-build darwin_arm:
-  extends: .build
-  variables:
-    ARCH: darwin_arm
-
 build darwin_arm64:
   extends: .build
   variables:
