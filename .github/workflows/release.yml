@@ -32,7 +32,7 @@ jobs:
         env:
           GITLAB_USER: ${{ secrets.GITLAB_USER }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        run: git config --global url."https://${GITLAB_USER}:${GITLAB_TOKEN}@gitlab.com/".insteadOf https://gitlab.com/
+        run: echo -e "machine gitlab.com\nlogin ${GITLAB_USER}\npassword ${GITLAB_TOKEN}" > ~/.netrc
       -
         name: Set Go context for private repos
         run: go env -w GOPRIVATE=gitlab.com/auto-cloud
