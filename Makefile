@@ -3,7 +3,7 @@ HOSTNAME=autocloud.io
 NAMESPACE=autoclouddev
 NAME=autocloud
 BINARY=terraform-provider-${NAME}
-BINARY_VERSION=$(echo $VERSION | sed -e 's/^[a-zA-Z]//')
+BINARY_VERSION := $(shell echo $$VERSION | sed -e 's/^[a-zA-Z]//')
 CITIZEN_ARCHIVE_NAME=${NAMESPACE}-${NAME}
 OS_ARCH=darwin_amd64
 ## uncomment the following line if you are working locally
