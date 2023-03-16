@@ -1,3 +1,10 @@
+# [0.3.0-pre.58](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0-pre.57...v0.3.0-pre.58) (2023-03-16)
+
+
+### Bug Fixes
+
+* **makefile:** using shell ([9f92c24](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9f92c24ad064847d24836687b0620b446269de78))
+
 # [0.3.0-pre.57](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0-pre.56...v0.3.0-pre.57) (2023-03-16)
 
 
