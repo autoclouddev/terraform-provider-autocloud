@@ -9,6 +9,7 @@ import (
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/iac_module"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -196,20 +197,12 @@ func GetSdkIacCatalogGitConfig(d *schema.ResourceData) *generator.IacCatalogGitC
 	return &gitConfig
 }
 
-func GetSdkIacModule(d *schema.ResourceData) autocloudsdk.IacModule {
-	var displayOrder = []string{}
-	if orderValues, isorderValuesOk := d.GetOk("display_order"); isorderValuesOk {
-		list := orderValues.([]interface{})
-		displayOrder = ToStringSlice(list)
-	}
-
-	// note: the Template and Variables fields are calculated by the SDK
-	iacModule := autocloudsdk.IacModule{
+func GetSdkIacModuleInput(d *schema.ResourceData) iac_module.ModuleInput {
+	iacModule := iac_module.ModuleInput{
 		Name:         d.Get("name").(string),
 		Source:       d.Get("source").(string),
 		Version:      d.Get("version").(string),
 		TagsVariable: d.Get("tags_variable").(string),
-		DisplayOrder: displayOrder,
 	}
 
 	return iacModule
