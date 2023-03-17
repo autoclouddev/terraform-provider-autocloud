@@ -47,6 +47,7 @@ version-check:
   rules:
     - when: always
   script:
+    - printenv | sort
     - echo $VERSION
     - echo $BINARY_VERSION
 
