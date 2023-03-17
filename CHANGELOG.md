@@ -1,3 +1,10 @@
+# [0.3.0-pre.59](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0-pre.58...v0.3.0-pre.59) (2023-03-17)
+
+
+### Bug Fixes
+
+* **pipeline:** fix citizen publishing ([4b5ef9f](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/4b5ef9fc53ea4026f9dce4038fe7ae571a9a5121))
+
 # [0.3.0-pre.58](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0-pre.57...v0.3.0-pre.58) (2023-03-16)
 
 
