@@ -1,3 +1,10 @@
+## [0.3.1-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.1-pre.1...v0.3.1-pre.2) (2023-03-17)
+
+
+### Bug Fixes
+
+* **iac:** adapt repository pattern to the module resource ([bf31b68](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/bf31b688ee6b708ffe704eca12772dc9796e464e))
+
 ## [0.3.1-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0...v0.3.1-pre.1) (2023-03-17)
 
 
