@@ -1,3 +1,10 @@
+# [0.4.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.1-pre.2...v0.4.0-pre.1) (2023-03-20)
+
+
+### Features
+
+* **iac:** add ability to fetch local modules ([d8682c7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/d8682c762870b1db4f3f78311039f2ca4e612c52))
+
 ## [0.3.1-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.1-pre.1...v0.3.1-pre.2) (2023-03-17)
 
 
