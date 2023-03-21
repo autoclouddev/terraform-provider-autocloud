@@ -47,11 +47,7 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 	},
-	"template": {
-		Description: "tf source code from registry",
-		Type:        schema.TypeString,
-		Computed:    true,
-	},
+
 	"variables": {
 		Type:     schema.TypeMap,
 		Computed: true,
@@ -64,7 +60,7 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 	},
-	"blueprint_config_1": {
+	"config": {
 		Description: "Form config",
 		Type:        schema.TypeString,
 		Computed:    true,
@@ -74,14 +70,6 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 		Default:     "tags",
-	},
-	"display_order": {
-		Description: "Display order variables",
-		Type:        schema.TypeList,
-		Optional:    true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
-		},
 	},
 	"outputs": {
 		Type:     schema.TypeMap,
@@ -115,9 +103,11 @@ func autocloudModuleCreate(ctx context.Context, d *schema.ResourceData, meta any
 	// use the meta value to retrieve your client from the provider configure method
 	var diags diag.Diagnostics
 
-	iacModule := utils.GetSdkIacModule(d)
+	moduleInput := utils.GetSdkIacModuleInput(d)
 	c := meta.(*autocloudsdk.Client)
-	o, err := c.CreateModule(&iacModule)
+	//o, err := c.CreateModule(&iacModule)
+
+	o, err := c.Module.Create(moduleInput)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,7 +132,7 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	iacModuleID := d.Id()
 
-	iacModule, err := c.GetModule(iacModuleID)
+	iacModule, err := c.Module.Get(iacModuleID)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
 		if resp != nil {
@@ -169,15 +159,6 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("template", iacModule.Template)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	err = d.Set("template_config", iacModule.Template)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	varsMap, err := utils.GetVariablesIdMap(iacModule.Variables)
 	if err != nil {
 		return diag.FromErr(err)
@@ -186,15 +167,11 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = d.Set("blueprint_config", iacModule.Variables)
+	err = d.Set("config", iacModule.Variables)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	err = d.Set("tags_variable", iacModule.TagsVariable)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	err = d.Set("display_order", iacModule.DisplayOrder)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -228,7 +205,6 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	//fmt.Println(string(jsonconf))
 	err = d.Set("blueprint_config", string(jsonconf))
 	if err != nil {
 		return diag.FromErr(err)
@@ -241,10 +217,10 @@ func autocloudModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*autocloudsdk.Client)
 
-	updatedIacModule := utils.GetSdkIacModule(d)
+	updatedIacModule := utils.GetSdkIacModuleInput(d)
 	updatedIacModule.ID = d.Id()
 
-	_, err := c.UpdateModule(&updatedIacModule)
+	_, err := c.Module.Update(updatedIacModule)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
 		if resp != nil {
@@ -267,7 +243,7 @@ func autocloudModuleDelete(ctx context.Context, d *schema.ResourceData, meta any
 
 	iacModuleID := d.Id()
 
-	err := c.DeleteModule(iacModuleID)
+	err := c.Module.Delete(iacModuleID)
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
 		if resp != nil {

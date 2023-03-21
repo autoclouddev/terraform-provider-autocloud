@@ -1,5 +1,8 @@
 package autocloud_module
 
+/*
+// Commented until we have a definition for this feature, this is about the data resource, not the "resource" resource of iac_module
+
 import (
 	"context"
 	"errors"
@@ -98,3 +101,4 @@ func dataSourceAutocloudModuleRead(ctx context.Context, d *schema.ResourceData, 
 	}
 	return diags
 }
+*/
