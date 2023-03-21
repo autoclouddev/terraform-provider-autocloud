@@ -1,3 +1,16 @@
+# [0.4.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0...v0.4.0) (2023-03-21)
+
+
+### Bug Fixes
+
+* Exposed config for autocloud_module ([4ec8c5d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/4ec8c5d72fc4eddb215d331f1726e1761f5ea9ae))
+* **iac:** adapt repository pattern to the module resource ([bf31b68](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/bf31b688ee6b708ffe704eca12772dc9796e464e))
+
+
+### Features
+
+* **iac:** add ability to fetch local modules ([d8682c7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/d8682c762870b1db4f3f78311039f2ca4e612c52))
+
 # [0.4.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.1-pre.2...v0.4.0-pre.1) (2023-03-20)
 
 
