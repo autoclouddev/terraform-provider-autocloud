@@ -6,6 +6,7 @@ import (
 	"time"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
+	gitrepository "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/git_repository"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -48,7 +49,7 @@ func DataSourceRepositories() *schema.Resource {
 	}
 }
 
-func flattenData(repositories *[]autocloudsdk.Repository) []interface{} {
+func flattenData(repositories *[]gitrepository.GitRepository) []interface{} {
 	if repositories != nil {
 		data := make([]interface{}, len(*repositories))
 
@@ -73,7 +74,7 @@ func dataSourceRepositoriesRead(ctx context.Context, d *schema.ResourceData, m i
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	repositories, err := c.GetRepositories()
+	repositories, err := c.GitRepository.List()
 
 	if err != nil {
 		resp := autocloudsdk.GetSdkHttpError(err)
@@ -88,7 +89,7 @@ func dataSourceRepositoriesRead(ctx context.Context, d *schema.ResourceData, m i
 
 	tflog.Trace(ctx, "getting the repositories")
 
-	data := flattenData(&repositories)
+	data := flattenData(repositories)
 	err = d.Set("data", data)
 	if err != nil {
 		//fmt.Println(err)
