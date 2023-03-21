@@ -1,3 +1,10 @@
+# [0.5.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.4.0...v0.5.0-pre.1) (2023-03-21)
+
+
+### Features
+
+* integrate new git repository service ([15a45b4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/15a45b47867eb8ab48d5dbad909f98339d3f443a))
+
 # [0.4.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.3.0...v0.4.0) (2023-03-21)
 
 
