@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
@@ -412,29 +411,6 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 		}
 	}
 
-	if variableType == MAP_TYPE {
-		var variablesMap map[string]interface{}
-		err := json.Unmarshal([]byte(requiredValues), &variablesMap)
-		if err != nil {
-			//return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrMapCantBeParsed)
-			fmt.Println(err)
-		}
-
-		ccc := ConvertMap(variablesMap)
-
-		pairs := make([]autocloudsdk.KeyValue, 0)
-
-		for key, value := range ccc {
-			pair := autocloudsdk.KeyValue{Key: key, Value: value}
-			pairs = append(pairs, pair)
-		}
-		mapValue, err := json.Marshal(pairs)
-		if err != nil {
-			//return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrMapCantBeParsed)
-			fmt.Println(err)
-		}
-		content.RequiredValues = string(mapValue)
-	}
 	validationRulesList := rawSchema["validation_rule"].(*schema.Set).List()
 
 	for _, validationRule := range validationRulesList {
