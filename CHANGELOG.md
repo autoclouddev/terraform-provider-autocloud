@@ -1,3 +1,10 @@
+# [0.5.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.1...v0.5.0-pre.2) (2023-03-22)
+
+
+### Bug Fixes
+
+* Left map convertion logic to API ([570ff2e](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/570ff2e021fa81873945122c2e2c5ffe76572066))
+
 # [0.5.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.4.0...v0.5.0-pre.1) (2023-03-21)
 
 
