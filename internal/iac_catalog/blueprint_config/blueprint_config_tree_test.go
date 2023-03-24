@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/go-faker/faker/v4"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
@@ -146,6 +147,31 @@ func TestOmitVars(t *testing.T) {
 	if hiddenVars != varCount-pickedCount {
 		t.Fatalf("vars were not omitted")
 	}
+}
+
+func TestOmitReferenceVars(t *testing.T) {
+	vars := make([]generator.FormShape, 0)
+
+	s3Tags := fakeFormShape()
+	s3Tags.ID = "s3.tags"
+	vars = append(vars, s3Tags)
+
+	cfTags := fakeFormShape()
+	cfTags.ID = "cloudfront.tags"
+	vars = append(vars, cfTags)
+
+	omits := []string{"cloudfront.variables.tags"}
+	omits = append(omits, "cloudfront.variables.tags")
+	result := blueprint_config.OmitVars(vars, omits, &(map[string]blueprint_config.OverrideVariable{}))
+
+	hiddenVars := 0
+	for _, v := range result {
+		if !v.IsHidden {
+			hiddenVars++
+		}
+	}
+
+	assert.Equal(t, 1, hiddenVars) // one omitted variable
 }
 
 func TestJsonUnmarshallOverride(t *testing.T) {
