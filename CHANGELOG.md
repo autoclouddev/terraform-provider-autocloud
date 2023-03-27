@@ -1,3 +1,10 @@
+# [0.5.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.2...v0.5.0-pre.3) (2023-03-27)
+
+
+### Bug Fixes
+
+* use correct ARCH for darwin_arm64 ([53b8013](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/53b80132c3a84dd26ed654ac6e3a680c57766e3a))
+
 # [0.5.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.1...v0.5.0-pre.2) (2023-03-22)
 
 
