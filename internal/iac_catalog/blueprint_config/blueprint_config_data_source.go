@@ -33,7 +33,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 				"rule": {
 					Type:         schema.TypeString,
 					Required:     true,
-					ValidateFunc: validation.StringInSlice([]string{"isRequired", "regex"}, false),
+					ValidateFunc: validation.StringInSlice([]string{"isRequired", "regex", "minLength", "maxLength"}, false),
 				},
 				"value": {
 					Type:     schema.TypeString,
