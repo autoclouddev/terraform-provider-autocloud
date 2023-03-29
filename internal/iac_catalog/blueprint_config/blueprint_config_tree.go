@@ -35,6 +35,17 @@ func GetFormShape(root BluePrintConfig) ([]generator.FormShape, error) {
 	return formShape, nil
 }
 
+func hasReference(ov string) bool {
+	keyValue := strings.Split(ov, ".")
+	if len(keyValue) != 3 {
+		return false
+	}
+	if keyValue[1] != "variables" {
+		return false
+	}
+	return true
+}
+
 // transverses the tree from leaves to root,
 // passing current level variables to its parent after
 // processing the current level overrides and generics
@@ -48,16 +59,6 @@ func postOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) 
 	//   }
 	// on name, if you split it by the point, the first part is the child name, the second the variable name
 	// analyze overrides that have "."  <source>.<varname>
-	hasReference := func(ov string) bool {
-		keyValue := strings.Split(ov, ".")
-		if len(keyValue) != 3 {
-			return false
-		}
-		if keyValue[1] != "variables" {
-			return false
-		}
-		return true
-	}
 	keys := make([]string, 0)
 	for k := range root.OverrideVariables {
 		keys = append(keys, k)
@@ -130,19 +131,27 @@ func OmitVars(vars []generator.FormShape, omits []string, overrideVariables *map
 	return addmittedVars
 }
 
-func findIdx(vars []generator.FormShape, varname string) int {
+func findIdx(vars []generator.FormShape, refname string) int {
 	for i, v := range vars {
-		varName, err := utils.GetVariableID(v.ID)
-		if err != nil {
-			log.Debugf("the [%s] variable not found\n", varName)
-			return -1
+		varName, varname := "", refname
+		if hasReference(refname) {
+			keyValue := strings.Split(refname, ".")
+			varname = fmt.Sprintf("%v.%v", keyValue[0], keyValue[2])
+			varName = v.ID
+		} else {
+			varId, err := utils.GetVariableID(v.ID)
+			if err != nil {
+				log.Debugf("the [%s] variable not found\n", varId)
+				return -1
+			}
+			varName = varId
 		}
 		if varName == varname {
 			log.Debugf("the [%s] variable was omitted\n", varName)
 			return i
 		}
 	}
-	log.Debugf("the [%s] omitted value not found in vars\n", varname)
+	log.Debugf("the [%s] omitted value not found in vars\n", refname)
 	return -1
 }
 
