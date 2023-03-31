@@ -92,6 +92,17 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
         "sales"
       ]
     })
+    
+    validation_rule {
+      rule          = "minLength"
+      value = 1
+      error_message = "min length is set to 1 element"
+    }
+    validation_rule {
+      rule          = "maxLength"
+      value = 5
+      error_message = "max length is set to 5 element"
+    }
   }
 
   variable {
@@ -143,6 +154,16 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
       "3002",
       "3001",
     ])
+    validation_rule {
+      rule          = "minLength"
+      value = 1
+      error_message = "min length is set to 1 element"
+    }
+    validation_rule {
+      rule          = "maxLength"
+      value = 5
+      error_message = "max length is set to 5 element"
+    }
   }
 }
 
