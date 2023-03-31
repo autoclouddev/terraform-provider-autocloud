@@ -1,3 +1,13 @@
+# [0.5.0-pre.4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.3...v0.5.0-pre.4) (2023-03-31)
+
+
+### Features
+
+* Added unit tests for omitted by reference variable ([5016fff](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/5016fffe90d6a4a832bb6bdbcb8c13700d825b51))
+* Included new validation rules for maxLength and minLength ([0dcc3a1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/0dcc3a1a486c2480f9a4604e205111894c4ef923))
+* Omitted just reference variable ([9da1aea](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9da1aea4206df0dd71ec997898efc6dd728d0ca3))
+* Updated list-basic example ([6e12daf](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/6e12dafd8577ac9163e4c22813c8a1717fe6af43))
+
 # [0.5.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.2...v0.5.0-pre.3) (2023-03-27)
 
 
