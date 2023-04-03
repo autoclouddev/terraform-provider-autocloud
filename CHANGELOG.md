@@ -1,3 +1,11 @@
+# [0.5.0-pre.5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.4...v0.5.0-pre.5) (2023-04-03)
+
+
+### Features
+
+* **module:** do not force tags name on modules ([fc47175](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/fc4717570411b4cbc39a53f9ea3ddaef48dd0252))
+* **sdk:** update tag ([5a4aa68](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/5a4aa68fc4ac4d734f5d04e46c6c1452b573377d))
+
 # [0.5.0-pre.4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.3...v0.5.0-pre.4) (2023-03-31)
 
 
