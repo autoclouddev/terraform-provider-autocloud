@@ -61,6 +61,7 @@ const CHECKBOX_TYPE = "checkbox"
 const LIST_TYPE = "list"
 const SHORTTEXT_TYPE = "shortText"
 const MAP_TYPE = "map"
+const RAW_TYPE = "raw"
 
 var ErrSetValueInForm = errors.New("A form options can not be added when setting the variable's value.")
 var ErrOneBlockOptionsRequied = errors.New("No more than 1 \"options\" blocks are allowed")

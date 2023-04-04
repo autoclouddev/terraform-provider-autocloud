@@ -839,6 +839,14 @@ func TestBuildVariableContent(t *testing.T) {
 				FieldOptions: []blueprint_config.FieldOption{},
 			},
 		},
+		"raw": {
+			DisplayName: "this is a raw variable",
+			HelperText:  "helper text",
+			Value:       "var.ami",
+			FormConfig: blueprint_config.FormConfig{
+				Type: "raw",
+			},
+		},
 		// "map": {
 		// 	DisplayName: "this is display",
 		// 	HelperText:  "helper text",
@@ -910,6 +918,7 @@ func createRawVariableContentSchema(content blueprint_config.VariableContent) ma
 	ud["display_name"] = content.DisplayName
 	ud["helper_text"] = content.HelperText
 	ud["type"] = content.FormConfig.Type
+	ud["value"] = content.Value
 	vRules := make([]interface{}, 0)
 	for _, rule := range content.FormConfig.ValidationRules {
 		rawRule := map[string]interface{}{

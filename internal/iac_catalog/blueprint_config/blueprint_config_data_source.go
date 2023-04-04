@@ -89,7 +89,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE}, false),
+			ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE, RAW_TYPE}, false),
 		},
 		"options": {
 			Type:     schema.TypeSet,
@@ -366,8 +366,13 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 	valueStr, valueIsString := value.(string)
 	valueIsDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
 
+	variableType := rawSchema["type"].(string)
+
 	if valueExist && valueIsString && valueIsDefined {
 		content.Value = valueStr
+		if variableType == RAW_TYPE {
+			content.FormConfig.Type = RAW_TYPE
+		}
 		return content, nil
 	}
 	// variableContent with form options
@@ -377,8 +382,6 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 		// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
 		return nil, errors.New("exactly one \"options\" must be defined")
 	}
-
-	variableType := rawSchema["type"].(string)
 
 	if variableType == "shortText" && len(optionsFromSchema.List()) > 0 {
 		return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrShortTextCantHaveOptions)

@@ -41,7 +41,7 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     // "ecs_cluster",                       // object({ arn = string name = string })
     //"ecs_subnet_ids",                  // list(string)
     "ecs_vpc_id",                        // string
-    "environment",                       // string
+    // "environment",                       // string
     "kms_key_id",                        // string
     "name",                              // string
     "additional_security_group_ids",     // list(string)
@@ -103,6 +103,14 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
       value = 5
       error_message = "max length is set to 5 element"
     }
+  }
+
+  variable {
+    name         = "environment"
+    display_name = "environment"
+    helper_text  = "select the environment"
+    type         = "raw"
+    value        = "var.ami"
   }
 
   variable {
