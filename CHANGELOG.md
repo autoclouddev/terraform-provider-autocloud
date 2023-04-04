@@ -1,3 +1,13 @@
+# [0.5.0-pre.6](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.5...v0.5.0-pre.6) (2023-04-04)
+
+
+### Features
+
+* Added raw type ([7362e66](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/7362e66e2b6ade2015506b4a50c5014d5ab37104))
+* Extended list-basic example with raw datatype ([59a78af](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/59a78af2b8d89c468fc56284ecefc8e94b4c1aab))
+* Set raw type as hcl-expression ([a2526b1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/a2526b134bb7814b9f76290dbf44a0e7ea39a689))
+* Set raw variableType ([2d2ddf7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/2d2ddf77e3865ad963344c44a54ae34f10049666))
+
 # [0.5.0-pre.5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.4...v0.5.0-pre.5) (2023-04-03)
 
 
