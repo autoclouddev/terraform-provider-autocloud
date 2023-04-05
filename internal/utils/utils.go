@@ -89,7 +89,7 @@ func GetSdkIacCatalogModules(d *schema.ResourceData) []autocloudsdk.IacCatalogMo
 	return iacModules
 }
 
-func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []generator.IacCatalogFile {
+func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCatalogFile, error) {
 	var fileDefinitions []generator.IacCatalogFile
 	if fileDefinitionsValues, ok := d.GetOk("file"); ok {
 		list := fileDefinitionsValues.(*schema.Set).List()
@@ -120,11 +120,15 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []generator.IacCata
 				fileDefinition.Content = val.(string)
 			}
 
+			if len(fileDefinition.Modules) == 0 && fileDefinition.Content == "" {
+				return nil, errors.New("file block should contain content or modules attributes")
+			}
+
 			fileDefinitions[i] = fileDefinition
 		}
 	}
 
-	return fileDefinitions
+	return fileDefinitions, nil
 }
 
 func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) generator.IacCatalogGitConfigPR {

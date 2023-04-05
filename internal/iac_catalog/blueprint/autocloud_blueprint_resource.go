@@ -331,6 +331,11 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 
 	gc := utils.GetSdkIacCatalogGitConfig(d)
 
+	fileDef, err := utils.GetSdkIacCatalogFileDefinitions(d)
+	if err != nil {
+		return nil, err
+	}
+
 	// TODO: convert tree to array
 	// read from leaves to root all variables and make a huge array of variables
 	// process overrides and conditionals
@@ -340,7 +345,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 		Description:     d.Get("description").(string),
 		Instructions:    d.Get("instructions").(string),
 		Labels:          labels,
-		FileDefinitions: utils.GetSdkIacCatalogFileDefinitions(d),
+		FileDefinitions: fileDef,
 		GitConfig:       gc,
 		FormQuestions:   formShape,
 	}
