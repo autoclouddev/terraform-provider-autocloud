@@ -153,10 +153,15 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 						"modules": {
 							Description: "modules, array containing the names of the modules included in this file",
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+						},
+						"content": {
+							Description: "content",
+							Type:        schema.TypeString,
+							Optional:    true,
 						},
 					},
 				},

@@ -116,6 +116,10 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) []generator.IacCata
 				fileDefinition.Modules = ToStringSlice(data)
 			}
 
+			if val, ok := fileDefinitionMap["content"]; ok {
+				fileDefinition.Content = val.(string)
+			}
+
 			fileDefinitions[i] = fileDefinition
 		}
 	}
