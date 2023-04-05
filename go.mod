@@ -1,6 +1,6 @@
 module gitlab.com/auto-cloud/infrastructure/public/terraform-provider
 
-go 1.18
+go 1.19
 
 require (
 	github.com/hashicorp/terraform-plugin-log v0.7.0
