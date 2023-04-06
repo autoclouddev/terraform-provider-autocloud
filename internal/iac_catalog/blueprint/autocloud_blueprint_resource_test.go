@@ -122,11 +122,30 @@ func TestAccAutocloudBlueprint(t *testing.T) {
 }
 
 func TestAutocloudBlueprintHasAtMostOneGitConfigError(t *testing.T) {
-	t.SkipNow()
 	expectedError := `No more than 1 "git_config" blocks are allowed`
 	terraform := `resource "autocloud_blueprint" "bar" {
 		git_config {}
 		git_config {}
+	  }`
+	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
+}
+
+func TestAutocloudBlueprintHasAtMostOneFileBlockError(t *testing.T) {
+	expectedError := `Insufficient file blocks`
+	terraform := `resource "autocloud_blueprint" "bar" {
+		git_config {}
+	  }`
+	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
+}
+
+func TestAutocloudBlueprinntHasMissingAttributesOnFileBlockError(t *testing.T) {
+	expectedError := `file block should contain content or modules attributes`
+	terraform := `resource "autocloud_blueprint" "bar" {
+		file {
+			action      = "CREATE"
+			destination = "s3.tf"
+			variables = {}
+		}
 	  }`
 	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
 }
