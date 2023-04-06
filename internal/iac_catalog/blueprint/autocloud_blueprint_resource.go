@@ -163,6 +163,16 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
+						"header": {
+							Description: "header",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"footer": {
+							Description: "footer",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
 					},
 				},
 			},
