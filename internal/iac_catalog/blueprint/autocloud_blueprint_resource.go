@@ -317,6 +317,9 @@ func lowercaseFileDefs(files []generator.IacCatalogFile) []interface{} {
 		m["destination"] = file.Destination
 		m["variables"] = file.Variables
 		m["modules"] = file.Modules
+		m["content"] = file.Content
+		m["footer"] = file.Header
+		m["header"] = file.Footer
 		out = append(out, m)
 	}
 
