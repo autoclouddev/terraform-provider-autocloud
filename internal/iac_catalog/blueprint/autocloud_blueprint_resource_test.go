@@ -149,3 +149,29 @@ func TestAutocloudBlueprinntHasMissingAttributesOnFileBlockError(t *testing.T) {
 	  }`
 	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
 }
+
+func TestAutocloudBlueprinntHasMissingModulesWithHeader(t *testing.T) {
+	expectedError := `modules can not be empty when using header or footer attributes`
+	terraform := `resource "autocloud_blueprint" "bar" {
+		file {
+			action      = "CREATE"
+			destination = "s3.tf"
+			variables = {}
+			header = "# header content"
+		}
+	  }`
+	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
+}
+
+func TestAutocloudBlueprinntHasMissingModulesWitFooter(t *testing.T) {
+	expectedError := `modules can not be empty when using header or footer attributes`
+	terraform := `resource "autocloud_blueprint" "bar" {
+		file {
+			action      = "CREATE"
+			destination = "s3.tf"
+			variables = {}
+			footer = "# footer content"
+		}
+	  }`
+	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
+}
