@@ -1,3 +1,12 @@
+# [0.5.0-pre.7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.6...v0.5.0-pre.7) (2023-04-06)
+
+
+### Features
+
+* Added file block missing attributes validation ([d349dd3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/d349dd32835dcbd56f6aa6dc5d50b65d13e32032))
+* Added file_content example ([49c9206](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/49c9206bf930b230774551dce5b0d44b59df4598))
+* Extended fileDefinition schema ([13f7da9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/13f7da9135966f48187141e6d9de339997588227))
+
 # [0.5.0-pre.6](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.5...v0.5.0-pre.6) (2023-04-04)
 
 
