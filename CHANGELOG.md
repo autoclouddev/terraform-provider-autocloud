@@ -1,3 +1,12 @@
+# [0.5.0-pre.8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.7...v0.5.0-pre.8) (2023-04-10)
+
+
+### Features
+
+* Added example with header and footer ([32e29fc](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/32e29fc7d43c8e2cc18352387cbc8b646c4f1dab))
+* Added validation for non empty modules using footer/header attributes ([152f525](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/152f525488887800bcd0f59dec772867b0fc7f5b))
+* Extended File block with header and footer attributes ([1ca9009](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1ca900977225741f97b09265248472188c8d6f39))
+
 # [0.5.0-pre.7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.6...v0.5.0-pre.7) (2023-04-06)
 
 
