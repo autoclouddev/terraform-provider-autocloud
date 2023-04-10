@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -173,6 +174,27 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			}},
+		"display_order": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"priority": {
+						Type:     schema.TypeInt,
+						Required: true,
+					},
+					"values": {
+						Type:     schema.TypeList,
+						Required: true,
+						MinItems: 1,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	return &schema.Resource{
@@ -256,6 +278,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
 	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
 	bp.Children = make(map[string]BluePrintConfig)
+	aliasToModuleNameMap := make(map[string]string)
 	if v, ok := d.GetOk("source"); ok {
 		for key, value := range v.(map[string]interface{}) {
 			strKey := fmt.Sprintf("%v", key)
@@ -269,6 +292,11 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 				return nil, errors.New("invalid conversion to BluePrintConfig")
 			}
 			bp.Children[strKey] = bc
+			if len(bc.Variables) > 0 {
+				aliasToModuleNameMap[strKey] = bc.Variables[0].Module
+			} else if len(bc.Children[strKey].Variables) > 0 { // if the current source doesn't have variable then we look for the module name in children
+				aliasToModuleNameMap[strKey] = bc.Children[strKey].Variables[0].Module
+			}
 		}
 	}
 	if v, ok := d.GetOk("omit_variables"); ok {
@@ -282,6 +310,42 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 		log.Printf("the [%v] are the omitted vars", bp.OmitVariables)
 	} else {
 		log.Printf("omit_vars get.ok not ok, no variables were added\n")
+	}
+
+	if v, ok := d.GetOk("display_order"); ok {
+		log.Printf("display_order get.ok is ok, %v\n", v)
+		list := v.([]interface{})
+		for _, currentVar := range list {
+			displayOrder := DisplayOrder{}
+			var values []string
+			varOverrideMap := currentVar.(map[string]interface{})
+			displayOrder.Priority = varOverrideMap["priority"].(int)
+			valuesList := varOverrideMap["values"].([]interface{})
+			for _, value := range valuesList {
+				valueStr := value.(string)
+				// valueStr can be <alias>.variables.<variable_name> or <module>.<variable_name>.
+				// If it's built with an alias, we need to convert it to <module>.<variable_name>
+				paths := strings.Split(valueStr, ".")
+				if len(paths) == 3 && paths[1] == "variables" {
+					// path[0] => alias
+					// path[1] => "variables"
+					// path[2] => variable_name
+					// convert alias to module name
+					if len(aliasToModuleNameMap[paths[0]]) > 0 {
+						valueStr = fmt.Sprintf("%s.%s", aliasToModuleNameMap[paths[0]], paths[2])
+					} else {
+						// if there isn't any module name for the alias we just use the variable name
+						valueStr = paths[2]
+					}
+				}
+				values = append(values, valueStr)
+			}
+			displayOrder.Values = values
+			bp.DisplayOrder = displayOrder
+		}
+		log.Printf("the %v is the displayOrder", bp.DisplayOrder)
+	} else {
+		log.Printf("display_order get.ok not ok\n")
 	}
 
 	if v, ok := d.GetOk("variable"); ok {
