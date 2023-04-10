@@ -120,6 +120,18 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 				fileDefinition.Content = val.(string)
 			}
 
+			if val, ok := fileDefinitionMap["header"]; ok {
+				fileDefinition.Header = val.(string)
+			}
+
+			if val, ok := fileDefinitionMap["footer"]; ok {
+				fileDefinition.Footer = val.(string)
+			}
+
+			if len(fileDefinition.Modules) == 0 && (fileDefinition.Header != "" || fileDefinition.Footer != "") {
+				return nil, errors.New("modules can not be empty when using header or footer attributes")
+			}
+
 			if len(fileDefinition.Modules) == 0 && fileDefinition.Content == "" {
 				return nil, errors.New("file block should contain content or modules attributes")
 			}

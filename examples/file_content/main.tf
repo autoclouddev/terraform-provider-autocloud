@@ -106,44 +106,96 @@ resource "autocloud_blueprint" "example" {
       autocloud_module.s3_bucket.name
     ]
 
-content = <<-EOT
-    # begin - paste to the top of the generated terraform code
-    terraform {
-      required_version = "~> 1.1.0"
-      required_providers {
-        aws = {
-          source  = "hashicorp/aws"
-          version = "~> 4.0"
+    content = <<-EOT
+        # begin - paste to the top of the generated terraform code
+        terraform {
+          required_version = "~> 1.1.0"
+          required_providers {
+            aws = {
+              source  = "hashicorp/aws"
+              version = "~> 4.0"
+            }
+          }
         }
-      }
-    }
 
-    variable "account_num" {
-      type        = string
-      description = "Target AWS account number, mandatory"
-    }
+        variable "account_num" {
+          type        = string
+          description = "Target AWS account number, mandatory"
+        }
 
-    variable "aws_region" {
-      description = "AWS region"
-      type        = string
-    }
+        variable "aws_region" {
+          description = "AWS region"
+          type        = string
+        }
 
-    variable "aws_role" {
-      description = "AWS role to assume"
-      type        = string
-    }
+        variable "aws_role" {
+          description = "AWS role to assume"
+          type        = string
+        }
 
-    provider "aws" {
-      region = var.aws_region
-      # The following code is for using cross account assume role
-      assume_role {
-        role_arn = "arn:aws:iam::${var.account_num}:role/${var.aws_role}"
-      }
-    }
+        provider "aws" {
+          region = var.aws_region
+          # The following code is for using cross account assume role
+          assume_role {
+            role_arn = "arn:aws:iam::${var.account_num}:role/${var.aws_role}"
+          }
+        }
 
-    # end - paste
-    EOT
+        # end - paste
+        EOT
 
   }
+
+  file {
+    action      = "CREATE"
+    destination = "s3_with_header_and_footer.tf"
+    variables = {
+    }
+
+    header = "# THE HEADER IS THIS"
+
+    footer = <<-EOT
+      # begin - paste to the top of the generated terraform code
+      terraform {
+        required_version = "~> 1.1.0"
+        required_providers {
+          aws = {
+            source  = "hashicorp/aws"
+            version = "~> 4.0"
+          }
+        }
+      }
+
+      variable "account_num" {
+        type        = string
+        description = "Target AWS account number, mandatory"
+      }
+
+      variable "aws_region" {
+        description = "AWS region"
+        type        = string
+      }
+
+      variable "aws_role" {
+        description = "AWS role to assume"
+        type        = string
+      }
+
+      provider "aws" {
+        region = var.aws_region
+        # The following code is for using cross account assume role
+        assume_role {
+          role_arn = "arn:aws:iam::${var.account_num}:role/${var.aws_role}"
+        }
+      }
+
+      # end - paste
+      EOT
+
+    modules = [
+      autocloud_module.s3_bucket.name
+    ]
+  }
+
   config = data.autocloud_blueprint_config.s3_custom_form.config
 }

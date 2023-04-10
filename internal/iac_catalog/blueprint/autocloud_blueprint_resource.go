@@ -163,6 +163,16 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
+						"header": {
+							Description: "header",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"footer": {
+							Description: "footer",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
 					},
 				},
 			},
@@ -307,6 +317,9 @@ func lowercaseFileDefs(files []generator.IacCatalogFile) []interface{} {
 		m["destination"] = file.Destination
 		m["variables"] = file.Variables
 		m["modules"] = file.Modules
+		m["content"] = file.Content
+		m["footer"] = file.Header
+		m["header"] = file.Footer
 		out = append(out, m)
 	}
 
