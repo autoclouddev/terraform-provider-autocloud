@@ -1,3 +1,37 @@
+# [0.5.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.4.0...v0.5.0) (2023-04-12)
+
+
+### Bug Fixes
+
+* Extended file_content example using omit dot notation ([8a4bdca](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/8a4bdca9d5e637f1351213efb85cb33dd3d3b6ab))
+* Fixed omit specific variable with dot notation ([b7e5d58](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b7e5d5869c089cbabc57d350e9aaa0db4ea9faf6))
+* Left map convertion logic to API ([570ff2e](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/570ff2e021fa81873945122c2e2c5ffe76572066))
+* use correct ARCH for darwin_arm64 ([53b8013](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/53b80132c3a84dd26ed654ac6e3a680c57766e3a))
+
+
+### Features
+
+* add display order ([f376a10](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f376a10fc01f8b4d9869bad4cfa1c4b9ea76209d))
+* Added example with header and footer ([32e29fc](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/32e29fc7d43c8e2cc18352387cbc8b646c4f1dab))
+* Added file block missing attributes validation ([d349dd3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/d349dd32835dcbd56f6aa6dc5d50b65d13e32032))
+* Added file_content example ([49c9206](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/49c9206bf930b230774551dce5b0d44b59df4598))
+* Added raw type ([7362e66](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/7362e66e2b6ade2015506b4a50c5014d5ab37104))
+* Added unit tests for omitted by reference variable ([5016fff](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/5016fffe90d6a4a832bb6bdbcb8c13700d825b51))
+* Added validation for non empty modules using footer/header attributes ([152f525](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/152f525488887800bcd0f59dec772867b0fc7f5b))
+* Added warning when using content property on fileblock ([afd038f](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/afd038fd559945e9744023217847d659c3390f1a))
+* Extended File block with header and footer attributes ([1ca9009](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1ca900977225741f97b09265248472188c8d6f39))
+* Extended filecontent example ([0eb3090](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/0eb30900a67c7235a305c1a403fc2028cb9a28c9))
+* Extended fileDefinition schema ([13f7da9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/13f7da9135966f48187141e6d9de339997588227))
+* Extended list-basic example with raw datatype ([59a78af](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/59a78af2b8d89c468fc56284ecefc8e94b4c1aab))
+* Included new validation rules for maxLength and minLength ([0dcc3a1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/0dcc3a1a486c2480f9a4604e205111894c4ef923))
+* integrate new git repository service ([15a45b4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/15a45b47867eb8ab48d5dbad909f98339d3f443a))
+* **module:** do not force tags name on modules ([fc47175](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/fc4717570411b4cbc39a53f9ea3ddaef48dd0252))
+* Omitted just reference variable ([9da1aea](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9da1aea4206df0dd71ec997898efc6dd728d0ca3))
+* **sdk:** update tag ([5a4aa68](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/5a4aa68fc4ac4d734f5d04e46c6c1452b573377d))
+* Set raw type as hcl-expression ([a2526b1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/a2526b134bb7814b9f76290dbf44a0e7ea39a689))
+* Set raw variableType ([2d2ddf7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/2d2ddf77e3865ad963344c44a54ae34f10049666))
+* Updated list-basic example ([6e12daf](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/6e12dafd8577ac9163e4c22813c8a1717fe6af43))
+
 # [0.5.0-pre.10](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.9...v0.5.0-pre.10) (2023-04-12)
 
 
