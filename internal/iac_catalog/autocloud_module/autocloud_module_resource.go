@@ -69,7 +69,6 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Description: "Tags variable name",
 		Type:        schema.TypeString,
 		Optional:    true,
-		Default:     "tags",
 	},
 	"outputs": {
 		Type:     schema.TypeMap,
@@ -200,6 +199,10 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		Id:        iacModule.ID,
 		Variables: variables,
 		Children:  make(map[string]blueprint_config.BluePrintConfig),
+		DisplayOrder: blueprint_config.DisplayOrder{
+			Priority: 1000,
+			Values:   make([]string, 0),
+		},
 	}
 	jsonconf, err := json.Marshal(config)
 	if err != nil {

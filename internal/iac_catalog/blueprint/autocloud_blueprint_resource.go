@@ -153,10 +153,25 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 						"modules": {
 							Description: "modules, array containing the names of the modules included in this file",
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+						},
+						"content": {
+							Description: "content",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"header": {
+							Description: "header",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"footer": {
+							Description: "footer",
+							Type:        schema.TypeString,
+							Optional:    true,
 						},
 					},
 				},
@@ -233,7 +248,7 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(err)
 	}
 
-	files := lowercaseFileDefs(generator.FileDefinitions)
+	files, diags := lowercaseFileDefs(generator.FileDefinitions, diags)
 	err = d.Set("file", files)
 	if err != nil {
 		return diag.FromErr(err)
@@ -294,7 +309,7 @@ func autocloudBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta 
 	return diags
 }
 
-func lowercaseFileDefs(files []generator.IacCatalogFile) []interface{} {
+func lowercaseFileDefs(files []generator.IacCatalogFile, diags diag.Diagnostics) ([]interface{}, diag.Diagnostics) {
 	var out = make([]interface{}, 0)
 	for _, file := range files {
 		m := make(map[string]interface{})
@@ -302,10 +317,21 @@ func lowercaseFileDefs(files []generator.IacCatalogFile) []interface{} {
 		m["destination"] = file.Destination
 		m["variables"] = file.Variables
 		m["modules"] = file.Modules
+		m["content"] = file.Content
+		m["footer"] = file.Header
+		m["header"] = file.Footer
 		out = append(out, m)
+
+		if file.Content != "" && (file.Footer != "" || file.Header != "" || len(file.Modules) > 0) {
+			diags = append(diags, diag.Diagnostic{
+				Detail:   "footer, header, or module properties defined on a file block will be omitted if the content property is defined",
+				Severity: diag.Warning,
+				Summary:  "content property overrides any other attribute",
+			})
+		}
 	}
 
-	return out
+	return out, diags
 }
 
 func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
@@ -326,6 +352,11 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 
 	gc := utils.GetSdkIacCatalogGitConfig(d)
 
+	fileDef, err := utils.GetSdkIacCatalogFileDefinitions(d)
+	if err != nil {
+		return nil, err
+	}
+
 	// TODO: convert tree to array
 	// read from leaves to root all variables and make a huge array of variables
 	// process overrides and conditionals
@@ -335,7 +366,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 		Description:     d.Get("description").(string),
 		Instructions:    d.Get("instructions").(string),
 		Labels:          labels,
-		FileDefinitions: utils.GetSdkIacCatalogFileDefinitions(d),
+		FileDefinitions: fileDef,
 		GitConfig:       gc,
 		FormQuestions:   formShape,
 	}

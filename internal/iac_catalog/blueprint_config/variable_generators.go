@@ -174,7 +174,8 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 		newIacModuleVar.AllowConsumerToEdit = false
 		//newIacModuleVar.IsHidden = overrideData.IsHidden
 		newIacModuleVar.UsedInHCL = true
-		if r.MatchString(overrideData.Value) {
+
+		if r.MatchString(overrideData.Value) || variableType == RAW_TYPE {
 			newIacModuleVar.FieldDataType = "hcl-expression"
 			newIacModuleVar.IsHidden = true
 		}

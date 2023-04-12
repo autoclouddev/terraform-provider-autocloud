@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
@@ -34,7 +34,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 				"rule": {
 					Type:         schema.TypeString,
 					Required:     true,
-					ValidateFunc: validation.StringInSlice([]string{"isRequired", "regex"}, false),
+					ValidateFunc: validation.StringInSlice([]string{"isRequired", "regex", "minLength", "maxLength"}, false),
 				},
 				"value": {
 					Type:     schema.TypeString,
@@ -90,7 +90,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		"type": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE}, false),
+			ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE, RAW_TYPE}, false),
 		},
 		"options": {
 			Type:     schema.TypeSet,
@@ -174,6 +174,27 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			}},
+		"display_order": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"priority": {
+						Type:     schema.TypeInt,
+						Required: true,
+					},
+					"values": {
+						Type:     schema.TypeList,
+						Required: true,
+						MinItems: 1,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	return &schema.Resource{
@@ -257,6 +278,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
 	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
 	bp.Children = make(map[string]BluePrintConfig)
+	aliasToModuleNameMap := make(map[string]string)
 	if v, ok := d.GetOk("source"); ok {
 		for key, value := range v.(map[string]interface{}) {
 			strKey := fmt.Sprintf("%v", key)
@@ -270,6 +292,11 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 				return nil, errors.New("invalid conversion to BluePrintConfig")
 			}
 			bp.Children[strKey] = bc
+			if len(bc.Variables) > 0 {
+				aliasToModuleNameMap[strKey] = bc.Variables[0].Module
+			} else if len(bc.Children[strKey].Variables) > 0 { // if the current source doesn't have variable then we look for the module name in children
+				aliasToModuleNameMap[strKey] = bc.Children[strKey].Variables[0].Module
+			}
 		}
 	}
 	if v, ok := d.GetOk("omit_variables"); ok {
@@ -283,6 +310,42 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 		log.Printf("the [%v] are the omitted vars", bp.OmitVariables)
 	} else {
 		log.Printf("omit_vars get.ok not ok, no variables were added\n")
+	}
+
+	if v, ok := d.GetOk("display_order"); ok {
+		log.Printf("display_order get.ok is ok, %v\n", v)
+		list := v.([]interface{})
+		for _, currentVar := range list {
+			displayOrder := DisplayOrder{}
+			var values []string
+			varOverrideMap := currentVar.(map[string]interface{})
+			displayOrder.Priority = varOverrideMap["priority"].(int)
+			valuesList := varOverrideMap["values"].([]interface{})
+			for _, value := range valuesList {
+				valueStr := value.(string)
+				// valueStr can be <alias>.variables.<variable_name> or <module>.<variable_name>.
+				// If it's built with an alias, we need to convert it to <module>.<variable_name>
+				paths := strings.Split(valueStr, ".")
+				if len(paths) == 3 && paths[1] == "variables" {
+					// path[0] => alias
+					// path[1] => "variables"
+					// path[2] => variable_name
+					// convert alias to module name
+					if len(aliasToModuleNameMap[paths[0]]) > 0 {
+						valueStr = fmt.Sprintf("%s.%s", aliasToModuleNameMap[paths[0]], paths[2])
+					} else {
+						// if there isn't any module name for the alias we just use the variable name
+						valueStr = paths[2]
+					}
+				}
+				values = append(values, valueStr)
+			}
+			displayOrder.Values = values
+			bp.DisplayOrder = displayOrder
+		}
+		log.Printf("the %v is the displayOrder", bp.DisplayOrder)
+	} else {
+		log.Printf("display_order get.ok not ok\n")
 	}
 
 	if v, ok := d.GetOk("variable"); ok {
@@ -367,8 +430,13 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 	valueStr, valueIsString := value.(string)
 	valueIsDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
 
+	variableType := rawSchema["type"].(string)
+
 	if valueExist && valueIsString && valueIsDefined {
 		content.Value = valueStr
+		if variableType == RAW_TYPE {
+			content.FormConfig.Type = RAW_TYPE
+		}
 		return content, nil
 	}
 	// variableContent with form options
@@ -378,8 +446,6 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 		// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
 		return nil, errors.New("exactly one \"options\" must be defined")
 	}
-
-	variableType := rawSchema["type"].(string)
 
 	if variableType == "shortText" && len(optionsFromSchema.List()) > 0 {
 		return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrShortTextCantHaveOptions)
@@ -412,29 +478,6 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 		}
 	}
 
-	if variableType == MAP_TYPE {
-		var variablesMap map[string]interface{}
-		err := json.Unmarshal([]byte(requiredValues), &variablesMap)
-		if err != nil {
-			//return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrMapCantBeParsed)
-			fmt.Println(err)
-		}
-
-		ccc := ConvertMap(variablesMap)
-
-		pairs := make([]autocloudsdk.KeyValue, 0)
-
-		for key, value := range ccc {
-			pair := autocloudsdk.KeyValue{Key: key, Value: value}
-			pairs = append(pairs, pair)
-		}
-		mapValue, err := json.Marshal(pairs)
-		if err != nil {
-			//return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrMapCantBeParsed)
-			fmt.Println(err)
-		}
-		content.RequiredValues = string(mapValue)
-	}
 	validationRulesList := rawSchema["validation_rule"].(*schema.Set).List()
 
 	for _, validationRule := range validationRulesList {

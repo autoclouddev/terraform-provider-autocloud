@@ -12,6 +12,7 @@ type BluePrintConfig struct {
 	OmitVariables     []string                    `json:"omitVariables"`
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
 	Variables         []generator.FormShape       `json:"variables"`
+	DisplayOrder      DisplayOrder                `json:"displayOrder"`
 	Children          map[string]BluePrintConfig  `json:"children"`
 }
 
@@ -55,12 +56,18 @@ type FieldOption struct {
 	Checked bool   `json:"checked"`
 }
 
+type DisplayOrder struct {
+	Priority int      `json:"priority" faker:"0"`
+	Values   []string `json:"values"`
+}
+
 const GENERIC = "generic"
 const RADIO_TYPE = "radio"
 const CHECKBOX_TYPE = "checkbox"
 const LIST_TYPE = "list"
 const SHORTTEXT_TYPE = "shortText"
 const MAP_TYPE = "map"
+const RAW_TYPE = "raw"
 
 var ErrSetValueInForm = errors.New("A form options can not be added when setting the variable's value.")
 var ErrOneBlockOptionsRequied = errors.New("No more than 1 \"options\" blocks are allowed")

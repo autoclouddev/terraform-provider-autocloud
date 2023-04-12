@@ -45,7 +45,7 @@ release-darwin_amd64:
 	rm ./binaries/${BINARY}_v${VERSION}_darwin_amd64
 
 release-darwin_arm64:
-	GOOS=darwin GOARCH=amd64 go build -o ./binaries/${BINARY}_v${VERSION}_darwin_arm64
+	GOOS=darwin GOARCH=arm64 go build -o ./binaries/${BINARY}_v${VERSION}_darwin_arm64
 	zip -j ./binaries/${BINARY}_${VERSION}_darwin_arm64.zip ./binaries/${BINARY}_v${VERSION}_darwin_arm64
 	cp ./binaries/${BINARY}_${VERSION}_darwin_arm64.zip ./binaries/${CITIZEN_ARCHIVE_NAME}_${VERSION}_darwin_arm64.zip
 	rm ./binaries/${BINARY}_v${VERSION}_darwin_arm64

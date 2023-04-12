@@ -3,6 +3,7 @@ package blueprint_config
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/apex/log"
@@ -32,7 +33,18 @@ func GetFormShape(root BluePrintConfig) ([]generator.FormShape, error) {
 	if err != nil {
 		return []generator.FormShape{}, err
 	}
-	return formShape, nil
+	return sortFormShape(root, formShape), nil
+}
+
+func hasReference(ov string) bool {
+	keyValue := strings.Split(ov, ".")
+	if len(keyValue) != 3 {
+		return false
+	}
+	if keyValue[1] != "variables" {
+		return false
+	}
+	return true
 }
 
 // transverses the tree from leaves to root,
@@ -48,16 +60,6 @@ func postOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) 
 	//   }
 	// on name, if you split it by the point, the first part is the child name, the second the variable name
 	// analyze overrides that have "."  <source>.<varname>
-	hasReference := func(ov string) bool {
-		keyValue := strings.Split(ov, ".")
-		if len(keyValue) != 3 {
-			return false
-		}
-		if keyValue[1] != "variables" {
-			return false
-		}
-		return true
-	}
 	keys := make([]string, 0)
 	for k := range root.OverrideVariables {
 		keys = append(keys, k)
@@ -93,8 +95,25 @@ func postOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) 
 		}
 		vars = append(vars, childrenvars...)
 	}
-	log.Debugf("current node omit vars, %s", root.OmitVariables)
-	admittedVars := OmitVars(vars, root.OmitVariables, &root.OverrideVariables)
+
+	// create omit keys with variable references
+	omitKeys := make([]string, 0)
+	for _, v := range root.OmitVariables {
+		if hasReference(v) {
+			sourceReference := strings.Split(v, ".")
+			idx := findIdx(root.Children[sourceReference[0]].Variables, sourceReference[2])
+			if idx < 0 {
+				return []generator.FormShape{}, fmt.Errorf("variable Reference is not matching any children variable: %s", v)
+			}
+			variableReference := strings.Split(root.Children[sourceReference[0]].Variables[idx].ID, ".")
+			omitKeys = append(omitKeys, fmt.Sprintf("%v.variables.%v", variableReference[0], variableReference[1]))
+		} else {
+			omitKeys = append(omitKeys, v)
+		}
+	}
+
+	log.Debugf("current node omit vars, %s", omitKeys)
+	admittedVars := OmitVars(vars, omitKeys, &root.OverrideVariables)
 	log.Debugf("the [%v] addmited vars", admittedVars)
 	log.Debugf("current override vars, %v", root.OverrideVariables)
 	return OverrideVariables(admittedVars, root.OverrideVariables)
@@ -130,19 +149,27 @@ func OmitVars(vars []generator.FormShape, omits []string, overrideVariables *map
 	return addmittedVars
 }
 
-func findIdx(vars []generator.FormShape, varname string) int {
+func findIdx(vars []generator.FormShape, refname string) int {
 	for i, v := range vars {
-		varName, err := utils.GetVariableID(v.ID)
-		if err != nil {
-			log.Debugf("the [%s] variable not found\n", varName)
-			return -1
+		varName, varname := "", refname
+		if hasReference(refname) {
+			keyValue := strings.Split(refname, ".")
+			varname = fmt.Sprintf("%v.%v", keyValue[0], keyValue[2])
+			varName = v.ID
+		} else {
+			varId, err := utils.GetVariableID(v.ID)
+			if err != nil {
+				log.Debugf("the [%s] variable not found\n", varId)
+				return -1
+			}
+			varName = varId
 		}
 		if varName == varname {
 			log.Debugf("the [%s] variable was omitted\n", varName)
 			return i
 		}
 	}
-	log.Debugf("the [%s] omitted value not found in vars\n", varname)
+	log.Debugf("the [%s] omitted value not found in vars\n", refname)
 	return -1
 }
 
@@ -198,4 +225,107 @@ func filter[T any](ss []T, test func(T) bool) (ret []T) {
 		}
 	}
 	return
+}
+
+func sortFormShape(root BluePrintConfig, formShape []generator.FormShape) []generator.FormShape {
+	var log = logger.Create(log.Fields{"fn": "sortFormShape()"})
+	// sort according display_order configuration
+	// first we sort formShape alphanumeric
+	formShape = SortVariableAlphanumeric(formShape)
+	varsOrder, err := GetDisplayOrder(root)
+	if err != nil {
+		log.Errorf("Error to merge display order: %v", err)
+		return formShape
+	}
+	// reverse varsOrder so we can move the variables to the front of the slice
+	// and they will be sorted as we need
+	varsOrder = reverseStringSlice(varsOrder)
+	for _, varName := range varsOrder {
+		isGenericVariable := !strings.Contains(varName, ".")
+		// the order is reversed so we move to the front any match
+		formShape = moveVariablesToFront(varName, formShape, isGenericVariable)
+	}
+
+	return formShape
+}
+
+func GetDisplayOrder(root BluePrintConfig) ([]string, error) {
+	var log = logger.Create(log.Fields{"fn": "GetDisplayOrder()"})
+	order, err := postDisplayOrderTransversal(&root)
+	if err != nil {
+		return []string{}, err
+	}
+	// we need to sort by priority asc
+	sort.Slice(order, func(i, j int) bool {
+		return order[i].Priority < order[j].Priority
+	})
+	var orderMerged = make([]string, 0)
+	for _, displayOrder := range order {
+		for _, varName := range displayOrder.Values {
+			if !contains(orderMerged, varName) {
+				orderMerged = append(orderMerged, varName)
+			}
+		}
+	}
+	log.Debugf("order: %v", orderMerged)
+	return orderMerged, nil
+}
+
+func SortVariableAlphanumeric(formShape []generator.FormShape) []generator.FormShape {
+	sort.Slice(formShape, func(i, j int) bool {
+		pathsVar1 := strings.Split(formShape[i].ID, ".")
+		pathsVar2 := strings.Split(formShape[j].ID, ".")
+		return pathsVar1[len(pathsVar1)-1] < pathsVar2[len(pathsVar2)-1]
+	})
+	return formShape
+}
+
+// transverses the tree from leaves to root
+func postDisplayOrderTransversal(root *BluePrintConfig) ([]DisplayOrder, error) {
+	var order []DisplayOrder = make([]DisplayOrder, 0)
+
+	order = append(order, root.DisplayOrder)
+
+	for _, v := range root.Children {
+		v := v                                                // avoid implicit memory aliasing
+		childrenOrder, err := postDisplayOrderTransversal(&v) // this &v now the address of the inner v
+		if err != nil {
+			return []DisplayOrder{}, err
+		}
+		order = append(order, childrenOrder...)
+	}
+	return order, nil
+}
+
+func moveVariablesToFront(varName string, formShape []generator.FormShape, compareOnlyVariableName bool) []generator.FormShape {
+	newFormShape := make([]generator.FormShape, 0)
+	for _, variable := range formShape {
+		currentVarName := variable.ID
+		if compareOnlyVariableName {
+			paths := strings.Split(variable.ID, ".")
+			currentVarName = paths[len(paths)-1]
+		}
+		if currentVarName == varName {
+			newFormShape = append([]generator.FormShape{variable}, newFormShape...)
+		} else {
+			newFormShape = append(newFormShape, variable)
+		}
+	}
+	return newFormShape
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+
+func reverseStringSlice(slice []string) []string {
+	for i, j := 0, len(slice)-1; i < j; i, j = i+1, j-1 {
+		slice[i], slice[j] = slice[j], slice[i]
+	}
+	return slice
 }

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/go-faker/faker/v4"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
@@ -23,6 +24,12 @@ func fakeFormShape() generator.FormShape {
 		log.Fatalln(err)
 	}
 	id := fmt.Sprintf("%s.%s", moduleName, faker.Word())
+	a.ID = id
+	return a
+}
+
+func fakeFormShapeWithID(id string) generator.FormShape {
+	a := fakeFormShape()
 	a.ID = id
 	return a
 }
@@ -78,6 +85,7 @@ func TestTreeTransversal(t *testing.T) {
 	form, _ := blueprint_config.GetFormShape(tree)
 	//expectedOrder := []string{"A", "B", "C", "D"}
 	expectedOrder := append(append(append(AVariables, BVariables...), CVariables...), DVariables...)
+	expectedOrder = blueprint_config.SortVariableAlphanumeric(expectedOrder)
 
 	if len(form) != len(expectedOrder) {
 		t.Fatalf("expected form has different length, len(form): %v  len(expectedOrder): %v", len(form), len(expectedOrder))
@@ -95,7 +103,7 @@ func TestTreeTransversal(t *testing.T) {
 		if form[i].ID != v.ID {
 			t.Fatalf("expected form has different order")
 		}
-		if i == 4 && form[i].FormQuestion.FieldLabel != overrideInB.DisplayName {
+		if form[i].ID == overrideInB.VariableName && form[i].FormQuestion.FieldLabel != overrideInB.DisplayName {
 			t.Fatalf("Override by referece did not work")
 		}
 	}
@@ -148,6 +156,31 @@ func TestOmitVars(t *testing.T) {
 	}
 }
 
+func TestOmitReferenceVars(t *testing.T) {
+	vars := make([]generator.FormShape, 0)
+
+	s3Tags := fakeFormShape()
+	s3Tags.ID = "s3.tags"
+	vars = append(vars, s3Tags)
+
+	cfTags := fakeFormShape()
+	cfTags.ID = "cloudfront.tags"
+	vars = append(vars, cfTags)
+
+	omits := []string{"cloudfront.variables.tags"}
+	omits = append(omits, "cloudfront.variables.tags")
+	result := blueprint_config.OmitVars(vars, omits, &(map[string]blueprint_config.OverrideVariable{}))
+
+	hiddenVars := 0
+	for _, v := range result {
+		if !v.IsHidden {
+			hiddenVars++
+		}
+	}
+
+	assert.Equal(t, 1, hiddenVars) // one omitted variable
+}
+
 func TestJsonUnmarshallOverride(t *testing.T) {
 	bp := createBp()
 
@@ -177,4 +210,239 @@ func createBp() *blueprint_config.BluePrintConfig {
 	ov.FormConfig = fmConfig
 	bp.OverrideVariables["bucket"] = ov
 	return bp
+}
+
+func TestGetDisplayOrder(t *testing.T) {
+	closer := acctest.EnvSetter(map[string]string{
+		"TF_LOG": "INFO", // to see the DEBUG logs
+	})
+	//     tree
+	//      A
+	//    /   \
+	//   B     D
+	//  /
+	// C
+	AVariables := []generator.FormShape{fakeFormShape()}
+	BVariables := []generator.FormShape{fakeFormShape(), fakeFormShape()}
+	CVariables := []generator.FormShape{fakeFormShape(), fakeFormShape()}
+	DVariables := []generator.FormShape{fakeFormShape()}
+
+	tree := blueprint_config.BluePrintConfig{
+		Id:        "A",
+		Variables: AVariables,
+		DisplayOrder: blueprint_config.DisplayOrder{
+			Priority: 1,
+			Values:   []string{"name"},
+		},
+		Children: map[string]blueprint_config.BluePrintConfig{
+			"B": {
+				Id:        "B.1",
+				Variables: BVariables,
+				DisplayOrder: blueprint_config.DisplayOrder{
+					Priority: 0,
+					Values:   []string{"name", BVariables[0].ID},
+				},
+				Children: map[string]blueprint_config.BluePrintConfig{
+					"C": {
+						Id:        "C.1",
+						Variables: CVariables,
+						DisplayOrder: blueprint_config.DisplayOrder{
+							Priority: 2,
+							Values:   []string{"description", CVariables[1].ID},
+						},
+					}},
+			},
+			"D": {
+				Id:        "D.1",
+				Variables: DVariables,
+				Children:  map[string]blueprint_config.BluePrintConfig{},
+			},
+		},
+	}
+
+	displayOrder, _ := blueprint_config.GetDisplayOrder(tree)
+	expectedDisplayOrder := []string{"name", BVariables[0].ID, "description", CVariables[1].ID}
+	fmt.Printf("got: %s\n", displayOrder)
+
+	if len(displayOrder) != len(expectedDisplayOrder) {
+		t.Fatalf("expected display order has different length, len(displayOrder): %v  len(expectedDisplayOrder): %v", len(displayOrder), len(expectedDisplayOrder))
+	}
+
+	for i, v := range expectedDisplayOrder {
+		if displayOrder[i] != v {
+			t.Fatalf("expected displayOrder has different order")
+		}
+	}
+
+	t.Cleanup(closer)
+}
+
+// No display_order has been defined in a blueprint
+func TestFormShapeSortedCase1(t *testing.T) {
+	closer := acctest.EnvSetter(map[string]string{
+		"TF_LOG": "INFO", // to see the DEBUG logs
+	})
+
+	AVariables := []generator.FormShape{
+		fakeFormShapeWithID("s3.namespaces"),
+		fakeFormShapeWithID("s3.name"),
+		fakeFormShapeWithID("s3.description"),
+		fakeFormShapeWithID("s3.amount"),
+		fakeFormShapeWithID("s3.owner"),
+	}
+
+	tree := blueprint_config.BluePrintConfig{
+		Id:        "A",
+		Variables: AVariables,
+	}
+
+	form, _ := blueprint_config.GetFormShape(tree)
+	expectedOrder := []string{"s3.amount", "s3.description", "s3.name", "s3.namespaces", "s3.owner"}
+
+	for i, v := range expectedOrder {
+		if form[i].ID != v {
+			t.Fatalf("expected form has different order")
+		}
+	}
+
+	t.Cleanup(closer)
+}
+
+// One display_order has been defined and blueprint has 1 module
+func TestFormShapeSortedCase2(t *testing.T) {
+	closer := acctest.EnvSetter(map[string]string{
+		"TF_LOG": "INFO", // to see the DEBUG logs
+	})
+
+	AVariables := []generator.FormShape{
+		fakeFormShapeWithID("s3.namespaces"),
+		fakeFormShapeWithID("s3.name"),
+		fakeFormShapeWithID("s3.description"),
+		fakeFormShapeWithID("s3.amount"),
+		fakeFormShapeWithID("s3.owner"),
+	}
+
+	tree := blueprint_config.BluePrintConfig{
+		Id:        "A",
+		Variables: AVariables,
+		DisplayOrder: blueprint_config.DisplayOrder{
+			Priority: 0,
+			Values:   []string{"name", "s3.description"},
+		},
+	}
+
+	form, _ := blueprint_config.GetFormShape(tree)
+	expectedOrder := []string{"s3.name", "s3.description", "s3.amount", "s3.namespaces", "s3.owner"}
+
+	for i, v := range expectedOrder {
+		if form[i].ID != v {
+			t.Fatalf("expected form has different order")
+		}
+	}
+
+	t.Cleanup(closer)
+}
+
+// One display_order has been defined and blueprint has 2 modules
+func TestFormShapeSortedCase3(t *testing.T) {
+	closer := acctest.EnvSetter(map[string]string{
+		"TF_LOG": "INFO", // to see the DEBUG logs
+	})
+	//     tree
+	//      A
+	//    /
+	//   B
+	AVariables := []generator.FormShape{
+		fakeFormShapeWithID("s3.namespaces"),
+		fakeFormShapeWithID("s3.name"),
+		fakeFormShapeWithID("s3.description"),
+		fakeFormShapeWithID("s3.amount"),
+		fakeFormShapeWithID("s3.owner"),
+	}
+	BVariables := []generator.FormShape{
+		fakeFormShapeWithID("kms.organization"),
+		fakeFormShapeWithID("kms.name"),
+		fakeFormShapeWithID("kms.description"),
+		fakeFormShapeWithID("kms.tags"),
+	}
+
+	tree := blueprint_config.BluePrintConfig{
+		Id:        "A",
+		Variables: AVariables,
+		DisplayOrder: blueprint_config.DisplayOrder{
+			Priority: 0,
+			Values:   []string{"name", "kms.description"},
+		},
+		Children: map[string]blueprint_config.BluePrintConfig{
+			"B": {
+				Id:        "B1",
+				Variables: BVariables,
+			},
+		},
+	}
+
+	form, _ := blueprint_config.GetFormShape(tree)
+	expectedOrder := []string{"kms.name", "s3.name", "kms.description", "s3.amount", "s3.description", "s3.namespaces", "kms.organization", "s3.owner", "kms.tags"}
+
+	for i, v := range expectedOrder {
+		if form[i].ID != v {
+			t.Fatalf("expected form has different order")
+		}
+	}
+
+	t.Cleanup(closer)
+}
+
+// Multiple display_order properties are set in multiple blueprint_configs
+func TestFormShapeSortedCase4(t *testing.T) {
+	closer := acctest.EnvSetter(map[string]string{
+		"TF_LOG": "INFO", // to see the DEBUG logs
+	})
+	//     tree
+	//      A
+	//    /
+	//   B
+	AVariables := []generator.FormShape{
+		fakeFormShapeWithID("s3.namespaces"),
+		fakeFormShapeWithID("s3.name"),
+		fakeFormShapeWithID("s3.description"),
+		fakeFormShapeWithID("s3.amount"),
+		fakeFormShapeWithID("s3.owner"),
+	}
+	BVariables := []generator.FormShape{
+		fakeFormShapeWithID("kms.organization"),
+		fakeFormShapeWithID("kms.name"),
+		fakeFormShapeWithID("kms.description"),
+		fakeFormShapeWithID("kms.tags"),
+	}
+
+	tree := blueprint_config.BluePrintConfig{
+		Id:        "A",
+		Variables: AVariables,
+		DisplayOrder: blueprint_config.DisplayOrder{
+			Priority: 0,
+			Values:   []string{"name", "s3.description"},
+		},
+		Children: map[string]blueprint_config.BluePrintConfig{
+			"B": {
+				Id:        "B1",
+				Variables: BVariables,
+				DisplayOrder: blueprint_config.DisplayOrder{
+					Priority: 1,
+					Values:   []string{"name", "kms.description", "organization"},
+				},
+			},
+		},
+	}
+
+	form, _ := blueprint_config.GetFormShape(tree)
+	expectedOrder := []string{"kms.name", "s3.name", "s3.description", "kms.description", "kms.organization", "s3.amount", "s3.namespaces", "s3.owner", "kms.tags"}
+
+	for i, v := range expectedOrder {
+		if form[i].ID != v {
+			t.Fatalf("expected form has different order")
+		}
+	}
+
+	t.Cleanup(closer)
 }
