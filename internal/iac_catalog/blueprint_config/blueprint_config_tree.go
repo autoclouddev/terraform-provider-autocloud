@@ -95,8 +95,25 @@ func postOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) 
 		}
 		vars = append(vars, childrenvars...)
 	}
-	log.Debugf("current node omit vars, %s", root.OmitVariables)
-	admittedVars := OmitVars(vars, root.OmitVariables, &root.OverrideVariables)
+
+	// create omit keys with variable references
+	omitKeys := make([]string, 0)
+	for _, v := range root.OmitVariables {
+		if hasReference(v) {
+			sourceReference := strings.Split(v, ".")
+			idx := findIdx(root.Children[sourceReference[0]].Variables, sourceReference[2])
+			if idx < 0 {
+				return []generator.FormShape{}, fmt.Errorf("variable Reference is not matching any children variable: %s", v)
+			}
+			variableReference := strings.Split(root.Children[sourceReference[0]].Variables[idx].ID, ".")
+			omitKeys = append(omitKeys, fmt.Sprintf("%v.variables.%v", variableReference[0], variableReference[1]))
+		} else {
+			omitKeys = append(omitKeys, v)
+		}
+	}
+
+	log.Debugf("current node omit vars, %s", omitKeys)
+	admittedVars := OmitVars(vars, omitKeys, &root.OverrideVariables)
 	log.Debugf("the [%v] addmited vars", admittedVars)
 	log.Debugf("current override vars, %v", root.OverrideVariables)
 	return OverrideVariables(admittedVars, root.OverrideVariables)

@@ -57,7 +57,8 @@ data "autocloud_blueprint_config" "s3_custom_form" {
     "policy",
     "putin_khuylo",
     "request_payer",
-    "tags"
+    "tags",
+    "s3.variables.enabled" // omit specific variable
   ]
 
   variable {
