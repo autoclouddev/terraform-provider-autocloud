@@ -311,7 +311,6 @@ func autocloudBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta 
 
 func lowercaseFileDefs(files []generator.IacCatalogFile, diags diag.Diagnostics) ([]interface{}, diag.Diagnostics) {
 	var out = make([]interface{}, 0)
-	var warnings diag.Diagnostics
 	for _, file := range files {
 		m := make(map[string]interface{})
 		m["action"] = file.Action
@@ -324,16 +323,15 @@ func lowercaseFileDefs(files []generator.IacCatalogFile, diags diag.Diagnostics)
 		out = append(out, m)
 
 		if file.Content != "" && (file.Footer != "" || file.Header != "" || len(file.Modules) > 0) {
-			warnings = append(diags, diag.Diagnostic{
-				Detail:   "footer, header or modules defining on file block will be replace it with content property",
+			diags = append(diags, diag.Diagnostic{
+				Detail:   "footer, header, or module properties defined on a file block will be omitted if the content property is defined",
 				Severity: diag.Warning,
 				Summary:  "content property overrides any other attribute",
 			})
-
 		}
 	}
 
-	return out, warnings
+	return out, diags
 }
 
 func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
