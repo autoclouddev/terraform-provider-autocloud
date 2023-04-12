@@ -248,7 +248,7 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(err)
 	}
 
-	files := lowercaseFileDefs(generator.FileDefinitions)
+	files, diags := lowercaseFileDefs(generator.FileDefinitions, diags)
 	err = d.Set("file", files)
 	if err != nil {
 		return diag.FromErr(err)
@@ -309,7 +309,7 @@ func autocloudBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta 
 	return diags
 }
 
-func lowercaseFileDefs(files []generator.IacCatalogFile) []interface{} {
+func lowercaseFileDefs(files []generator.IacCatalogFile, diags diag.Diagnostics) ([]interface{}, diag.Diagnostics) {
 	var out = make([]interface{}, 0)
 	for _, file := range files {
 		m := make(map[string]interface{})
@@ -321,9 +321,17 @@ func lowercaseFileDefs(files []generator.IacCatalogFile) []interface{} {
 		m["footer"] = file.Header
 		m["header"] = file.Footer
 		out = append(out, m)
+
+		if file.Content != "" && (file.Footer != "" || file.Header != "" || len(file.Modules) > 0) {
+			diags = append(diags, diag.Diagnostic{
+				Detail:   "footer, header, or module properties defined on a file block will be omitted if the content property is defined",
+				Severity: diag.Warning,
+				Summary:  "content property overrides any other attribute",
+			})
+		}
 	}
 
-	return out
+	return out, diags
 }
 
 func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {

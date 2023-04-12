@@ -59,6 +59,14 @@ data "autocloud_blueprint_config" "s3_custom_form" {
     "request_payer",
     "tags"
   ]
+
+  variable {
+    name         = "environment"
+    display_name = "environment"
+    helper_text  = "select the environment"
+    type         = "raw"
+    value        = "var.ami"
+  }
 }
 
 resource "autocloud_blueprint" "example" {
@@ -144,6 +152,15 @@ resource "autocloud_blueprint" "example" {
         # end - paste
         EOT
 
+  }
+
+  file {
+    action      = "CREATE"
+    destination = "s3_file.tf"
+    variables = {
+    }
+
+    content = file("../files/config.tf.tpl")
   }
 
   file {
