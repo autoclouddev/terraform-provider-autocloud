@@ -1,3 +1,11 @@
+# [0.5.0-pre.9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.8...v0.5.0-pre.9) (2023-04-12)
+
+
+### Features
+
+* Added warning when using content property on fileblock ([afd038f](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/afd038fd559945e9744023217847d659c3390f1a))
+* Extended filecontent example ([0eb3090](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/0eb30900a67c7235a305c1a403fc2028cb9a28c9))
+
 # [0.5.0-pre.8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.7...v0.5.0-pre.8) (2023-04-10)
 
 
