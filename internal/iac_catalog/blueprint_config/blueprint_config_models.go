@@ -12,6 +12,7 @@ type BluePrintConfig struct {
 	OmitVariables     []string                    `json:"omitVariables"`
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
 	Variables         []generator.FormShape       `json:"variables"`
+	DisplayOrder      DisplayOrder                `json:"displayOrder"`
 	Children          map[string]BluePrintConfig  `json:"children"`
 }
 
@@ -53,6 +54,11 @@ type FieldOption struct {
 	Label   string `json:"label" faker:"word"`
 	Value   string `json:"value" faker:"word"`
 	Checked bool   `json:"checked"`
+}
+
+type DisplayOrder struct {
+	Priority int      `json:"priority" faker:"0"`
+	Values   []string `json:"values"`
 }
 
 const GENERIC = "generic"
