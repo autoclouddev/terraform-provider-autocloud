@@ -1,3 +1,16 @@
+# [0.5.0-pre.10](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.9...v0.5.0-pre.10) (2023-04-12)
+
+
+### Bug Fixes
+
+* Extended file_content example using omit dot notation ([8a4bdca](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/8a4bdca9d5e637f1351213efb85cb33dd3d3b6ab))
+* Fixed omit specific variable with dot notation ([b7e5d58](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b7e5d5869c089cbabc57d350e9aaa0db4ea9faf6))
+
+
+### Features
+
+* add display order ([f376a10](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/f376a10fc01f8b4d9869bad4cfa1c4b9ea76209d))
+
 # [0.5.0-pre.9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0-pre.8...v0.5.0-pre.9) (2023-04-12)
 
 
