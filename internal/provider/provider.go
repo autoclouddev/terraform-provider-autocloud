@@ -64,6 +64,9 @@ func configure(version string, p *schema.Provider) func(ctx context.Context, d *
 		}
 
 		token := d.Get("token").(string)
+		if token == "" {
+			return nil, diag.Errorf("Autocloud Token is empty")
+		}
 		c, err := autocloudsdk.NewClient(&apiHost, &token)
 
 		// Warning or errors can be collected in a slice type
