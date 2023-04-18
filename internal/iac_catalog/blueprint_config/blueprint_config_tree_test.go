@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"path"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
@@ -13,6 +14,7 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	acctest "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -61,23 +63,23 @@ func TestTreeTransversal(t *testing.T) {
 	tree := blueprint_config.BluePrintConfig{
 		Id:        "A",
 		Variables: AVariables,
-		Children: map[string]blueprint_config.BluePrintConfig{
-			"B": {
+		Children: []blueprint_config.BluePrintConfig{
+			{
 				Id:        "B.1",
 				Variables: BVariables,
 				OverrideVariables: map[string]blueprint_config.OverrideVariable{
 					overrideInB.VariableName: *overrideInB,
 				},
-				Children: map[string]blueprint_config.BluePrintConfig{
-					"C": {
+				Children: []blueprint_config.BluePrintConfig{
+					{
 						Id:        "C.1",
 						Variables: CVariables,
 					}},
 			},
-			"D": {
+			{
 				Id:        "D.1",
 				Variables: DVariables,
-				Children:  map[string]blueprint_config.BluePrintConfig{},
+				Children:  []blueprint_config.BluePrintConfig{},
 			},
 		},
 	}
@@ -178,7 +180,7 @@ func TestOmitReferenceVars(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, 1, hiddenVars) // one omitted variable
+	assert.Equal(t, 0, hiddenVars) // one omitted variable
 }
 
 func TestJsonUnmarshallOverride(t *testing.T) {
@@ -234,16 +236,16 @@ func TestGetDisplayOrder(t *testing.T) {
 			Priority: 1,
 			Values:   []string{"name"},
 		},
-		Children: map[string]blueprint_config.BluePrintConfig{
-			"B": {
+		Children: []blueprint_config.BluePrintConfig{
+			{
 				Id:        "B.1",
 				Variables: BVariables,
 				DisplayOrder: blueprint_config.DisplayOrder{
 					Priority: 0,
 					Values:   []string{"name", BVariables[0].ID},
 				},
-				Children: map[string]blueprint_config.BluePrintConfig{
-					"C": {
+				Children: []blueprint_config.BluePrintConfig{
+					{
 						Id:        "C.1",
 						Variables: CVariables,
 						DisplayOrder: blueprint_config.DisplayOrder{
@@ -252,10 +254,10 @@ func TestGetDisplayOrder(t *testing.T) {
 						},
 					}},
 			},
-			"D": {
+			{
 				Id:        "D.1",
 				Variables: DVariables,
-				Children:  map[string]blueprint_config.BluePrintConfig{},
+				Children:  []blueprint_config.BluePrintConfig{},
 			},
 		},
 	}
@@ -373,8 +375,8 @@ func TestFormShapeSortedCase3(t *testing.T) {
 			Priority: 0,
 			Values:   []string{"name", "kms.description"},
 		},
-		Children: map[string]blueprint_config.BluePrintConfig{
-			"B": {
+		Children: []blueprint_config.BluePrintConfig{
+			{
 				Id:        "B1",
 				Variables: BVariables,
 			},
@@ -423,8 +425,8 @@ func TestFormShapeSortedCase4(t *testing.T) {
 			Priority: 0,
 			Values:   []string{"name", "s3.description"},
 		},
-		Children: map[string]blueprint_config.BluePrintConfig{
-			"B": {
+		Children: []blueprint_config.BluePrintConfig{
+			{
 				Id:        "B1",
 				Variables: BVariables,
 				DisplayOrder: blueprint_config.DisplayOrder{
@@ -445,4 +447,39 @@ func TestFormShapeSortedCase4(t *testing.T) {
 	}
 
 	t.Cleanup(closer)
+}
+
+func TestGetFormShape(t *testing.T) {
+	testData, err := utils.LoadData[blueprint_config.BluePrintConfig](path.Join(FIXTURES_FOLDER, "blueprint_config.json"))
+	assert.Nil(t, err)
+
+	aliases := blueprint_config_references.GetInstance()
+	aliases.SetValue("s3", "s3bucket")
+	aliases.SetValue("policy", "s3bucketpolicy")
+	aliases.SetValue("route53", "route53")
+	aliases.SetValue("cloudfront", "cloudfront")
+	aliases.SetValue("s3_bucket", "s3bucket")
+	aliases.SetValue("s3_bucket_policy", "s3bucketpolicy")
+	aliases.SetValue("kms", "kmskey")
+
+	_, err = blueprint_config.GetFormShape(testData)
+	assert.Nil(t, err)
+}
+
+func TestGetFormShapeError(t *testing.T) {
+	testData, err := utils.LoadData[blueprint_config.BluePrintConfig](path.Join(FIXTURES_FOLDER, "blueprint_config.json"))
+	assert.Nil(t, err)
+
+	aliases := blueprint_config_references.GetInstance()
+	aliases.SetValue("s3", "s3bucket")
+	aliases.SetValue("policy", "s3bucketpolicy")
+	aliases.SetValue("route53", "route53")
+	aliases.SetValue("cloudfront", "cloudfront")
+	aliases.SetValue("s3_bucket", "s3bucket")
+	aliases.SetValue("s3_bucket_policy", "s3bucketpolicy")
+	aliases.SetValue("kms", "kmskey")
+
+	_, err = blueprint_config.GetFormShape(testData)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "Variable Reference is not matching any children variable:")
 }

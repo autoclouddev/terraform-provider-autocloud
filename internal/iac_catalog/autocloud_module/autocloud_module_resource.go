@@ -208,7 +208,8 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	config := blueprint_config.BluePrintConfig{
 		Id:        iacModule.ID,
 		Variables: variables,
-		Children:  make(map[string]blueprint_config.BluePrintConfig),
+		RefName:   iacModule.Name,
+		Children:  make([]blueprint_config.BluePrintConfig, 0),
 		DisplayOrder: blueprint_config.DisplayOrder{
 			Priority: 1000,
 			Values:   make([]string, 0),

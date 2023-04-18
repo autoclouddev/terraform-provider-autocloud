@@ -48,14 +48,16 @@ func (d dsBlueprintConfig) ReadDataSource(ctx context.Context, req *tfprotov5.Re
 	// TODO: refactor GetBlueprintConfigFromSchema to be used here
 	bp := &blueprint_config.BluePrintConfig{}
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
-	bp.Children = make(map[string]blueprint_config.BluePrintConfig)
-	for k, v := range input.source {
+	bp.Children = make([]blueprint_config.BluePrintConfig, 0)
+	var cindex = 0 // children index
+	for _, v := range input.source {
 		bc := blueprint_config.BluePrintConfig{}
 		err := json.Unmarshal([]byte(v), &bc)
 		if err != nil {
 			return nil, errors.New("invalid conversion to BluePrintConfig")
 		}
-		bp.Children[k] = bc
+		bp.Children[cindex] = bc
+		cindex++
 	}
 	formVariables, err := blueprint_config.GetFormShape(*bp)
 	if err != nil {
