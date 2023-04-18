@@ -93,14 +93,18 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 	var fileDefinitions []generator.IacCatalogFile
 	if fileDefinitionsValues, ok := d.GetOk("file"); ok {
 		list := fileDefinitionsValues.(*schema.Set).List()
-		fileDefinitions = make([]generator.IacCatalogFile, len(list))
-		for i, fileDefinitionsValue := range list {
+		fileDefinitions = make([]generator.IacCatalogFile, 0)
+		for _, fileDefinitionsValue := range list {
 			var fileDefinitionMap = fileDefinitionsValue.(map[string]interface{})
-
 			var fileDefinition = generator.IacCatalogFile{}
 
 			if val, ok := fileDefinitionMap["action"]; ok {
 				fileDefinition.Action = val.(string)
+			}
+
+			// prevent empty values
+			if fileDefinition.Action == "" {
+				continue
 			}
 
 			if val, ok := fileDefinitionMap["destination"]; ok {
@@ -136,7 +140,7 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 				return nil, errors.New("file block should contain content or modules attributes")
 			}
 
-			fileDefinitions[i] = fileDefinition
+			fileDefinitions = append(fileDefinitions, fileDefinition)
 		}
 	}
 
