@@ -44,12 +44,12 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     // "environment",                       // string
     "kms_key_id",                        // string
     "name",                              // string
-    "additional_security_group_ids",     // list(string)
+    // "additional_security_group_ids",     // list(string)
     "alb_security_group",                // string
     "assign_public_ip",                  // bool
     "associate_alb",                     // bool
     "associate_nlb",                     // bool
-    "cloudwatch_alarm_actions",          // list(string)
+    // "cloudwatch_alarm_actions",          // list(string)
     "cloudwatch_alarm_cpu_enable",       // bool
     "cloudwatch_alarm_cpu_threshold",    // number
     "cloudwatch_alarm_mem_enable",       // bool
@@ -59,7 +59,7 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     "container_image",                   // string
     "container_volumes",                 // list( object({ name = string }) )
     "ec2_create_task_execution_role",    // bool
-    "ecr_repo_arns",                     // list(string)
+    // "ecr_repo_arns",                     // list(string)
     "ecs_exec_enable",                   // bool
     "ecs_instance_role",                 // string
     "ecs_use_fargate",                   // bool
@@ -96,12 +96,12 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     validation_rule {
       rule          = "minLength"
       value = 1
-      error_message = "min length is set to 1 element"
+      error_message = "min length is set to 1"
     }
     validation_rule {
       rule          = "maxLength"
       value = 5
-      error_message = "max length is set to 5 element"
+      error_message = "max length is set to 5"
     }
   }
 
@@ -114,26 +114,20 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
   }
 
   variable {
-    name         = "ecs_subnet_ids"
-    display_name = "ecs subnet ids"
-    helper_text  = "select the ecs subnet ids"
+    name         = "cloudwatch_alarm_actions"
+    display_name = "cloudwatch alarm actions"
+    helper_text  = "select the cloudwatch alarm actions"
     type         = "checkbox"
     options {
-      option {
-        label   = "SUBNET 1"
-        value   = "subnet-id-1"
-        checked = true
-      }
-      option {
-        label   = "SUBNET 2"
-        value   = "subnet-id-2"
-        checked = true
-      }
-      option {
-        label   = "SUBNET 3"
-        value   = "subnet-id-3"
-        checked = false
-      }
+    }
+    validation_rule {
+      rule          = "minLength"
+      value = 3
+      error_message = "min length is set to 3"
+    }
+    validation_rule {
+      rule          = "isRequired"
+      error_message = "invalid"
     }
   }
 
@@ -165,12 +159,12 @@ data "autocloud_blueprint_config" "ecs_custom_form" {
     validation_rule {
       rule          = "minLength"
       value = 1
-      error_message = "min length is set to 1 element"
+      error_message = "min length is set to 1"
     }
     validation_rule {
       rule          = "maxLength"
       value = 5
-      error_message = "max length is set to 5 element"
+      error_message = "max length is set to 5"
     }
   }
 }
