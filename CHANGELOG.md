@@ -1,3 +1,10 @@
+# [0.6.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.6.0-pre.1...v0.6.0-pre.2) (2023-04-18)
+
+
+### Bug Fixes
+
+* Displayed an error when autocloud token is not set ([131dfe0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/131dfe0ab749d531ff98b279a54c07cd13acba4e))
+
 # [0.6.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.5.0...v0.6.0-pre.1) (2023-04-18)
 
 
