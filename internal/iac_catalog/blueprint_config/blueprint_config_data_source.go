@@ -222,6 +222,14 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	prioritiesDuplicated, _ := getDisplayOrderDuplicated(*blueprintConfig)
+	if len(prioritiesDuplicated) > 0 {
+		diags = append(diags, diag.Diagnostic{
+			Detail:   prioritiesDuplicated,
+			Severity: diag.Warning,
+			Summary:  "Display order priorities duplicated",
+		})
+	}
 	err = validateConditionals(formVariables)
 	if err != nil {
 		return diag.FromErr(err)
@@ -410,6 +418,34 @@ func validateConditionals(variables []generator.FormShape) error {
 	}
 
 	return nil
+}
+
+func getDisplayOrderDuplicated(root BluePrintConfig) (string, error) {
+	order, err := postDisplayOrderTransversal(&root)
+	if err != nil {
+		return "", err
+	}
+	var displayOrderByPriority = make(map[int][]string, 0)
+	var prioritiesDuplicatedMessage = ""
+	// we build a map of displayOrder by priority
+	for _, displayOrder := range order {
+		priority := displayOrder.Priority
+		if len(displayOrder.Values) > 0 {
+			// to do more pretty the message
+			formatMessage := "\n%+v"
+			if len(displayOrderByPriority[priority]) > 0 {
+				formatMessage = "\n%+v\n"
+			}
+			displayOrderByPriority[priority] = append(displayOrderByPriority[priority], fmt.Sprintf(formatMessage, displayOrder))
+		}
+	}
+	// then we add to the duplicated list those which has more than one entry
+	for _, displayOrders := range displayOrderByPriority {
+		if len(displayOrders) > 1 {
+			prioritiesDuplicatedMessage = fmt.Sprintf("%v\n%v", prioritiesDuplicatedMessage, displayOrders)
+		}
+	}
+	return prioritiesDuplicatedMessage, nil
 }
 
 func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent, error) {
