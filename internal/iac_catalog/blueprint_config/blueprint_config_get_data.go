@@ -243,36 +243,3 @@ func getConditionals(varOverrideMap *schema.Set) ([]ConditionalConfig, error) {
 
 	return conditionals, nil
 }
-
-func LoadReferencesFromState(aliases blueprint_config_references.Data) {
-	fileData, err := utils.LoadData[interface{}](STATE_FILE)
-
-	if err == nil {
-		state := fileData.(map[string]interface{})
-		resources := state["resources"].([]interface{})
-		references := make(map[string]string)
-
-		for _, v := range resources {
-			data := v.(map[string]interface{})
-			if data["type"] == "autocloud_blueprint_config" {
-				instances := data["instances"].([]interface{})
-				for _, v := range instances {
-					rawData := v.(map[string]interface{})
-					attributes := rawData["attributes"].(map[string]interface{})
-					rawAliases := attributes["references"].(string)
-					var storedAliases map[string]string
-					err := json.Unmarshal([]byte(rawAliases), &storedAliases)
-					if err != nil {
-						fmt.Println("err", err)
-					}
-
-					utils.MergeMaps(&references, &storedAliases)
-				}
-			}
-		}
-
-		for key, value := range references {
-			aliases.SetValue(key, value)
-		}
-	}
-}

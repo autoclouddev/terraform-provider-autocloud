@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"time"
 
@@ -211,8 +210,8 @@ func DataSourceBlueprintConfig() *schema.Resource {
 
 func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	blueprintConfig, err := GetBlueprintConfigFromSchema(d)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -224,6 +223,7 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 
 	// Save references
 	aliases := blueprint_config_references.GetInstance()
+
 	err = d.Set("references", aliases.ToString())
 	if err != nil {
 		return diag.FromErr(err)
@@ -279,12 +279,6 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
 	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
 	aliasToModuleNameMap := blueprint_config_references.GetInstance()
-
-	if v, err := os.Stat(STATE_FILE); os.IsNotExist(err) {
-		log.Println("STATE NOT FOUND")
-	} else if v.Size() > 0 {
-		LoadReferencesFromState(*aliasToModuleNameMap)
-	}
 
 	// get sources
 	var cerrors []error // collect data errors
