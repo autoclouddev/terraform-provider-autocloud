@@ -223,6 +223,8 @@ func GetSdkIacModuleInput(d *schema.ResourceData) iac_module.ModuleInput {
 		Source:       d.Get("source").(string),
 		Version:      d.Get("version").(string),
 		TagsVariable: d.Get("tags_variable").(string),
+		Header:       d.Get("header").(string),
+		Footer:       d.Get("footer").(string),
 	}
 
 	return iacModule
