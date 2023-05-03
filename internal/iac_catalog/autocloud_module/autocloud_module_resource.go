@@ -83,6 +83,16 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 	},
+	"header": {
+		Description: "header",
+		Type:        schema.TypeString,
+		Optional:    true,
+	},
+	"footer": {
+		Description: "footer",
+		Type:        schema.TypeString,
+		Optional:    true,
+	},
 }
 
 func ResourceAutocloudModule() *schema.Resource {
@@ -209,6 +219,16 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 	err = d.Set("blueprint_config", string(jsonconf))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("header", iacModule.Header)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("footer", iacModule.Footer)
 	if err != nil {
 		return diag.FromErr(err)
 	}
