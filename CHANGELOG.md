@@ -1,3 +1,10 @@
+## [0.7.1-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.7.0...v0.7.1-pre.1) (2023-05-03)
+
+
+### Bug Fixes
+
+* Fixed error on update file definitions ([be31dc0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/be31dc010bb625bdf2f8030913ba5767d030ed91))
+
 # [0.7.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.6.0...v0.7.0) (2023-05-03)
 
 
