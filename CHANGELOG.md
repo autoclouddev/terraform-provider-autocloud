@@ -1,3 +1,10 @@
+# [0.7.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.6.0...v0.7.0) (2023-05-03)
+
+
+### Features
+
+* **iac:** add ability to add raw header and footer iac module ([51d9ffc](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/51d9ffca6696fcd234b9f6ec8c9705d1adde981d))
+
 # [0.7.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.6.0...v0.7.0-pre.1) (2023-05-03)
 
 
