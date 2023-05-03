@@ -73,15 +73,13 @@ func readState(fileData interface{}) map[string]string {
 	return references
 }
 
-func retrieveLocalState() map[string]string {
+func retrieveLocalState() (map[string]string, error) {
 	log.Println("LOCAL STATE")
-
-	references := make(map[string]string)
 	fileData, err := utils.LoadData[interface{}](STATE_FILE)
-	if err == nil {
-		return readState(fileData) // read from local terraform.tfstate fle
+	if err != nil {
+		return nil, err
 	}
-	return references
+	return readState(fileData), nil // read from local terraform.tfstate fle
 }
 
 func donwloadStateFromTFC(ctx context.Context, config map[string]string) (interface{}, error) {
@@ -110,76 +108,86 @@ func donwloadStateFromTFC(ctx context.Context, config map[string]string) (interf
 		}
 	}
 
-	if latestStateVersion == nil {
-		return nil, errors.New("Stored state not found")
-	}
+	if latestStateVersion != nil {
+		// Print latest state version
+		fmt.Printf("Latest state version is %d\n", latestStateVersion.Serial)
 
-	// Print latest state version
-	fmt.Printf("Latest state version is %d\n", latestStateVersion.Serial)
-
-	latestState, err := client.StateVersions.Download(ctx, latestStateVersion.DownloadURL)
-	if err != nil {
-		return nil, errors.New("Error downloading the latest state")
-	}
-
-	var stateData interface{}
-	err = json.Unmarshal(latestState, &stateData)
-	if err != nil {
-		return nil, errors.New("Error parsing to json")
-	}
-
-	return stateData, nil
-}
-
-func retrieveRemoteState(ctx context.Context) map[string]string {
-	log.Println("REMOTE STATE")
-	references := make(map[string]string)
-	fileData, err := utils.LoadData[interface{}](path.Join(".terraform", STATE_FILE))
-	if err == nil {
-		config := make(map[string]string)
-		state := fileData.(map[string]interface{})
-		backend := state["backend"].(map[string]interface{})
-		backendType := backend["type"].(string)
-		if backendType == "cloud" {
-			token, err := getTFCCredential()
-			if err != nil {
-				fmt.Println("error", err)
-			}
-			cloudConfig := backend["config"].(map[string]interface{})
-			workSpacesConfig := cloudConfig["workspaces"].(map[string]interface{})
-			config["tfcToken"] = token
-			config["orgName"] = cloudConfig["organization"].(string)
-			config["workspaceName"] = workSpacesConfig["name"].(string)
-
-			fileData, err := donwloadStateFromTFC(ctx, config)
-			if err == nil {
-				return readState(fileData)
-			}
+		latestState, err := client.StateVersions.Download(ctx, latestStateVersion.DownloadURL)
+		if err != nil {
+			return nil, errors.New("Error downloading the latest state")
 		}
-		return references
+
+		var stateData interface{}
+		err = json.Unmarshal(latestState, &stateData)
+		if err != nil {
+			return nil, errors.New("Error parsing to json")
+		}
+		return stateData, nil
 	}
-	return references
+
+	return nil, nil // no states found
 }
 
-func LoadReferencesFromState(ctx context.Context) {
+func retrieveRemoteState(ctx context.Context) (map[string]string, error) {
+	log.Println("REMOTE STATE")
+	fileData, err := utils.LoadData[interface{}](path.Join(".terraform", STATE_FILE))
+	if err != nil {
+		return nil, err
+	}
+	config := make(map[string]string)
+	state := fileData.(map[string]interface{})
+	backend := state["backend"].(map[string]interface{})
+	backendType := backend["type"].(string)
+	if backendType == "cloud" {
+		token, err := getTFCCredential()
+		if err != nil {
+			return nil, err
+		}
+		cloudConfig := backend["config"].(map[string]interface{})
+		workSpacesConfig := cloudConfig["workspaces"].(map[string]interface{})
+		config["tfcToken"] = token
+		config["orgName"] = cloudConfig["organization"].(string)
+		config["workspaceName"] = workSpacesConfig["name"].(string)
+
+		fileData, err := donwloadStateFromTFC(ctx, config)
+		if err != nil {
+			return nil, err
+		}
+		if fileData != nil {
+			return readState(fileData), nil
+		} else {
+			return nil, nil
+		}
+	} else {
+		return nil, fmt.Errorf("Backend not supported")
+	}
+}
+
+func LoadReferencesFromState(ctx context.Context) error {
 	references := make(map[string]string)
 	aliases := blueprint_config_references.GetInstance()
 
 	// looking for local tfstate
-	if v, err := os.Stat(STATE_FILE); err == nil {
-		if v.Size() > 0 {
-			references = retrieveLocalState()
+	if v, err := os.Stat(STATE_FILE); err == nil && v.Size() > 0 {
+		references, err = retrieveLocalState()
+		if err != nil {
+			return err
 		}
-	}
-
-	// looking for remote tfstate
-	if v, err := os.Stat(path.Join(".terraform", STATE_FILE)); err == nil {
-		if v.Size() > 0 {
-			references = retrieveRemoteState(ctx)
+	} else {
+		// looking for remote tfstate
+		if v, err := os.Stat(path.Join(".terraform", STATE_FILE)); err == nil && v.Size() > 0 {
+			remoteReferences, err := retrieveRemoteState(ctx)
+			if err != nil {
+				return err
+			}
+			if remoteReferences != nil {
+				references = remoteReferences
+			}
 		}
 	}
 
 	for key, value := range references {
 		aliases.SetValue(key, value)
 	}
+	return nil
 }
