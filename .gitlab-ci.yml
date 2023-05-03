@@ -29,6 +29,9 @@ variables:
 vendor:
   image: golang:1.19-alpine
   stage: init
+  variables:
+    KUBERNETES_CPU_REQUEST: 500m
+    KUBERNETES_CPU_LIMIT: 1
   rules:
     - when: always
   cache:
