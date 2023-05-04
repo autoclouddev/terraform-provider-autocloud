@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -195,6 +195,10 @@ func DataSourceBlueprintConfig() *schema.Resource {
 				},
 			},
 		},
+		"references": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 
 	return &schema.Resource{
@@ -206,9 +210,8 @@ func DataSourceBlueprintConfig() *schema.Resource {
 
 func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	// map the resource to a FormBuilder object
 	blueprintConfig, err := GetBlueprintConfigFromSchema(d)
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -217,6 +220,15 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	log.Println("INPUT BLUEPRINTCONFIG->", pretty)
+
+	// Save references
+	aliases := blueprint_config_references.GetInstance()
+
+	err = d.Set("references", aliases.ToString())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	// new form variables (as JSON)
 	formVariables, err := GetFormShape(*blueprintConfig)
 	if err != nil {
@@ -261,143 +273,55 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func ConvertMap(mapInterface map[string]interface{}) map[string]string {
-	mapString := make(map[string]string)
-
-	for key, value := range mapInterface {
-		mapValue := value
-		if value == nil {
-			mapValue = ""
-		}
-		strKey := fmt.Sprintf("%v", key)
-		strValue := fmt.Sprintf("%v", mapValue)
-
-		mapString[strKey] = strValue
-	}
-
-	return mapString
-}
-
 // maps tf declaration to object
-//
-//nolint:gocyclo
 func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, error) {
-	bp := &BluePrintConfig{}
+	bp := BluePrintConfig{}
 	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
 	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
-	bp.Children = make(map[string]BluePrintConfig)
-	aliasToModuleNameMap := make(map[string]string)
+	aliasToModuleNameMap := blueprint_config_references.GetInstance()
+
+	// get sources
+	var cerrors []error // collect data errors
 	if v, ok := d.GetOk("source"); ok {
-		for key, value := range v.(map[string]interface{}) {
-			strKey := fmt.Sprintf("%v", key)
-			strValue := fmt.Sprintf("%v", value)
-			log.Printf("SOURCE_INPUT_KEY: %v\n", key)
-			formattedValue, _ := utils.PrettyString(strValue)
-			log.Printf("SOURCE_INPUT_VALUE: %v", formattedValue)
-			bc := BluePrintConfig{}
-			err := json.Unmarshal([]byte(strValue), &bc)
-			if err != nil {
-				return nil, errors.New("invalid conversion to BluePrintConfig")
-			}
-			bp.Children[strKey] = bc
-			if len(bc.Variables) > 0 {
-				aliasToModuleNameMap[strKey] = bc.Variables[0].Module
-			} else if len(bc.Children[strKey].Variables) > 0 { // if the current source doesn't have variable then we look for the module name in children
-				aliasToModuleNameMap[strKey] = bc.Children[strKey].Variables[0].Module
-			}
-		}
+		cerrors = append(cerrors, GetBlueprintConfigSources(v, &bp, *aliasToModuleNameMap))
 	}
+
+	// get omit_variables
 	if v, ok := d.GetOk("omit_variables"); ok {
 		log.Printf("omit_vars get.ok is ok, %v\n", v)
-		list := v.(*schema.Set).List()
-		omit := make([]string, len(list))
-		for i, optionValue := range list {
-			omit[i] = optionValue.(string)
-		}
-		bp.OmitVariables = omit
+		cerrors = append(cerrors, GetBlueprintConfigOmitVariables(v.(*schema.Set).List(), &bp, *aliasToModuleNameMap))
 		log.Printf("the [%v] are the omitted vars", bp.OmitVariables)
 	} else {
 		log.Printf("omit_vars get.ok not ok, no variables were added\n")
 	}
 
+	// get display_order
 	if v, ok := d.GetOk("display_order"); ok {
 		log.Printf("display_order get.ok is ok, %v\n", v)
-		list := v.([]interface{})
-		for _, currentVar := range list {
-			displayOrder := DisplayOrder{}
-			var values []string
-			varOverrideMap := currentVar.(map[string]interface{})
-			displayOrder.Priority = varOverrideMap["priority"].(int)
-			valuesList := varOverrideMap["values"].([]interface{})
-			for _, value := range valuesList {
-				valueStr := value.(string)
-				// valueStr can be <alias>.variables.<variable_name> or <module>.<variable_name>.
-				// If it's built with an alias, we need to convert it to <module>.<variable_name>
-				paths := strings.Split(valueStr, ".")
-				if len(paths) == 3 && paths[1] == "variables" {
-					// path[0] => alias
-					// path[1] => "variables"
-					// path[2] => variable_name
-					// convert alias to module name
-					if len(aliasToModuleNameMap[paths[0]]) > 0 {
-						valueStr = fmt.Sprintf("%s.%s", aliasToModuleNameMap[paths[0]], paths[2])
-					} else {
-						// if there isn't any module name for the alias we just use the variable name
-						valueStr = paths[2]
-					}
-				}
-				values = append(values, valueStr)
-			}
-			displayOrder.Values = values
-			bp.DisplayOrder = displayOrder
-		}
+		cerrors = append(cerrors, GetBlueprintConfigDisplayOrder(v, &bp, *aliasToModuleNameMap))
 		log.Printf("the %v is the displayOrder", bp.DisplayOrder)
 	} else {
 		log.Printf("display_order get.ok not ok\n")
 	}
 
+	// get override vars
 	if v, ok := d.GetOk("variable"); ok {
-		varsList := v.([]interface{})
-		// override vars loop
-		for _, currentVar := range varsList {
-			varOverrideMap := currentVar.(map[string]interface{})
-			//create variable
-			varName := varOverrideMap["name"].(string)
-			vc, err := BuildVariableFromSchema(varOverrideMap)
-			if err != nil {
-				return nil, err
-			}
-
-			bp.OverrideVariables[varName] = OverrideVariable{
-				VariableName:    varName,
-				VariableContent: *vc,
-				dirty:           false,
-				//UsedInHCL:       true,
-			}
-
-			// Conditionals
-			conditionals, conditionalExists := varOverrideMap["conditional"].(*schema.Set)
-			log.Printf("CONDITIONALS: %v \n", conditionals)
-			if conditionalExists {
-				if entry, ok := bp.OverrideVariables[varName]; ok {
-					conditionals, err := getConditionals(conditionals)
-					if err != nil {
-						return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
-					}
-					entry.Conditionals = conditionals
-					bp.OverrideVariables[varName] = entry
-				} else {
-					return nil, errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
-				}
-			}
-		}
+		cerrors = append(cerrors, GetBlueprintConfigOverrideVariables(v, &bp))
 	}
+
+	// Propagate error
+	err := hasError(cerrors)
+	if err != nil {
+		return nil, err
+	}
+
 	str, err := json.MarshalIndent(bp, "", "    ")
 	if err != nil {
 		return nil, errors.New("invalid conversion to BluePrintConfig")
 	}
+
 	log.Printf("final bc: %s", string(str))
-	return bp, nil
+	return &bp, nil
 }
 
 func validateConditionals(variables []generator.FormShape) error {
@@ -417,6 +341,15 @@ func validateConditionals(variables []generator.FormShape) error {
 		}
 	}
 
+	return nil
+}
+
+func hasError(errors []error) error {
+	for _, err := range errors {
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -446,123 +379,4 @@ func getDisplayOrderDuplicated(root BluePrintConfig) (string, error) {
 		}
 	}
 	return prioritiesDuplicatedMessage, nil
-}
-
-func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent, error) {
-	content := &VariableContent{}
-	var requiredValues string
-	requiredValuesInput, requiredValuesInputExist := rawSchema["required_values"]
-	if requiredValuesInputExist {
-		requiredValues = requiredValuesInput.(string)
-	}
-
-	content.DisplayName = rawSchema["display_name"].(string)
-	content.HelperText = rawSchema["helper_text"].(string)
-	content.RequiredValues = requiredValues
-
-	// Note: if it has a value, then it can NOT have form options "options"
-	valueIsDefined := false
-	value, valueExist := rawSchema["value"]
-	valueStr, valueIsString := value.(string)
-	valueIsDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
-
-	variableType := rawSchema["type"].(string)
-
-	if valueExist && valueIsString && valueIsDefined {
-		content.Value = valueStr
-		if variableType == RAW_TYPE {
-			content.FormConfig.Type = RAW_TYPE
-		}
-		return content, nil
-	}
-	// variableContent with form options
-
-	optionsFromSchema := rawSchema["options"].(*schema.Set)
-	if len(optionsFromSchema.List()) > 1 {
-		// it should be caught at schema check level - adding the check here to enforce it in case the schema changes
-		return nil, errors.New("exactly one \"options\" must be defined")
-	}
-
-	if variableType == "shortText" && len(optionsFromSchema.List()) > 0 {
-		return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrShortTextCantHaveOptions)
-	}
-
-	if variableType == "" && len(optionsFromSchema.List()) > 0 {
-		variableType = LIST_TYPE
-	}
-
-	content.FormConfig = FormConfig{
-		Type:            variableType,
-		ValidationRules: make([]ValidationRule, 0),
-		FieldOptions:    make([]FieldOption, 0),
-	}
-	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE || variableType == LIST_TYPE {
-		rawOptionsCluster := optionsFromSchema.List() // "options key in schema options {}" should always have 1 elem
-		if len(optionsFromSchema.List()) == 1 {
-			rawOptions := rawOptionsCluster[0].(map[string]interface{})
-			optionSchema := rawOptions["option"].(*schema.Set)
-
-			for _, option := range optionSchema.List() {
-				options := option.(map[string]interface{})
-				fieldOption := FieldOption{
-					Label:   options["label"].(string),
-					Value:   options["value"].(string),
-					Checked: options["checked"].(bool),
-				}
-				content.FormConfig.FieldOptions = append(content.FormConfig.FieldOptions, fieldOption)
-			}
-		}
-	}
-
-	validationRulesList := rawSchema["validation_rule"].(*schema.Set).List()
-
-	for _, validationRule := range validationRulesList {
-		validationRuleMap := validationRule.(map[string]interface{})
-
-		rule := validationRuleMap["rule"].(string)
-		ruleValue := validationRuleMap["value"].(string)
-
-		if rule == "isRequired" && ruleValue != "" {
-			return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrIsRequiredCantHaveValue)
-		}
-		vr := ValidationRule{
-			Rule:         rule,
-			Value:        ruleValue,
-			ErrorMessage: validationRuleMap["error_message"].(string),
-		}
-		content.FormConfig.ValidationRules = append(content.FormConfig.ValidationRules, vr)
-	}
-	return content, nil
-}
-
-func getConditionals(varOverrideMap *schema.Set) ([]ConditionalConfig, error) {
-	conditionalLen := varOverrideMap.Len()
-
-	conditionals := make([]ConditionalConfig, 0)
-	if conditionalLen == 0 {
-		return conditionals, nil
-	}
-	conditionalsList := varOverrideMap.List()
-
-	for _, conditional := range conditionalsList {
-		conditionalMap := conditional.(map[string]interface{})
-		conditionalContentMapList := conditionalMap["content"].(*schema.Set).List()
-		if len(conditionalContentMapList) < 1 {
-			continue
-		}
-		conditionalContentMap := conditionalContentMapList[0].(map[string]interface{})
-		vc, err := BuildVariableFromSchema(conditionalContentMap)
-		if err != nil {
-			return nil, err
-		}
-		c := ConditionalConfig{
-			Source:          conditionalMap["source"].(string),
-			Condition:       conditionalMap["condition"].(string),
-			VariableContent: *vc,
-		}
-
-		conditionals = append(conditionals, c)
-	}
-
-	return conditionals, nil
 }

@@ -3,15 +3,23 @@ module gitlab.com/auto-cloud/infrastructure/public/terraform-provider
 go 1.19
 
 require (
+	github.com/hashicorp/go-tfe v1.23.0
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-mux v0.8.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/joho/godotenv v1.4.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.6.0
 )
 
-require github.com/pkg/errors v0.9.1 // indirect
+require (
+	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
+	github.com/hashicorp/go-slug v0.11.1 // indirect
+	github.com/hashicorp/jsonapi v0.0.0-20210826224640-ee7dae0fb22d // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	golang.org/x/time v0.3.0 // indirect
+)
 
 //uncomment the following line when working with local setup
 //replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../terraform-provider-sdk/

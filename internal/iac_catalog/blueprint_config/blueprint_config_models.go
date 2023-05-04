@@ -13,7 +13,7 @@ type BluePrintConfig struct {
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
 	Variables         []generator.FormShape       `json:"variables"`
 	DisplayOrder      DisplayOrder                `json:"displayOrder"`
-	Children          map[string]BluePrintConfig  `json:"children"`
+	Children          []BluePrintConfig           `json:"children"`
 }
 
 type VariableContent struct {
@@ -68,6 +68,8 @@ const LIST_TYPE = "list"
 const SHORTTEXT_TYPE = "shortText"
 const MAP_TYPE = "map"
 const RAW_TYPE = "raw"
+
+const STATE_FILE = "terraform.tfstate"
 
 var ErrSetValueInForm = errors.New("A form options can not be added when setting the variable's value.")
 var ErrOneBlockOptionsRequied = errors.New("No more than 1 \"options\" blocks are allowed")

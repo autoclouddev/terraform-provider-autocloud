@@ -29,28 +29,17 @@ func GetFormShape(root BluePrintConfig) ([]generator.FormShape, error) {
 	var log = logger.Create(log.Fields{"fn": "GetFormShape()"})
 	str, _ := json.MarshalIndent(root, "", "    ")
 	log.Debugf("root bc: %s", string(str))
-	formShape, err := postOrderTransversal(&root)
+	formShape, err := PostOrderTransversal(&root)
 	if err != nil {
 		return []generator.FormShape{}, err
 	}
 	return sortFormShape(root, formShape), nil
 }
 
-func hasReference(ov string) bool {
-	keyValue := strings.Split(ov, ".")
-	if len(keyValue) != 3 {
-		return false
-	}
-	if keyValue[1] != "variables" {
-		return false
-	}
-	return true
-}
-
 // transverses the tree from leaves to root,
 // passing current level variables to its parent after
 // processing the current level overrides and generics
-func postOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) {
+func PostOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) {
 	var vars []generator.FormShape = root.Variables
 	// first, make sure we override all variables that have reference
 	// a reference consist in the following code
@@ -64,56 +53,43 @@ func postOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) 
 	for k := range root.OverrideVariables {
 		keys = append(keys, k)
 	}
-	overridesWithReference := filter(keys, hasReference)
+	overridesWithReference := filter(keys, utils.HasReference)
 	// look for the variable in root.Children[source].variables
 	for _, key := range overridesWithReference {
 		keyValue := strings.Split(key, ".")
-		child := keyValue[0]
 		varName := keyValue[2]
-		idx := findIdx(root.Children[child].Variables, varName)
-		if idx < 0 {
-			return []generator.FormShape{}, fmt.Errorf("Variable Reference is not matching any children variable: %s", key)
-		}
-		// build override in place
-		root.Children[child].Variables[idx] = BuildOverridenVariable(root.Children[child].Variables[idx], root.OverrideVariables[key])
-		// delete from overrides
-		delete(root.OverrideVariables, key)
-		// remove from omits
-		for i, omitName := range root.OmitVariables {
-			if varName == omitName {
-				root.OmitVariables = append(root.OmitVariables[:i], root.OmitVariables[i+1:]...)
-				break
+		for cindex := 0; cindex <= len(root.Children)-1; cindex++ {
+			matches := utils.FindIdx(root.Children[cindex].Variables, key)
+			// if len(matches) < 1 {
+			// 	return []generator.FormShape{}, fmt.Errorf("Variable Reference is not matching any children variable: %s", key)
+			// }
+			for _, idx := range matches {
+				// build override in place
+				root.Children[cindex].Variables[idx] = BuildOverridenVariable(root.Children[cindex].Variables[idx], root.OverrideVariables[key])
+				// delete from overrides
+				delete(root.OverrideVariables, key)
+				// remove from omits
+				for i, omitName := range root.OmitVariables {
+					if varName == omitName {
+						root.OmitVariables = append(root.OmitVariables[:i], root.OmitVariables[i+1:]...)
+						break
+					}
+				}
 			}
 		}
 	}
 
 	for _, v := range root.Children {
 		v := v                                        // avoid implicit memory aliasing
-		childrenvars, err := postOrderTransversal(&v) // this &v now the address of the inner v
+		childrenvars, err := PostOrderTransversal(&v) // this &v now the address of the inner v
 		if err != nil {
 			return []generator.FormShape{}, err
 		}
 		vars = append(vars, childrenvars...)
 	}
 
-	// create omit keys with variable references
-	omitKeys := make([]string, 0)
-	for _, v := range root.OmitVariables {
-		if hasReference(v) {
-			sourceReference := strings.Split(v, ".")
-			idx := findIdx(root.Children[sourceReference[0]].Variables, sourceReference[2])
-			if idx < 0 {
-				return []generator.FormShape{}, fmt.Errorf("variable Reference is not matching any children variable: %s", v)
-			}
-			variableReference := strings.Split(root.Children[sourceReference[0]].Variables[idx].ID, ".")
-			omitKeys = append(omitKeys, fmt.Sprintf("%v.variables.%v", variableReference[0], variableReference[1]))
-		} else {
-			omitKeys = append(omitKeys, v)
-		}
-	}
-
-	log.Debugf("current node omit vars, %s", omitKeys)
-	admittedVars := OmitVars(vars, omitKeys, &root.OverrideVariables)
+	log.Debugf("current node omit vars, %s", root.OmitVariables)
+	admittedVars := OmitVars(vars, root.OmitVariables, &root.OverrideVariables)
 	log.Debugf("the [%v] addmited vars", admittedVars)
 	log.Debugf("current override vars, %v", root.OverrideVariables)
 	return OverrideVariables(admittedVars, root.OverrideVariables)
@@ -125,52 +101,27 @@ func postOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) 
 func OmitVars(vars []generator.FormShape, omits []string, overrideVariables *map[string]OverrideVariable) []generator.FormShape {
 	addmittedVars := vars
 	for _, omit := range omits {
-		idx := findIdx(addmittedVars, omit)
-		if idx == -1 {
-			continue
-		}
-		omittedVar := addmittedVars[idx]
-		omittedVar.IsHidden = true
-		omittedVar.UsedInHCL = false
+		matches := utils.FindIdx(addmittedVars, omit)
+		for _, idx := range matches {
+			omittedVar := addmittedVars[idx]
+			omittedVar.IsHidden = true
+			omittedVar.UsedInHCL = false
 
-		if omittedVar.IsOverriden {
-			omittedVar.UsedInHCL = true
-		}
-		addmittedVars[idx] = omittedVar
-		//addmittedVars = remove(addmittedVars, idx)
-		// if the blueprint config overrides an omitted variable, then it's an admitted var as we have to modify its behavior
-		if overrideVariable, isVarOverriden := (*overrideVariables)[omit]; isVarOverriden {
-			overrideVariable.IsHidden = true // we don't want to show omitted vars
-			overrideVariable.UsedInHCL = true
-			(*overrideVariables)[omit] = overrideVariable
-			continue
+			if omittedVar.IsOverriden {
+				omittedVar.UsedInHCL = true
+			}
+			addmittedVars[idx] = omittedVar
+			//addmittedVars = remove(addmittedVars, idx)
+			// if the blueprint config overrides an omitted variable, then it's an admitted var as we have to modify its behavior
+			if overrideVariable, isVarOverriden := (*overrideVariables)[omit]; isVarOverriden {
+				overrideVariable.IsHidden = true // we don't want to show omitted vars
+				overrideVariable.UsedInHCL = true
+				(*overrideVariables)[omit] = overrideVariable
+				continue
+			}
 		}
 	}
 	return addmittedVars
-}
-
-func findIdx(vars []generator.FormShape, refname string) int {
-	for i, v := range vars {
-		varName, varname := "", refname
-		if hasReference(refname) {
-			keyValue := strings.Split(refname, ".")
-			varname = fmt.Sprintf("%v.%v", keyValue[0], keyValue[2])
-			varName = v.ID
-		} else {
-			varId, err := utils.GetVariableID(v.ID)
-			if err != nil {
-				log.Debugf("the [%s] variable not found\n", varId)
-				return -1
-			}
-			varName = varId
-		}
-		if varName == varname {
-			log.Debugf("the [%s] variable was omitted\n", varName)
-			return i
-		}
-	}
-	log.Debugf("the [%s] omitted value not found in vars\n", refname)
-	return -1
 }
 
 // vars => form shapes coming from leaves
@@ -179,27 +130,18 @@ func OverrideVariables(vars []generator.FormShape, overrides map[string]Override
 	var log = logger.Create(log.Fields{"fn": "OverrideVariables()"})
 	usedOverrides := make(map[string][]string, 0)
 	// transform all original Variables to its overrides
-	for i, iacVar := range vars {
-		varName, err := utils.GetVariableID(iacVar.ID)
-
-		if err != nil {
-			log.Debugf("WARNING: no variable ID found -> %v, evaluated value : %v", err, iacVar)
-			// consider returning an error instead
-			return []generator.FormShape{}, fmt.Errorf("%w -> %v, evaluated value : %v", ErrVariableNotFound, err, iacVar)
-		}
-		overrideVariableData, ok := overrides[varName]
-		if ok {
-			str, _ := json.MarshalIndent(overrideVariableData, "", "    ")
+	for overrideName, overrideData := range overrides {
+		matches := utils.FindIdx(vars, overrideName)
+		for _, idx := range matches {
+			str, _ := json.MarshalIndent(overrideData, "", "    ")
 			log.Debugf("data -> %s", string(str))
-			vars[i] = BuildOverridenVariable(iacVar, overrideVariableData)
-		}
+			vars[idx] = BuildOverridenVariable(vars[idx], overrideData)
 
-		// check if we already have overridden a variable
-		if _, isAlreadyOverridden := usedOverrides[varName]; !isAlreadyOverridden {
-			usedOverrides[varName] = make([]string, 0)
-		}
-		if !utils.Contains(usedOverrides[varName], iacVar.ID) {
-			usedOverrides[varName] = append(usedOverrides[varName], iacVar.ID)
+			// check if we already have overridden a variable
+			if _, isAlreadyOverridden := usedOverrides[overrideName]; !isAlreadyOverridden {
+				usedOverrides[overrideName] = make([]string, 0)
+			}
+			usedOverrides[overrideName] = append(usedOverrides[overrideName], overrideName)
 		}
 	}
 	for varName, overridenVarIds := range usedOverrides {
@@ -211,10 +153,7 @@ func OverrideVariables(vars []generator.FormShape, overrides map[string]Override
 		formVar := BuildGenericVariable(ov)
 		vars = append(vars, formVar)
 	}
-	// sort questions to keep ordering consistent ??
-	/*sort.Slice(vars, func(i, j int) bool {
-		return vars[i].ID < vars[j].ID
-	})*/
+
 	return vars, nil
 }
 
