@@ -46,7 +46,7 @@ func getTFCCredential() (string, error) {
 	return token, nil
 }
 
-func readState(fileData interface{}) map[string]string {
+func readState(fileData interface{}) (map[string]string, error) {
 	state := fileData.(map[string]interface{})
 	resources := state["resources"].([]interface{})
 	references := make(map[string]string)
@@ -58,19 +58,23 @@ func readState(fileData interface{}) map[string]string {
 			for _, v := range instances {
 				rawData := v.(map[string]interface{})
 				attributes := rawData["attributes"].(map[string]interface{})
-				rawAliases := attributes["references"].(string)
-				var storedAliases map[string]string
-				err := json.Unmarshal([]byte(rawAliases), &storedAliases)
-				if err != nil {
-					fmt.Println("error reading references", err)
-				}
 
-				utils.MergeMaps(&references, &storedAliases)
+				if attributes["references"] != nil {
+					rawAliases := attributes["references"].(string)
+					storedAliases := make(map[string]string)
+					err := json.Unmarshal([]byte(rawAliases), &storedAliases)
+					if err != nil {
+						return nil, errors.New("error reading references")
+					}
+					utils.MergeMaps(&references, &storedAliases)
+				} else {
+					return nil, errors.New("references attribute not found on current schema. please destroy and recreate again.")
+				}
 			}
 		}
 	}
 
-	return references
+	return references, nil
 }
 
 func retrieveLocalState() (map[string]string, error) {
@@ -79,7 +83,12 @@ func retrieveLocalState() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return readState(fileData), nil // read from local terraform.tfstate fle
+	references, err := readState(fileData)
+	if err != nil {
+		return nil, err
+	}
+
+	return references, nil // read from local terraform.tfstate fle
 }
 
 func donwloadStateFromTFC(ctx context.Context, config map[string]string) (interface{}, error) {
@@ -154,7 +163,11 @@ func retrieveRemoteState(ctx context.Context) (map[string]string, error) {
 			return nil, err
 		}
 		if fileData != nil {
-			return readState(fileData), nil
+			references, err := readState(fileData)
+			if err != nil {
+				return nil, err
+			}
+			return references, nil
 		} else {
 			return nil, nil
 		}
