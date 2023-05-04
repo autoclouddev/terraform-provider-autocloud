@@ -1,3 +1,10 @@
+# [0.8.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.8.0-pre.1...v0.8.0-pre.2) (2023-05-04)
+
+
+### Bug Fixes
+
+* Warning on not compatibile schema ([67d9081](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/67d90812be87f906e9fc0b735bba7134040658ea))
+
 # [0.8.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.7.1-pre.1...v0.8.0-pre.1) (2023-05-04)
 
 
