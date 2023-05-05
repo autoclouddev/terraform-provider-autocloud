@@ -19,6 +19,16 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
 
+func findBlueprintConfigById(configs []blueprint_config.BluePrintConfig, id string) blueprint_config.BluePrintConfig {
+	for _, v := range configs {
+		if v.Id == id {
+			return v
+		}
+	}
+
+	return blueprint_config.BluePrintConfig{}
+}
+
 func TestAccBlueprintConfig_sourceValidation(t *testing.T) {
 	var blueprintConfig blueprint_config.BluePrintConfig
 	resourceName := "data.autocloud_blueprint_config.test"
@@ -720,7 +730,7 @@ func TestGetFormBuilder(t *testing.T) {
 		t.Errorf("BlueprintConfig variables.length is not 0 is: %d", variablesLength)
 	}
 
-	kms := blueprintConfig.Children["kms"]
+	kms := findBlueprintConfigById(blueprintConfig.Children, "kms")
 	//nestedVariables := blueprintConfig.Children[0].Variables
 	if len(kms.Variables) != 7 {
 		t.Errorf("BlueprintConfig.children[0].Variables.length is not 7 is: %d", len(kms.Variables))
@@ -786,8 +796,9 @@ func TestBlueprintConfigConditionalsReading(t *testing.T) {
 	}
 	assert.Equal(t, 1, len(blueprintConfig.Children))
 
-	assert.Equal(t, 1, len(blueprintConfig.Children["Cloudfront"].Variables))
-	assert.Equal(t, "dummy-static-value", blueprintConfig.Children["Cloudfront"].Variables[0].Conditionals[0].Value)
+	cloudfront := findBlueprintConfigById(blueprintConfig.Children, "Cloudfront")
+	assert.Equal(t, 1, len(cloudfront.Variables))
+	assert.Equal(t, "dummy-static-value", cloudfront.Variables[0].Conditionals[0].Value)
 
 	jsonBlueprintConfig, _ := utils.ToJsonString(blueprintConfig)
 	fmt.Printf("blueprint config: [%v]\n", jsonBlueprintConfig)

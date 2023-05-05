@@ -113,7 +113,7 @@ data "autocloud_blueprint_config" "s3_bucket_processor" {
     "block_public",
     "enable_bucket_ownership_controls",
     "external_policy",
-    "force_destroy",
+    "s3.variables.force_destroy",
 
     # To be configured later
     "kms_key_arn",
@@ -358,7 +358,7 @@ data "autocloud_blueprint_config" "final" {
     "force_destroy",
     # CloudFront Distribution
     "alternate_domain_names",
-    "comment",
+    "cloudfront.variables.comment",
     "default_root_object",
     "s3_bucket_name",
     "s3_bucket_domain_name",
@@ -438,7 +438,7 @@ data "autocloud_blueprint_config" "final" {
   ###
   # Set the index file name
   variable {
-    name         = "index_file"
+    name         = "s3_bucket.variables.index_file"
     display_name = "Index file name"
     helper_text  = "Name of the default content file to be served if no file is specified in the URL"
     value        = "index.html"

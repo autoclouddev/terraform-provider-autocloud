@@ -58,6 +58,11 @@ func configure(version string, p *schema.Provider) func(ctx context.Context, d *
 	// sentry setup, etc
 
 	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
+		err := blueprint_config.LoadReferencesFromState(ctx)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+
 		apiHost := d.Get("endpoint").(string)
 		if apiHost == "" {
 			return nil, diag.Errorf("Autocloud API Endpoint is empty")

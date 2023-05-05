@@ -6,9 +6,11 @@ import (
 	"testing"
 
 	"github.com/go-faker/faker/v4"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -275,4 +277,16 @@ func CreateFakeOverride() (*blueprint_config.OverrideVariable, error) {
 	ov.FormConfig = formConfig
 	ov.Conditionals = []blueprint_config.ConditionalConfig{conditional}
 	return &ov, nil
+}
+
+func TestOverrideVariablesRealData(t *testing.T) {
+	variables := loadTestData[[]generator.FormShape]("variables.json")
+	overrides := loadTestData[map[string]blueprint_config.OverrideVariable]("overrides.json")
+
+	aliases := blueprint_config_references.GetInstance()
+
+	aliases.SetValue("ami", "wec2amiid")
+
+	_, err := blueprint_config.OverrideVariables(variables, overrides)
+	assert.Nil(t, err)
 }

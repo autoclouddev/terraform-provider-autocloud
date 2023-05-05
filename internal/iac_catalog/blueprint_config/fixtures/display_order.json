@@ -1,0 +1,10 @@
+[
+    {
+        "priority": 0,
+        "values": [
+            "name",
+            "myModule.variables.description",
+            "myOtherModule.variables.version"
+        ]
+    }
+]

@@ -1,3 +1,30 @@
+# [0.8.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.8.0-pre.1...v0.8.0-pre.2) (2023-05-04)
+
+
+### Bug Fixes
+
+* Warning on not compatibile schema ([67d9081](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/67d90812be87f906e9fc0b735bba7134040658ea))
+
+# [0.8.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.7.1-pre.1...v0.8.0-pre.1) (2023-05-04)
+
+
+### Bug Fixes
+
+* Fixed error on update file definitions ([712b384](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/712b3844f0c9c12a86a87939f3c6a775c4ea19ed))
+* Returned errors when loading existing state ([ebf6a86](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/ebf6a8698ac10689a156882b8cb5b3abf4d97ed1))
+
+
+### Features
+
+* Retrieved state from TFC ([16f0313](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/16f0313c824c616c2be6a884b3209ea2343dc55c))
+
+## [0.7.1-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.7.0...v0.7.1-pre.1) (2023-05-03)
+
+
+### Bug Fixes
+
+* Fixed error on update file definitions ([be31dc0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/be31dc010bb625bdf2f8030913ba5767d030ed91))
+
 # [0.7.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.6.0...v0.7.0) (2023-05-03)
 
 
