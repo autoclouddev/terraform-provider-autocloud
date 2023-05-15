@@ -151,6 +151,9 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 		if variableType == RAW_TYPE {
 			content.FormConfig.Type = RAW_TYPE
 		}
+		if variableType == EDITOR_TYPE {
+			content.FormConfig.Type = EDITOR_TYPE
+		}
 		return content, nil
 	}
 	// variableContent with form options
