@@ -1,3 +1,10 @@
+## [0.9.1-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.9.0...v0.9.1-pre.1) (2023-05-16)
+
+
+### Bug Fixes
+
+* Fixed display_order with references ([8198ff7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/8198ff71bc5b75f5e8e2712d5b677a5c77139747))
+
 # [0.9.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.8.0...v0.9.0) (2023-05-16)
 
 
