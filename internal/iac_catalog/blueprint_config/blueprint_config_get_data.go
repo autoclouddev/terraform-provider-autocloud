@@ -75,7 +75,7 @@ func GetBlueprintConfigDisplayOrder(v interface{}, bp *BluePrintConfig, aliases 
 				paths := strings.Split(valueStr, ".")
 				referenceName := aliases.GetValue(paths[0])
 				if len(referenceName) > 0 {
-					valueStr = fmt.Sprintf("%s.variables.%s", referenceName, paths[2])
+					valueStr = fmt.Sprintf("%s.%s", referenceName, paths[2])
 				} else {
 					// if there isn't any module name for the alias we just use the variable name
 					valueStr = paths[2]
