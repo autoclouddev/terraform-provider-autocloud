@@ -1,3 +1,11 @@
+# [0.9.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.8.0...v0.9.0-pre.1) (2023-05-16)
+
+
+### Features
+
+* Enabled editor type for overrides ([0525940](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/052594099e0a4c8fce7091ac7877d73913fa5e9d))
+* Overrided data type as editor ([dd1337e](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/dd1337eaa3fb83e04e1ef8b0bea1b761c02d2885))
+
 # [0.8.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.7.0...v0.8.0) (2023-05-05)
 
 
