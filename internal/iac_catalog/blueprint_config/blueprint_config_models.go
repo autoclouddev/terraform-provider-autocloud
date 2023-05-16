@@ -68,6 +68,7 @@ const LIST_TYPE = "list"
 const SHORTTEXT_TYPE = "shortText"
 const MAP_TYPE = "map"
 const RAW_TYPE = "raw"
+const EDITOR_TYPE = "editor"
 
 const STATE_FILE = "terraform.tfstate"
 
