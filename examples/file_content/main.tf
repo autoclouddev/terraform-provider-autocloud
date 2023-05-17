@@ -158,9 +158,7 @@ resource "autocloud_blueprint" "example" {
   file {
     action      = "CREATE"
     destination = "s3_file.tf"
-    variables = {
-    }
-
+    
     content = file("../files/config.tf.tpl")
   }
 
