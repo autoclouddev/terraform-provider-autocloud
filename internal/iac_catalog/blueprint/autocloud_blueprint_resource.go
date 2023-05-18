@@ -145,7 +145,7 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 						"variables": {
 							Description: "variables",
 							Type:        schema.TypeMap,
-							Required:    true,
+							Optional:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
