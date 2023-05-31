@@ -49,13 +49,13 @@ data "autocloud_blueprint_config" "kms_key_processor" {
     "label_key_case",
     "label_value_case",
     "descriptor_formats",
-    "enabled",  
+    "enabled",
     # Use defaults in the module (don't collect)
     "alias",
     "customer_master_key_spec",
     "key_usage",
     "multi_region",
-    "policy",      
+    "policy",
     # Hard Coded values
     "deletion_window_in_days",
     "description",
@@ -74,7 +74,7 @@ data "autocloud_blueprint_config" "kms_key_processor" {
   ###
   # Set description
   variable {
-    name = "kms.variables.description"
+    name  = "kms.variables.description"
     value = format("KMS key for encryption of KMS encrypted S3 bucket")
   }
 }
@@ -87,7 +87,7 @@ data "autocloud_blueprint_config" "kms_key_processor" {
 resource "autocloud_module" "s3_bucket" {
   name    = "cps3bucket"
   source  = "cloudposse/s3-bucket/aws"
-  version = "3.0.0"
+  version = "3.1.0"
 }
 
 data "autocloud_blueprint_config" "s3_bucket_processor" {
@@ -97,63 +97,65 @@ data "autocloud_blueprint_config" "s3_bucket_processor" {
 
   ###
   # Hide variables from user
-omit_variables = [
-  # Global
-  "context",
-  "tenant",
-  "stage",
-  "delimiter",
-  "attributes",
-  "labels_as_tags",
-  "additional_tag_map",
-  "label_order",
-  "regex_replace_chars",
-  "id_length_limit",
-  "label_key_case",
-  "label_value_case",
-  "descriptor_formats",
-  "enabled",
-  # Use defaults in the module (don't collect)
-  "access_key_enabled",
-  "acl",
-  "allowed_bucket_actions",
-  "block_public_acls",
-  "block_public_policy",
-  "bucket_key_enabled",
-  "bucket_name",
-  "cors_configuration",
-  "force_destroy",
-  "grants",
-  "ignore_public_acls",
-  "lifecycle_configuration_rules",
-  "lifecycle_rule_ids",
-  "lifecycle_rules",
-  "logging",
-  "object_lock_configuration",
-  "policy",
-  "privileged_principal_actions",
-  "privileged_principal_arns",
-  "replication_rules",
-  "restrict_public_buckets",
-  "s3_replica_bucket_arn",
-  "s3_replication_enabled",
-  "s3_replication_rules",
-  "s3_replication_source_roles",
-  "source_policy_documents",
-  "ssm_base_path",
-  "store_access_key_in_ssm",
-  "transfer_acceleration_enabled",
-  "user_enabled",
-  "versioning_enabled",
-  "website_configuration",
-  "website_redirect_all_requests_to",
-  # Hard Coded values
-  "allow_encrypted_uploads_only",
-  "allow_ssl_requests_only",
-  "kms_master_key_arn",
-  "s3_object_ownership",
-  "sse_algorithm",
-]
+  omit_variables = [
+    # Global
+    "context",
+    "tenant",
+    "stage",
+    "delimiter",
+    "attributes",
+    "labels_as_tags",
+    "additional_tag_map",
+    "label_order",
+    "regex_replace_chars",
+    "id_length_limit",
+    "label_key_case",
+    "label_value_case",
+    "descriptor_formats",
+    "enabled",
+    # Use defaults in the module (don't collect)
+    "access_key_enabled",
+    "acl",
+    "allowed_bucket_actions",
+    "block_public_acls",
+    "block_public_policy",
+    "bucket_key_enabled",
+    "bucket_name",
+    "cors_configuration",
+    "force_destroy",
+    "grants",
+    "ignore_public_acls",
+    "lifecycle_configuration_rules",
+    "lifecycle_rule_ids",
+    "lifecycle_rules",
+    "logging",
+    "object_lock_configuration",
+    "policy",
+    "privileged_principal_actions",
+    "privileged_principal_arns",
+    "replication_rules",
+    "restrict_public_buckets",
+    "s3_replica_bucket_arn",
+    "s3_replication_enabled",
+    "s3_replication_permissions_boundary_arn",
+    "s3_replication_rules",
+    "s3_replication_source_roles",
+    "source_policy_documents",
+    "ssm_base_path",
+    "store_access_key_in_ssm",
+    "transfer_acceleration_enabled",
+    "user_enabled",
+    "user_permissions_boundary_arn",
+    "versioning_enabled",
+    "website_configuration",
+    "website_redirect_all_requests_to",
+    # Hard Coded values
+    "allow_encrypted_uploads_only",
+    "allow_ssl_requests_only",
+    "kms_master_key_arn",
+    "s3_object_ownership",
+    "sse_algorithm",
+  ]
 
   ###
   # Force encrypted uploads
@@ -200,7 +202,7 @@ omit_variables = [
 data "autocloud_blueprint_config" "global" {
   source = {
     kms = data.autocloud_blueprint_config.kms_key_processor.blueprint_config,
-    s3 = data.autocloud_blueprint_config.s3_bucket_processor.blueprint_config
+    s3  = data.autocloud_blueprint_config.s3_bucket_processor.blueprint_config
   }
 
   ###
@@ -385,9 +387,9 @@ resource "autocloud_blueprint" "this" {
     action      = "CREATE"
     destination = "aws/{{environment}}/{{namespace}}-{{environment}}-{{name}}.tf"
     variables = {
-        namespace   = "cpkmskey.namespace"
-        environment = "cpkmskey.environment"
-        name        = "cpkmskey.name"
+      namespace   = "cpkmskey.namespace"
+      environment = "cpkmskey.environment"
+      name        = "cpkmskey.name"
     }
 
     modules = [
@@ -412,7 +414,7 @@ resource "autocloud_blueprint" "this" {
       commit_message_template = "[AutoCloud] new KMS Encrypted S3 Bucket {{namespace}}-{{environment}}-{{name}}, created by {{authorName}}"
       body                    = file("./files/pull_request.md.tpl")
       variables = {
-        authorName = "generic.authorName"
+        authorName  = "generic.authorName"
         namespace   = "cpkmskey.namespace"
         environment = "cpkmskey.environment"
         name        = "cpkmskey.name"
@@ -420,8 +422,3 @@ resource "autocloud_blueprint" "this" {
     }
   }
 }
-
-
-
-
-
