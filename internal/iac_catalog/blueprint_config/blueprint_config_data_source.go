@@ -155,6 +155,13 @@ func DataSourceBlueprintConfig() *schema.Resource {
 						Required: true,
 					},
 					"conditional": conditionalSchema,
+					"variables": {
+						Type:     schema.TypeMap,
+						Optional: true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
 				}),
 			},
 		},

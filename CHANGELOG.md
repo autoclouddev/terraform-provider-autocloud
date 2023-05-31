@@ -1,3 +1,10 @@
+## [0.9.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.9.1...v0.9.2) (2023-05-31)
+
+
+### Bug Fixes
+
+* Set variables interpolation block as optional ([124f013](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/124f013c0c5c588b0497601f42540307b7489e05))
+
 ## [0.9.2-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.9.1...v0.9.2-pre.1) (2023-05-31)
 
 
