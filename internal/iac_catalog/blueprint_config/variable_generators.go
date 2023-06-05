@@ -67,6 +67,7 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 		UsedInHCL:           true, //if a user overrides, then it is used,
 		Conditionals:        iacModuleVar.Conditionals,
 		IsOverriden:         true,
+		InterpolationVars:   iacModuleVar.InterpolationVars, //OVERRIDE THIS
 	}
 
 	if variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE || variableType == LIST_TYPE {
@@ -151,6 +152,11 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 			newIacModuleVar.IsHidden = true
 		}
 	}
+
+	if overrideData.InterpolationVars != nil || len(overrideData.InterpolationVars) > 0 {
+		newIacModuleVar.InterpolationVars = overrideData.InterpolationVars
+	}
+
 	str, _ := json.MarshalIndent(newIacModuleVar, "", "    ")
 	log.Debugf("New var result: %s", str)
 	return newIacModuleVar
