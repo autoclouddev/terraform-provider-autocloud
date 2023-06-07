@@ -1,3 +1,0 @@
-provider "autocloud" {
-  # Authentication configuration
-}
