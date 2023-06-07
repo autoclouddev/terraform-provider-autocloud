@@ -24,7 +24,7 @@
 <br />
 
 AutoCloud Terraform Provider <!-- omit in toc -->
-=========================================
+============================
 
 Contents <!-- omit in toc -->
 --------
