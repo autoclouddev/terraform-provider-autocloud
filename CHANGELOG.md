@@ -1,3 +1,10 @@
+# [0.10.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.9.2...v0.10.0) (2023-06-07)
+
+
+### Features
+
+* **blueprint:** add variable interpolation ([67eaa2c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/67eaa2c39aaf5cf8ba794973b5ec400d47e0afab))
+
 # [0.10.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.9.2...v0.10.0-pre.1) (2023-06-07)
 
 
