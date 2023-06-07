@@ -2,8 +2,7 @@ provider "autocloud" {
   ###
   # AutoCloud API Endpoint URL
   #
-  # Sets the endpoint that Terraform will talk to in order to determine state. Omit to use production SaaS endpoint.
-  # For self hosted or testing environments, set either via environment variable:
+  # Sets the API endpoint that Terraform will talk to in order to determine state.
   #
   # export AUTOCLOUD_API=https://api.autocloud.io/api/v.0.0.1
   #

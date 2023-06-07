@@ -91,6 +91,7 @@ func GetBlueprintConfigDisplayOrder(v interface{}, bp *BluePrintConfig, aliases 
 
 func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) error {
 	override_variables := v.([]interface{})
+	aliases := blueprint_config_references.GetInstance()
 	for _, currentVar := range override_variables {
 		varOverrideMap := currentVar.(map[string]interface{})
 		//create variable
@@ -99,11 +100,30 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 		if err != nil {
 			return err
 		}
+		variables := varOverrideMap["variables"].(map[string]interface{})
+		varInterpolation := make(map[string]string)
+		for key, value := range variables {
+			/*
+				We have to translate from <alias>.variables.<variable_name> to <module>.<variable_name>
+				We check if a value of a variable interpolation element IS a reference (alias.variables.variable_name)
+				If it is, we have to convert it to data_autocloud_blueprintconfig.<module>.<variable_name>
+				data_autocloud_blueprint_config is an string reference used in the Mutation to get the value from other variable values
+			*/
+			val := value.(string)
+			if utils.HasReference(val) {
+				reference := strings.Split(val, ".")
+				moduleName := aliases.GetValue(reference[0])
+				dataRef := "data_autocloud_blueprint_config"
+				val = fmt.Sprintf("%s.%s.%s", dataRef, moduleName, reference[2])
+			}
+			varInterpolation[key] = val
+		}
 
 		bp.OverrideVariables[varName] = OverrideVariable{
-			VariableName:    varName,
-			VariableContent: *vc,
-			dirty:           false,
+			VariableName:      varName,
+			VariableContent:   *vc,
+			dirty:             false,
+			InterpolationVars: varInterpolation,
 			//UsedInHCL:       true,
 		}
 

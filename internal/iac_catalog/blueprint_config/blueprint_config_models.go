@@ -26,10 +26,11 @@ type VariableContent struct {
 type OverrideVariable struct {
 	VariableName string `json:"variableName" faker:"word"`
 	VariableContent
-	Conditionals []ConditionalConfig `json:"conditionals"`
-	IsHidden     bool                `json:"isHidden"` // based on omit variables
-	UsedInHCL    bool                `json:"usedInHCL"`
-	dirty        bool
+	Conditionals      []ConditionalConfig `json:"conditionals"`
+	IsHidden          bool                `json:"isHidden"` // based on omit variables
+	UsedInHCL         bool                `json:"usedInHCL"`
+	InterpolationVars map[string]string   `json:"interpolationVars"`
+	dirty             bool
 }
 
 type ConditionalConfig struct {
