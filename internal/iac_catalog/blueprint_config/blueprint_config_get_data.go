@@ -174,6 +174,19 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 		if variableType == EDITOR_TYPE {
 			content.FormConfig.Type = EDITOR_TYPE
 		}
+
+		aliases := blueprint_config_references.GetInstance()
+		//check if value is a reference
+		if utils.HasReference(valueStr) {
+			reference := strings.Split(valueStr, ".")
+			moduleName := aliases.GetValue(reference[0])
+			if len(moduleName) == 0 {
+				moduleName = "generic"
+			}
+			dataRef := "data_autocloud_blueprint_config"
+			val := fmt.Sprintf("%s.%s.%s", dataRef, moduleName, reference[2])
+			content.Value = val
+		}
 		return content, nil
 	}
 	// variableContent with form options
