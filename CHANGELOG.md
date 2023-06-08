@@ -1,3 +1,10 @@
+# [0.11.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.10.0...v0.11.0-pre.1) (2023-06-08)
+
+
+### Features
+
+* **iac:** support global variable values as reference to get other vars value ([9f7121b](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9f7121b59f912a2d86adbf5335889b888b6ec625))
+
 # [0.10.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.9.2...v0.10.0) (2023-06-07)
 
 
