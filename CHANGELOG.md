@@ -1,3 +1,10 @@
+# [0.11.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0-pre.2...v0.11.0-pre.3) (2023-06-09)
+
+
+### Bug Fixes
+
+* **iac:** apply generic/global variables in interpolation too ([63eec39](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/63eec39790de1c9f506452aba29eaff1b40e34b7))
+
 # [0.11.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0-pre.1...v0.11.0-pre.2) (2023-06-09)
 
 
