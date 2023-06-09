@@ -2,7 +2,6 @@ package blueprint_config
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 	"strings"
 
@@ -11,19 +10,6 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/logger"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
-
-func FormShapeToMap(formShape []generator.FormShape) (map[string]string, error) {
-	varsMap := make(map[string]string)
-
-	for _, form := range formShape {
-		varName, err := utils.GetVariableID(form.ID)
-		if err != nil {
-			return varsMap, err
-		}
-		varsMap[varName] = fmt.Sprintf("data_autocloud_blueprint_config.%s", form.ID)
-	}
-	return varsMap, nil
-}
 
 func GetFormShape(root BluePrintConfig) ([]generator.FormShape, error) {
 	var log = logger.Create(log.Fields{"fn": "GetFormShape()"})
