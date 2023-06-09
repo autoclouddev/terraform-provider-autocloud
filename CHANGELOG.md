@@ -1,3 +1,24 @@
+# [0.11.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0-pre.2...v0.11.0-pre.3) (2023-06-09)
+
+
+### Bug Fixes
+
+* **iac:** apply generic/global variables in interpolation too ([63eec39](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/63eec39790de1c9f506452aba29eaff1b40e34b7))
+
+# [0.11.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0-pre.1...v0.11.0-pre.2) (2023-06-09)
+
+
+### Bug Fixes
+
+* **iac:** remove formShapeMap legacy feature ([4d396b1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/4d396b18828b53d9ae30f34bf2351f712b8d008a))
+
+# [0.11.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.10.0...v0.11.0-pre.1) (2023-06-08)
+
+
+### Features
+
+* **iac:** support global variable values as reference to get other vars value ([9f7121b](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9f7121b59f912a2d86adbf5335889b888b6ec625))
+
 # [0.10.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.9.2...v0.10.0) (2023-06-07)
 
 

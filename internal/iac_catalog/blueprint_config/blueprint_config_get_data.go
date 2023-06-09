@@ -109,13 +109,8 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 				If it is, we have to convert it to data_autocloud_blueprintconfig.<module>.<variable_name>
 				data_autocloud_blueprint_config is an string reference used in the Mutation to get the value from other variable values
 			*/
-			val := value.(string)
-			if utils.HasReference(val) {
-				reference := strings.Split(val, ".")
-				moduleName := aliases.GetValue(reference[0])
-				dataRef := "data_autocloud_blueprint_config"
-				val = fmt.Sprintf("%s.%s.%s", dataRef, moduleName, reference[2])
-			}
+			//check if value is a reference
+			val := ApplyRefenceValue(value.(string), aliases)
 			varInterpolation[key] = val
 		}
 
@@ -167,13 +162,16 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 	variableType := rawSchema["type"].(string)
 
 	if valueExist && valueIsString && valueIsDefined {
-		content.Value = valueStr
 		if variableType == RAW_TYPE {
 			content.FormConfig.Type = RAW_TYPE
 		}
 		if variableType == EDITOR_TYPE {
 			content.FormConfig.Type = EDITOR_TYPE
 		}
+
+		aliases := blueprint_config_references.GetInstance()
+		//check if value is a reference
+		content.Value = ApplyRefenceValue(valueStr, aliases)
 		return content, nil
 	}
 	// variableContent with form options
@@ -265,4 +263,24 @@ func getConditionals(varOverrideMap *schema.Set) ([]ConditionalConfig, error) {
 	}
 
 	return conditionals, nil
+}
+
+// ApplyRefenceValue updates the value of a variable to an internal reference format.
+// It checks if the variable value contains a reference <childName.variables.variableName> and extracts the reference components.
+// The module name is looked up in the aliases data structure and, if not found, defaults to "generic".
+// The function constructs a new value by combining the reference components with a predefined data reference prefix.
+// "data_autocloud_blueprint_config.<moduleName>.<variableName>" is the data reference prefix, this is what the appy understand as a reference
+// The updated value is returned, ensuring a standardized format for variable references.
+func ApplyRefenceValue(variableValue string, aliases *blueprint_config_references.Data) string {
+	val := variableValue
+	if utils.HasReference(variableValue) {
+		reference := strings.Split(variableValue, ".")
+		moduleName := aliases.GetValue(reference[0])
+		if len(moduleName) == 0 {
+			moduleName = "generic"
+		}
+		dataRef := "data_autocloud_blueprint_config"
+		val = fmt.Sprintf("%s.%s.%s", dataRef, moduleName, reference[2])
+	}
+	return val
 }

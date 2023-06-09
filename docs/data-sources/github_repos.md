@@ -50,18 +50,21 @@ resource "autocloud_blueprint" "this" {
 }
 ```
 
-## Arguments
+## Arguments Reference
 
 None
 
+## Attribute Reference
 
-## Attributes
+The following attributes are exported:
 
 - [`data`](#nestedatt--data) - (List of Object) The Github repository information.
-- `id` - (String) The ID of this resource.
+- `id` - (String) The unique identifier for the data resource.
 
 <a id="nestedatt--data"></a>
-### data
+### `data`
+
+The following attributes are exported:
 
 - `description` - (String) The Github repository description.
 - `id` - (Number) The Github repository ID.

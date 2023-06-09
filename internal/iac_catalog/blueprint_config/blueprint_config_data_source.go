@@ -175,12 +175,6 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"variables": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			}},
 		"display_order": {
 			Type:     schema.TypeList,
 			Optional: true,
@@ -258,15 +252,6 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	err = d.Set("config", jsonFormShape)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	varsMap, err := FormShapeToMap(formVariables)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	err = d.Set("variables", varsMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}

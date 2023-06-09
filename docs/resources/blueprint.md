@@ -52,10 +52,12 @@ The following arguments are supported:
 - `name` (String) A short descriptive display name for the blueprint.
 
 <a id="file"></a>
-### file
+### `file`
+
+The following arguments are supported:
 
 - `action` (String) The file action. Currently only one value supported, must be `CREATE`.
-- `content` (Optional, String) The raw content of the generated file. One of either `content` or `modules` is required. If both are provided, only the `content` value is used. Conflicts with `modules`.
+- `content` (Optional, String) The raw content of the generated file. One of either `content` or `modules` is required. If both are provided, only the `content` value is used. Conflicts with `modules`. AutoCloud string interpolation supported.
 - `destination` (String) A string specifying the relative path the file will be placed in. Will be used relative to zip archive root and git repository root. AutoCloud string interpolation supported.
 - `footer` (Optional, String) A string containing raw text that will be inserted verbatim at the bottom of the file. AutoCloud string interpolation supported.
 - `header` (Optional, String) A string containing raw text that will be inserted verbatim at the top of the file. AutoCloud string interpolation supported.
@@ -63,7 +65,9 @@ The following arguments are supported:
 - `variables` (Optional, Map of String) A dictionary of keys and values to be used in AutoCloud string interpolation.
 
 <a id="git_config"></a>
-### git_config
+### `git_config`
+
+The following arguments are supported:
 
 - `destination_branch` (String) The destination branch for the pull request created.
 - `git_url_default` (String) The git repository URL that is selected by default for the user. Must be in `git_url_options`
@@ -71,7 +75,9 @@ The following arguments are supported:
 - [pull_request](#pull_request) (Block Set) Configuration block defining the content of the pull request submitted.
 
 <a id="pull_request"></a>
-### pull_request
+### `pull_request`
+
+The following arguments are supported:
 
 - `body` (String) A markdown string defining the contents of the pull request. AutoCloud string interpolation supported.
 - `commit_message_template` (String) The commit message used to commit the generated code. AutoCloud string interpolation supported.
@@ -82,4 +88,4 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` (String) The unique identifier for this Terraform blueprint.
+- `id` (String) The unique identifier for this Terraform blueprint on AutoCloud's systems.
