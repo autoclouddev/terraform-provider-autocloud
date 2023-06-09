@@ -1,3 +1,10 @@
+# [0.11.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0-pre.1...v0.11.0-pre.2) (2023-06-09)
+
+
+### Bug Fixes
+
+* **iac:** remove formShapeMap legacy feature ([4d396b1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/4d396b18828b53d9ae30f34bf2351f712b8d008a))
+
 # [0.11.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.10.0...v0.11.0-pre.1) (2023-06-08)
 
 
