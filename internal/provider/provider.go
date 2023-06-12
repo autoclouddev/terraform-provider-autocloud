@@ -35,7 +35,7 @@ func New(version string, experimental bool) func() *schema.Provider {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Sensitive:   true,
-					DefaultFunc: schema.EnvDefaultFunc("AUTOCLOUD_API", nil),
+					DefaultFunc: schema.EnvDefaultFunc("AUTOCLOUD_API", "https://api.autocloud.io/api/v.0.0.1"),
 				},
 			},
 			ResourcesMap: map[string]*schema.Resource{

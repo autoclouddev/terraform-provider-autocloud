@@ -9,6 +9,7 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 
 	"context"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -30,23 +31,34 @@ func TestProviderEndpoint(t *testing.T) {
 	autocloudProvider := provider.New("dev", false)()
 	diags := autocloudProvider.Configure(context.Background(), emptyResourceConfig)
 
+	// we need a token
 	assert.NotNil(t, diags)
-	assert.Equal(t, "Autocloud API Endpoint is empty", diags[0].Summary)
+	assert.Equal(t, "No AutoCloud auth token found", diags[0].Summary)
 
-	// load .env
+	// set a token, we now have an API endpoint as default
+	os.Setenv("AUTOCLOUD_TOKEN", "12345")
+	autocloudProvider = provider.New("dev", false)()
+	diags = autocloudProvider.Configure(context.Background(), emptyResourceConfig)
+	assert.Nil(t, diags)
+	sdkClient := autocloudProvider.Meta().(*autocloudsdk.Client)
+	expectedEndpoint := "https://api.autocloud.io/api/v.0.0.1"
+
+	assert.Equal(t, expectedEndpoint, sdkClient.HostURL)
+
+	// load .env with token and endpioint
 	acctest.TestAccPreCheck(t)
 
 	// 2 - initialize the provider WITHOUT a given endpoint but WITH a value in the .env
 	autocloudProvider = provider.New("dev", false)()
 	diags = autocloudProvider.Configure(context.Background(), emptyResourceConfig)
-	sdkClient := autocloudProvider.Meta().(*autocloudsdk.Client)
+	sdkClient = autocloudProvider.Meta().(*autocloudsdk.Client)
 
 	assert.Nil(t, diags)
 	assert.NotNil(t, sdkClient)
 	assert.Equal(t, "http://localhost:8080/api/v.0.0.1", sdkClient.HostURL)
 
 	// 3 - initialize the provider WITH a given endpoint (it shouldn't use the .env value)
-	expectedEndpoint := "https://api.autocloud.domain.com/api/v.0.0.1"
+	expectedEndpoint = "https://api.autocloud.domain.com/api/v.0.0.1"
 	providerConfiguration := map[string]interface{}{
 		"endpoint": expectedEndpoint,
 	}
