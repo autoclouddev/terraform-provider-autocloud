@@ -1,3 +1,10 @@
+# [0.12.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0...v0.12.0-pre.1) (2023-06-12)
+
+
+### Features
+
+* **config:** set prod url as default endpoint ([a77da18](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/a77da18d6fa651e7c4cd75dc2b1f6688987809f1))
+
 # [0.11.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.10.0...v0.11.0) (2023-06-09)
 
 
