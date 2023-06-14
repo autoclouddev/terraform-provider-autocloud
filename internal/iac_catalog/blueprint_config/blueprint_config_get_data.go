@@ -26,18 +26,8 @@ func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig, aliases bluep
 		if err != nil {
 			return errors.New("invalid conversion to BluePrintConfig")
 		}
-
-		if bc.RefName == "" {
-			bc.RefName = strKey
-		}
-
-		if len(bc.Variables) > 0 {
-			aliases.SetValue(strKey, bc.RefName)
-		} else if len(bc.Children) > 0 { // if the current source doesn't have variable then we look for the module name in children
-			for _, cconfig := range bc.Children {
-				aliases.SetValue(strKey, cconfig.RefName)
-			}
-		}
+		aliasKey := fmt.Sprintf("%s#%s", strKey, bp.Id)
+		aliases.SetValue(aliasKey, bc.Id)
 
 		bp.Children = append(bp.Children, bc)
 	}
@@ -65,6 +55,7 @@ func GetBlueprintConfigDisplayOrder(v interface{}, bp *BluePrintConfig, aliases 
 		valuesList := varOverrideMap["values"].([]interface{})
 		for _, value := range valuesList {
 			valueStr := value.(string)
+			displayValue := ""
 			// valueStr can be <alias>.variables.<variable_name> or <module>.<variable_name>.
 			// If it's built with an alias, we need to convert it to <module>.<variable_name>
 			if utils.HasReference(valueStr) {
@@ -72,16 +63,19 @@ func GetBlueprintConfigDisplayOrder(v interface{}, bp *BluePrintConfig, aliases 
 				// path[1] => "variables"
 				// path[2] => variable_name
 				// convert alias to module name
+				moduleName := GetModuleNameFromVariable(valueStr, aliases, bp)
 				paths := strings.Split(valueStr, ".")
-				referenceName := aliases.GetValue(paths[0])
-				if len(referenceName) > 0 {
-					valueStr = fmt.Sprintf("%s.%s", referenceName, paths[2])
-				} else {
+				if len(moduleName) > 0 {
+					displayValue = fmt.Sprintf("%s.%s", moduleName, paths[2])
+				}
+				//referenceName := aliases.GetValue(paths[0])
+				if len(displayValue) == 0 {
 					// if there isn't any module name for the alias we just use the variable name
-					valueStr = paths[2]
+					displayValue = fmt.Sprintf("%s.%s", "generic", paths[2]) //paths[2]
 				}
 			}
-			values = append(values, valueStr)
+
+			values = append(values, displayValue)
 		}
 		displayOrder.Values = values
 		bp.DisplayOrder = displayOrder
@@ -96,7 +90,7 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 		varOverrideMap := currentVar.(map[string]interface{})
 		//create variable
 		varName := varOverrideMap["name"].(string)
-		vc, err := BuildVariableFromSchema(varOverrideMap)
+		vc, err := BuildVariableFromSchema(varOverrideMap, bp)
 		if err != nil {
 			return err
 		}
@@ -110,7 +104,7 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 				data_autocloud_blueprint_config is an string reference used in the Mutation to get the value from other variable values
 			*/
 			//check if value is a reference
-			val := ApplyRefenceValue(value.(string), aliases)
+			val := ApplyRefenceValue(value.(string), aliases, bp)
 			varInterpolation[key] = val
 		}
 
@@ -127,7 +121,7 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 		log.Printf("CONDITIONALS: %v \n", conditionals)
 		if conditionalExists {
 			if entry, ok := bp.OverrideVariables[varName]; ok {
-				conditionals, err := getConditionals(conditionals)
+				conditionals, err := getConditionals(conditionals, bp)
 				if err != nil {
 					return errors.New("GetBlueprintConfigFromSchema: Error accessing bp")
 				}
@@ -141,7 +135,7 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 	return nil
 }
 
-func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent, error) {
+func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConfig) (*VariableContent, error) {
 	content := &VariableContent{}
 	var requiredValues string
 	requiredValuesInput, requiredValuesInputExist := rawSchema["required_values"]
@@ -171,7 +165,7 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 
 		aliases := blueprint_config_references.GetInstance()
 		//check if value is a reference
-		content.Value = ApplyRefenceValue(valueStr, aliases)
+		content.Value = ApplyRefenceValue(valueStr, aliases, bp)
 		return content, nil
 	}
 	// variableContent with form options
@@ -234,7 +228,7 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}) (*VariableContent
 	return content, nil
 }
 
-func getConditionals(varOverrideMap *schema.Set) ([]ConditionalConfig, error) {
+func getConditionals(varOverrideMap *schema.Set, bp *BluePrintConfig) ([]ConditionalConfig, error) {
 	conditionalLen := varOverrideMap.Len()
 
 	conditionals := make([]ConditionalConfig, 0)
@@ -249,7 +243,7 @@ func getConditionals(varOverrideMap *schema.Set) ([]ConditionalConfig, error) {
 			continue
 		}
 		conditionalContentMap := conditionalContentMapList[0].(map[string]interface{})
-		vc, err := BuildVariableFromSchema(conditionalContentMap)
+		vc, err := BuildVariableFromSchema(conditionalContentMap, bp)
 		if err != nil {
 			return nil, err
 		}
@@ -263,24 +257,4 @@ func getConditionals(varOverrideMap *schema.Set) ([]ConditionalConfig, error) {
 	}
 
 	return conditionals, nil
-}
-
-// ApplyRefenceValue updates the value of a variable to an internal reference format.
-// It checks if the variable value contains a reference <childName.variables.variableName> and extracts the reference components.
-// The module name is looked up in the aliases data structure and, if not found, defaults to "generic".
-// The function constructs a new value by combining the reference components with a predefined data reference prefix.
-// "data_autocloud_blueprint_config.<moduleName>.<variableName>" is the data reference prefix, this is what the appy understand as a reference
-// The updated value is returned, ensuring a standardized format for variable references.
-func ApplyRefenceValue(variableValue string, aliases *blueprint_config_references.Data) string {
-	val := variableValue
-	if utils.HasReference(variableValue) {
-		reference := strings.Split(variableValue, ".")
-		moduleName := aliases.GetValue(reference[0])
-		if len(moduleName) == 0 {
-			moduleName = "generic"
-		}
-		dataRef := "data_autocloud_blueprint_config"
-		val = fmt.Sprintf("%s.%s.%s", dataRef, moduleName, reference[2])
-	}
-	return val
 }

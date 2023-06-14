@@ -12,14 +12,9 @@ import (
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/iac_module"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 
-	"github.com/apex/log"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-// singleton reference
-var aliasToModuleNameMap = blueprint_config_references.GetInstance()
 
 func Contains(sl []string, name string) bool {
 	for _, value := range sl {
@@ -279,17 +274,6 @@ func GetVariablesIdMap(str string) (map[string]string, error) {
 	return varsMap, nil
 }
 
-// variables id follow the pattern "<alias>.variables.<variable name>""
-func GetVariableReferenceID(variableKey string) (string, error) {
-	keyValue := strings.Split(variableKey, ".")
-	moduleName := aliasToModuleNameMap.GetValue(keyValue[0]) // returns string
-	if HasReference(variableKey) && len(keyValue) == 3 && len(moduleName) > 0 {
-		return fmt.Sprintf("%v.%v", moduleName, keyValue[2]), nil
-	}
-
-	return "", errors.New("Invalid Key")
-}
-
 // variables id follow the pattern "<source module>.<variable name>""
 func GetVariableID(variableKey string) (string, error) {
 	keyValue := strings.Split(variableKey, ".")
@@ -364,34 +348,6 @@ func HasReference(ov string) bool {
 	re := regexp.MustCompile(pattern)
 	result := re.MatchString(ov)
 	return result
-}
-
-// Find index for a variable given its name
-func FindIdx(vars []generator.FormShape, refname string) []int {
-	matches := make([]int, 0)
-	for i, v := range vars {
-		varName, varname := "", refname
-		var err error
-		if HasReference(refname) {
-			varname, err = GetVariableReferenceID(refname)
-			varName = v.ID
-			if err != nil {
-				log.Debugf("the [%s] reference variable not found\n", varName)
-			}
-		} else {
-			varId, err := GetVariableID(v.ID)
-			if err != nil {
-				log.Debugf("the [%s] variable not found\n", varId)
-			}
-			varName = varId
-		}
-		if varName == varname {
-			log.Debugf("the [%s] variable was omitted\n", varName)
-			matches = append(matches, i)
-		}
-	}
-	log.Debugf("the [%s] omitted value not found in vars\n", refname)
-	return matches
 }
 
 func SaveLogs(name string, data interface{}) {

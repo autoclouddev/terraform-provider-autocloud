@@ -914,7 +914,7 @@ func TestBuildVariableContent(t *testing.T) {
 
 		for _, currentVar := range varsList {
 			varOverrideMap := currentVar.(map[string]interface{})
-			got, _ := blueprint_config.BuildVariableFromSchema(varOverrideMap)
+			got, _ := blueprint_config.BuildVariableFromSchema(varOverrideMap, &blueprint_config.BluePrintConfig{})
 
 			if diff := cmp.Diff(&tc.want, got, trans); diff != "" {
 				t.Fatalf("TESTNAME: %s BuildVariableFromSchema() mismatch (-want +got):\n%s", name, diff)
