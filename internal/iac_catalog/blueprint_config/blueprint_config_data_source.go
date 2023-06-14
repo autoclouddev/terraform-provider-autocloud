@@ -6,12 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
@@ -268,7 +267,11 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 // maps tf declaration to object
 func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, error) {
 	bp := BluePrintConfig{}
-	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
+	id, err := gonanoid.New()
+	if err != nil {
+		return nil, err
+	}
+	bp.Id = id
 	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
 	aliasToModuleNameMap := blueprint_config_references.GetInstance()
 
@@ -302,7 +305,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	}
 
 	// Propagate error
-	err := hasError(cerrors)
+	err = hasError(cerrors)
 	if err != nil {
 		return nil, err
 	}
