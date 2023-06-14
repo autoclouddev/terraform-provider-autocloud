@@ -1,3 +1,10 @@
+# [0.12.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0-pre.1...v0.12.0-pre.2) (2023-06-14)
+
+
+### Bug Fixes
+
+* **tree:** use aliases hash to map parent and child blueprintconfigs ([627835e](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/627835e2c2a9b466e2e0730e40fef3981ca9b2b1))
+
 # [0.12.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0...v0.12.0-pre.1) (2023-06-12)
 
 
