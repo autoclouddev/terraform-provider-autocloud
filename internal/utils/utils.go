@@ -142,6 +142,10 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 				return nil, errors.New("file block should contain content or modules attributes")
 			}
 
+			if len(fileDefinition.Modules) > 0 && fileDefinition.Content != "" {
+				return nil, errors.New("file block should contain content or modules attributes, but not both")
+			}
+
 			fileDefinitions = append(fileDefinitions, fileDefinition)
 		}
 	}
