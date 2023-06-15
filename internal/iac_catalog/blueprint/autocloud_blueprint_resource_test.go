@@ -199,7 +199,7 @@ func minimal_blueprint() string {
 		variable {
 		  name         = "app_name"
 		  display_name = "Application Name"
-		  type         = "shortText"
+		 type         = "shortText"
 
 		  validation_rule {
 			rule          = "isRequired"

@@ -94,9 +94,9 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			Optional: true,
 		},
 		"type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE, RAW_TYPE, EDITOR_TYPE}, false),
+			Type:     schema.TypeString,
+			Optional: true,
+			//ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE, RAW_TYPE, EDITOR_TYPE}, false),
 		},
 		"options": {
 			Type:     schema.TypeSet,
