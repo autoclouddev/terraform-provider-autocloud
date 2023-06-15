@@ -162,7 +162,7 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 	return newIacModuleVar
 }
 
-func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
+func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 	fieldID := fmt.Sprintf("%s.%s", GENERIC, ov.VariableName)
 
 	validationRules := make([]generator.ValidationRule, len(ov.FormConfig.ValidationRules))
@@ -175,7 +175,7 @@ func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 	}
 
 	if ov.FormConfig.Type == "" && ov.Value == "" {
-		log.Fatalf("cant initialize generic variable %s without type", ov.VariableName)
+		return generator.FormShape{}, fmt.Errorf("cant initialize generic variable %s without  a type", ov.VariableName)
 	}
 
 	fieldLabel := ov.VariableName
@@ -238,5 +238,5 @@ func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 	}
 	//str, _ := json.MarshalIndent(formVariable, "", "    ")
 	//log.Printf("formVariable: %s", string(str))
-	return formVariable
+	return formVariable, nil
 }
