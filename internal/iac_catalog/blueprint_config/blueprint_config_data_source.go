@@ -114,6 +114,13 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		},
 		//"conditional":     conditionalSchema,
 		"validation_rule": validationRulesSchema,
+		"variables": {
+			Type:     schema.TypeMap,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 	}
 
 	conditionalSchema := &schema.Schema{
@@ -161,13 +168,6 @@ func DataSourceBlueprintConfig() *schema.Resource {
 						Required: true,
 					},
 					"conditional": conditionalSchema,
-					"variables": {
-						Type:     schema.TypeMap,
-						Optional: true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
-					},
 				}),
 			},
 		},

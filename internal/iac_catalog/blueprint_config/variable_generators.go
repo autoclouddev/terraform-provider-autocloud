@@ -177,7 +177,8 @@ func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 	}
 
 	if ov.FormConfig.Type == "" && ov.Value == "" {
-		return generator.FormShape{}, fmt.Errorf("cant initialize generic variable %s without  a type", ov.VariableName)
+		//return generator.FormShape{}, fmt.Errorf("cant initialize generic variable %s without  a type", ov.VariableName)
+		log.Debugf("cant initialize generic variable %s without  a type", ov.VariableName)
 	}
 
 	fieldLabel := ov.VariableName
