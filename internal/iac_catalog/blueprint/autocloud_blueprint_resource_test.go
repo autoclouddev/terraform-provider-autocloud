@@ -13,7 +13,20 @@ const testAccAutocloudBluePrint = `
 
 data "autocloud_blueprint_config" "test" {
 	source = {}
-}
+
+	omit_variables = []
+
+	variable {
+	  name         = "app_name"
+	  display_name = "Application Name"
+	  type         = "shortText"
+
+	  validation_rule {
+		rule          = "isRequired"
+		error_message = "You must provide an application name to provision a resource"
+	  }
+	}
+  }
 
 resource "autocloud_blueprint" "bar" {
   name = "FirstBluePrint"
@@ -70,7 +83,7 @@ resource "autocloud_blueprint" "bar" {
 `
 
 func TestAccAutocloudBlueprint(t *testing.T) {
-	t.SkipNow()
+	//t.SkipNow()
 	resourceName := "autocloud_blueprint.bar"
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.TestAccPreCheck(t) },
@@ -174,4 +187,72 @@ func TestAutocloudBlueprinntHasMissingModulesWitFooter(t *testing.T) {
 		}
 	  }`
 	acctest.ValidateErrors(t, fmt.Errorf(expectedError), terraform)
+}
+
+func minimal_blueprint() string {
+	return `
+	data "autocloud_blueprint_config" "test" {
+		source = {}
+
+		omit_variables = []
+
+		variable {
+		  name         = "app_name"
+		  display_name = "Application Name"
+		  type         = "shortText"
+
+		  validation_rule {
+			rule          = "isRequired"
+			error_message = "You must provide an application name to provision a resource"
+		  }
+		}
+	  }
+
+	resource "autocloud_blueprint" "minimal" {
+	  name = "FirstBluePrint"
+	  author = "enrique.enciso@autocloud.dev"
+
+	  ###
+	  # File definitions
+	  # THIS HAS TO CHANGE TO SUPPORT FILE PER MODULE
+	  #
+	  file {
+		action = "CREATE"
+
+		destination = "eks-cluster-{{clusterName}}.tf"
+		variables = {
+		  clusterName = "EKSGenerator.clusterName"
+		}
+		#modules = ["EKSGenerator"]
+		content ="hellO"
+	  }
+
+	  config = data.autocloud_blueprint_config.test.config
+
+	}
+
+	`
+}
+
+func TestAccAutocloudMinimalBlueprint(t *testing.T) {
+	//t.SkipNow()
+	resourceName := "autocloud_blueprint.minimal"
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.TestAccPreCheck(t) },
+		ProviderFactories: acctest.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: minimal_blueprint(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						resourceName, "name"),
+					resource.TestCheckResourceAttrSet(
+						resourceName, "author"),
+					resource.TestCheckResourceAttrSet(
+						resourceName, "config"),
+					resource.TestCheckNoResourceAttr(resourceName, "git_config.#"),
+				),
+			},
+		},
+	})
 }
