@@ -214,13 +214,19 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 
 		rule := validationRuleMap["rule"].(string)
 		ruleValue := validationRuleMap["value"].(string)
+		ruleScope := validationRuleMap["scope"].(string)
 
 		if rule == "isRequired" && ruleValue != "" {
 			return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrIsRequiredCantHaveValue)
 		}
+		if rule != "regex" && ruleScope != "" {
+			return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrRegexOnlyCanHaveScope)
+		}
+		// @TODO: see if we can add some extra validation here (only maps support the key scope)
 		vr := ValidationRule{
 			Rule:         rule,
 			Value:        ruleValue,
+			Scope:        ruleScope,
 			ErrorMessage: validationRuleMap["error_message"].(string),
 		}
 		content.FormConfig.ValidationRules = append(content.FormConfig.ValidationRules, vr)
