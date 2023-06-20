@@ -1,3 +1,10 @@
+# [0.12.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0-pre.2...v0.12.0-pre.3) (2023-06-20)
+
+
+### Features
+
+* **iac:** support for generatedName and external variables from blueprint_config ([266e688](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/266e68822cb9ad53fe990d0321ab71207cf33b8d))
+
 # [0.12.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0-pre.1...v0.12.0-pre.2) (2023-06-14)
 
 
