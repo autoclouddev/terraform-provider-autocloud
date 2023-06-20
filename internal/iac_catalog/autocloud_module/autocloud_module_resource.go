@@ -93,6 +93,11 @@ var autocloudModuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
 	},
+	"generated_name": {
+		Description: "Output name of the generated module",
+		Type:        schema.TypeString,
+		Computed:    true,
+	},
 }
 
 func ResourceAutocloudModule() *schema.Resource {
@@ -230,6 +235,12 @@ func autocloudModuleRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	err = d.Set("footer", iacModule.Footer)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	generatedName := fmt.Sprintf("%s.%s", iacModule.Name, "generatedName")
+	err = d.Set("generated_name", generatedName)
 	if err != nil {
 		return diag.FromErr(err)
 	}
