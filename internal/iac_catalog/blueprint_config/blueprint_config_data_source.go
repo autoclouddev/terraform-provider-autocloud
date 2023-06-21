@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
-	"time"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
@@ -40,6 +40,12 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					Type:     schema.TypeString,
 					Optional: true,
 					Default:  "",
+				},
+				"scope": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Default:      "",
+					ValidateFunc: validation.StringInSlice([]string{"value", "key"}, false),
 				},
 				"error_message": {
 					Type:     schema.TypeString,
@@ -200,6 +206,12 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"variables": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			}},
 	}
 
 	return &schema.Resource{
@@ -247,6 +259,11 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	vars := GetVariablesInBlueprint(formVariables)
+	err = d.Set("variables", vars)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	jsonFormShape, err := utils.ToJsonString(formVariables)
 	if err != nil {
 		return diag.FromErr(err)
@@ -260,15 +277,25 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(blueprintConfig.Id)
 
+	d.SetId(blueprintConfig.Id)
 	return diags
 }
 
 // maps tf declaration to object
 func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, error) {
 	bp := BluePrintConfig{}
-	bp.Id = strconv.FormatInt(time.Now().Unix(), 10)
+	id, err := gonanoid.New()
+	if err != nil {
+		return nil, err
+	}
+	//if id is not set, anyways the id is always generated, it is not saved in the statefile between executions
+	if len(d.Id()) == 0 {
+		bp.Id = id
+	} else {
+		bp.Id = d.Id()
+	}
+
 	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
 	aliasToModuleNameMap := blueprint_config_references.GetInstance()
 
@@ -302,7 +329,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	}
 
 	// Propagate error
-	err := hasError(cerrors)
+	err = hasError(cerrors)
 	if err != nil {
 		return nil, err
 	}
@@ -314,6 +341,16 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 
 	log.Printf("final bc: %s", string(str))
 	return &bp, nil
+}
+
+func GetVariablesInBlueprint(formVariables []generator.FormShape) map[string]string {
+	var outputVars = make(map[string]string)
+	for _, form := range formVariables {
+		questionName := strings.Split(form.ID, ".")
+		variableName := questionName[1]
+		outputVars[variableName] = form.ID
+	}
+	return outputVars
 }
 
 func validateConditionals(variables []generator.FormShape) error {

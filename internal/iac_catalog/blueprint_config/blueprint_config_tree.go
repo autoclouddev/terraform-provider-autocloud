@@ -2,11 +2,14 @@ package blueprint_config
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/apex/log"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/logger"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
@@ -45,7 +48,7 @@ func PostOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) 
 		keyValue := strings.Split(key, ".")
 		varName := keyValue[2]
 		for cindex := 0; cindex <= len(root.Children)-1; cindex++ {
-			matches := utils.FindIdx(root.Children[cindex].Variables, key)
+			matches := FindIdx(root.Children[cindex].Variables, key, root)
 			// if len(matches) < 1 {
 			// 	return []generator.FormShape{}, fmt.Errorf("Variable Reference is not matching any children variable: %s", key)
 			// }
@@ -75,19 +78,19 @@ func PostOrderTransversal(root *BluePrintConfig) ([]generator.FormShape, error) 
 	}
 
 	log.Debugf("current node omit vars, %s", root.OmitVariables)
-	admittedVars := OmitVars(vars, root.OmitVariables, &root.OverrideVariables)
+	admittedVars := OmitVars(vars, root.OmitVariables, &root.OverrideVariables, root)
 	log.Debugf("the [%v] addmited vars", admittedVars)
 	log.Debugf("current override vars, %v", root.OverrideVariables)
-	return OverrideVariables(admittedVars, root.OverrideVariables)
+	return OverrideVariables(admittedVars, root.OverrideVariables, root)
 }
 
 // vars => variables coming from leaves (for example: a s3 autocloud_module variables)
 // omits => current blueprint config vars to omit (a var will be discarded in case there are no overrides in the current blueprint config)
 // overrideVariables ==> current blueprint config var overrides
-func OmitVars(vars []generator.FormShape, omits []string, overrideVariables *map[string]OverrideVariable) []generator.FormShape {
+func OmitVars(vars []generator.FormShape, omits []string, overrideVariables *map[string]OverrideVariable, bp *BluePrintConfig) []generator.FormShape {
 	addmittedVars := vars
 	for _, omit := range omits {
-		matches := utils.FindIdx(addmittedVars, omit)
+		matches := FindIdx(addmittedVars, omit, bp)
 		for _, idx := range matches {
 			omittedVar := addmittedVars[idx]
 			omittedVar.IsHidden = true
@@ -112,12 +115,12 @@ func OmitVars(vars []generator.FormShape, omits []string, overrideVariables *map
 
 // vars => form shapes coming from leaves
 // overrides => new vars definitions + modifications to vars from leaves
-func OverrideVariables(vars []generator.FormShape, overrides map[string]OverrideVariable) ([]generator.FormShape, error) {
+func OverrideVariables(vars []generator.FormShape, overrides map[string]OverrideVariable, bp *BluePrintConfig) ([]generator.FormShape, error) {
 	var log = logger.Create(log.Fields{"fn": "OverrideVariables()"})
 	usedOverrides := make(map[string][]string, 0)
 	// transform all original Variables to its overrides
 	for overrideName, overrideData := range overrides {
-		matches := utils.FindIdx(vars, overrideName)
+		matches := FindIdx(vars, overrideName, bp)
 		for _, idx := range matches {
 			str, _ := json.MarshalIndent(overrideData, "", "    ")
 			log.Debugf("data -> %s", string(str))
@@ -165,6 +168,7 @@ func sortFormShape(root BluePrintConfig, formShape []generator.FormShape) []gene
 	// reverse varsOrder so we can move the variables to the front of the slice
 	// and they will be sorted as we need
 	varsOrder = reverseStringSlice(varsOrder)
+	fmt.Println("VARS ORDER ->", varsOrder)
 	for _, varName := range varsOrder {
 		isGenericVariable := !strings.Contains(varName, ".")
 		// the order is reversed so we move to the front any match
@@ -230,6 +234,9 @@ func moveVariablesToFront(varName string, formShape []generator.FormShape, compa
 			paths := strings.Split(variable.ID, ".")
 			currentVarName = paths[len(paths)-1]
 		}
+		// check against the alias
+		fmt.Println("currentVarName ->", currentVarName)
+		fmt.Println("varName ->", varName)
 		if currentVarName == varName {
 			newFormShape = append([]generator.FormShape{variable}, newFormShape...)
 		} else {
@@ -253,4 +260,45 @@ func reverseStringSlice(slice []string) []string {
 		slice[i], slice[j] = slice[j], slice[i]
 	}
 	return slice
+}
+
+// Find index for a variable given its name
+func FindIdx(vars []generator.FormShape, refname string, bp *BluePrintConfig) []int {
+	matches := make([]int, 0)
+	for i, v := range vars {
+		varName, varname := "", refname
+		var err error
+		if utils.HasReference(refname) {
+			varname, err = GetVariableReferenceID(refname, bp)
+			varName = v.ID
+			if err != nil {
+				log.Debugf("the [%s] reference variable not found\n", varName)
+			}
+		} else {
+			varId, err := utils.GetVariableID(v.ID)
+			if err != nil {
+				log.Debugf("the [%s] variable not found\n", varId)
+			}
+			varName = varId
+		}
+		if varName == varname {
+			log.Debugf("the [%s] variable was omitted\n", varName)
+			matches = append(matches, i)
+		}
+	}
+	log.Debugf("the [%s] omitted value not found in vars\n", refname)
+	return matches
+}
+
+// variables id follow the pattern "<alias>.variables.<variable name>""
+func GetVariableReferenceID(variableKey string, bp *BluePrintConfig) (string, error) {
+	var aliases = blueprint_config_references.GetInstance()
+	fmt.Println("ALIASES: ", aliases.ToString())
+	keyValue := strings.Split(variableKey, ".")
+	moduleName := GetModuleNameFromVariable(variableKey, *aliases, bp)
+	if utils.HasReference(variableKey) && len(keyValue) == 3 && len(moduleName) > 0 {
+		fmt.Println("found moduleName: ", moduleName)
+		return fmt.Sprintf("%v.%v", moduleName, keyValue[2]), nil
+	}
+	return "", errors.New("Invalid Key")
 }

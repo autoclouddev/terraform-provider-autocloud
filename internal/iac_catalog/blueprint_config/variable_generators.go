@@ -27,6 +27,7 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 	for i, vr := range overrideData.FormConfig.ValidationRules {
 		validationRules[i] = generator.ValidationRule{
 			Rule:         vr.Rule,
+			Scope:        vr.Scope,
 			Value:        vr.Value,
 			ErrorMessage: vr.ErrorMessage,
 		}
@@ -169,6 +170,7 @@ func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 	for i, vr := range ov.FormConfig.ValidationRules {
 		validationRules[i] = generator.ValidationRule{
 			Rule:         vr.Rule,
+			Scope:        vr.Scope,
 			Value:        vr.Value,
 			ErrorMessage: vr.ErrorMessage,
 		}

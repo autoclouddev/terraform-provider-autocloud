@@ -71,7 +71,7 @@ func TestOverrideVariable(t *testing.T) {
 		overridesCopy[k] = v
 	}
 
-	newVars, err := blueprint_config.OverrideVariables(originalVars, overrides)
+	newVars, err := blueprint_config.OverrideVariables(originalVars, overrides, &blueprint_config.BluePrintConfig{})
 
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -116,7 +116,7 @@ func TestOverrideVariableError(t *testing.T) {
 		overrides[ov.VariableName] = *ov
 	}
 
-	_, err := blueprint_config.OverrideVariables(originalVars, overrides)
+	_, err := blueprint_config.OverrideVariables(originalVars, overrides, &blueprint_config.BluePrintConfig{})
 
 	if !errors.Is(err, expectedError) {
 		t.Fatalf("no error was detected")
@@ -287,6 +287,6 @@ func TestOverrideVariablesRealData(t *testing.T) {
 
 	aliases.SetValue("ami", "wec2amiid")
 
-	_, err := blueprint_config.OverrideVariables(variables, overrides)
+	_, err := blueprint_config.OverrideVariables(variables, overrides, &blueprint_config.BluePrintConfig{})
 	assert.Nil(t, err)
 }

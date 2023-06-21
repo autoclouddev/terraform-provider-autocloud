@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
@@ -220,7 +221,7 @@ func TestGetVariableReferenceID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got, err := utils.GetVariableReferenceID(tt.input)
+		got, err := blueprint_config.GetVariableReferenceID(tt.input, &blueprint_config.BluePrintConfig{})
 
 		assert.Equal(t, tt.err, err, fmt.Sprintf("Error mismatch for input %q", tt.input))
 		assert.Equal(t, tt.want, got, fmt.Sprintf("Output mismatch for input %q", tt.input))
@@ -244,7 +245,7 @@ func TestFindIdx(t *testing.T) {
 	// Test case 1: reference variable not found
 	reference := "alias.variables.test4"
 	expected := []int{}
-	result := utils.FindIdx(vars, reference)
+	result := blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
 	if !reflect.DeepEqual(expected, result) {
 		t.Errorf("Test case 1 failed: expected %v, but got %v", expected, result)
 	}
@@ -252,7 +253,7 @@ func TestFindIdx(t *testing.T) {
 	// Test case 2: regular variable not found
 	reference = "test4"
 	expected = []int{}
-	result = utils.FindIdx(vars, reference)
+	result = blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
 	if !reflect.DeepEqual(expected, result) {
 		t.Errorf("Test case 2 failed: expected %v, but got %v", expected, result)
 	}
@@ -262,7 +263,7 @@ func TestFindIdx(t *testing.T) {
 	aliasToModuleNameMap.SetValue("alias", "test")
 	reference = "alias.variables.test1"
 	expected = []int{0}
-	result = utils.FindIdx(vars, reference)
+	result = blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
 	if !reflect.DeepEqual(expected, result) {
 		t.Errorf("Test case 3 failed: expected %v, but got %v", expected, result)
 	}
@@ -270,7 +271,7 @@ func TestFindIdx(t *testing.T) {
 	// Test case 4: regular variable found
 	reference = "test1"
 	expected = []int{0}
-	result = utils.FindIdx(vars, reference)
+	result = blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
 	if !reflect.DeepEqual(expected, result) {
 		t.Errorf("Test case 4 failed: expected %v, but got %v", expected, result)
 	}
@@ -283,7 +284,7 @@ func TestFindIdx(t *testing.T) {
 	}, generator.FormShape{
 		ID: "test.test5",
 	})
-	result = utils.FindIdx(vars, reference)
+	result = blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
 	if !reflect.DeepEqual(expected, result) {
 		t.Errorf("Test case 5 failed: expected %v, but got %v", expected, result)
 	}

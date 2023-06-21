@@ -139,7 +139,7 @@ func TestOmitVars(t *testing.T) {
 		varname, _ := utils.GetVariableID(vars[pick.Int64()].ID)
 		omits = append(omits, varname)
 	}
-	result := blueprint_config.OmitVars(vars, omits, &(map[string]blueprint_config.OverrideVariable{}))
+	result := blueprint_config.OmitVars(vars, omits, &(map[string]blueprint_config.OverrideVariable{}), &blueprint_config.BluePrintConfig{})
 	fmt.Printf("original: %s\n", printFormShapeVarsIds(vars))
 	fmt.Print("OMITTED\n")
 	fmt.Println(omits)
@@ -171,7 +171,7 @@ func TestOmitReferenceVars(t *testing.T) {
 
 	omits := []string{"cloudfront.variables.tags"}
 	omits = append(omits, "cloudfront.variables.tags")
-	result := blueprint_config.OmitVars(vars, omits, &(map[string]blueprint_config.OverrideVariable{}))
+	result := blueprint_config.OmitVars(vars, omits, &(map[string]blueprint_config.OverrideVariable{}), &blueprint_config.BluePrintConfig{})
 
 	hiddenVars := 0
 	for _, v := range result {
