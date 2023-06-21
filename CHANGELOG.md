@@ -1,3 +1,10 @@
+# [0.12.0-pre.4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0-pre.3...v0.12.0-pre.4) (2023-06-21)
+
+
+### Features
+
+* **validations:** add scope to regex ([9850dd1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9850dd1c116f2ecb2f8137be6cbad8d2b228e207))
+
 # [0.12.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0-pre.2...v0.12.0-pre.3) (2023-06-20)
 
 
