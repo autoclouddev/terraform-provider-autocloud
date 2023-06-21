@@ -48,6 +48,7 @@ type FormConfig struct {
 type ValidationRule struct {
 	Rule         string `json:"rule" faker:"word"`
 	Value        string `json:"value" faker:"word"`
+	Scope        string `json:"scope" faker:"word"`
 	ErrorMessage string `json:"errorMessage" faker:"word"`
 }
 
@@ -77,5 +78,6 @@ var ErrSetValueInForm = errors.New("A form options can not be added when setting
 var ErrOneBlockOptionsRequied = errors.New("No more than 1 \"options\" blocks are allowed")
 var ErrShortTextCantHaveOptions = errors.New("ShortText variables can not have options")
 var ErrIsRequiredCantHaveValue = errors.New("'isRequired' validation rule can not have a value")
+var ErrRegexOnlyCanHaveScope = errors.New("Only 'regex' validation rule can have a scope")
 var ErrVariableNotFound = errors.New("ERROR: no variable ID found")
 var ErrMapCantBeParsed = errors.New("Map type cant be created")

@@ -41,6 +41,12 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					Optional: true,
 					Default:  "",
 				},
+				"scope": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Default:      "",
+					ValidateFunc: validation.StringInSlice([]string{"value", "key"}, false),
+				},
 				"error_message": {
 					Type:     schema.TypeString,
 					Optional: true,
