@@ -222,7 +222,7 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 		if rule != "regex" && ruleScope != "" {
 			return nil, fmt.Errorf("GetBlueprintConfigFromSchema: %w", ErrRegexOnlyCanHaveScope)
 		}
-		// @TODO: see if we can add some extra validation here (only maps support the key scope)
+
 		vr := ValidationRule{
 			Rule:         rule,
 			Value:        ruleValue,
