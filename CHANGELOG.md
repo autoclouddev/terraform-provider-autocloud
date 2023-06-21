@@ -1,3 +1,17 @@
+# [0.12.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0...v0.12.0) (2023-06-21)
+
+
+### Bug Fixes
+
+* **tree:** use aliases hash to map parent and child blueprintconfigs ([627835e](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/627835e2c2a9b466e2e0730e40fef3981ca9b2b1))
+
+
+### Features
+
+* **config:** set prod url as default endpoint ([a77da18](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/a77da18d6fa651e7c4cd75dc2b1f6688987809f1))
+* **iac:** support for generatedName and external variables from blueprint_config ([266e688](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/266e68822cb9ad53fe990d0321ab71207cf33b8d))
+* **validations:** add scope to regex ([9850dd1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/9850dd1c116f2ecb2f8137be6cbad8d2b228e207))
+
 # [0.12.0-pre.4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0-pre.3...v0.12.0-pre.4) (2023-06-21)
 
 
