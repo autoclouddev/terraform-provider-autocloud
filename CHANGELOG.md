@@ -1,3 +1,16 @@
+# [0.13.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0...v0.13.0-pre.1) (2023-06-23)
+
+
+### Bug Fixes
+
+* **generic_variable:** type in generic/global variable should always have a type ([1445dd8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1445dd804840598f5e9f7df1c2a7ad7ef918dddd))
+
+
+### Features
+
+* **iac:** add minimal validations ([1af2e6c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1af2e6c2fc3d8c102aaadb78c3de9e1fcea0b54b))
+* **iac:** support variable interpol in conditionals ([c6d679d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/c6d679db86f86ed9d78a304430356e0470fce6aa))
+
 # [0.12.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.11.0...v0.12.0) (2023-06-21)
 
 
