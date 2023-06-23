@@ -165,8 +165,11 @@ func TestBuildGenericVar(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	fs := blueprint_config.BuildGenericVariable(*ov)
+	fs, err := blueprint_config.BuildGenericVariable(*ov)
 
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	// check form shape is created
 	genericId := "generic." + ov.VariableName
 	if fs.ID != genericId {
