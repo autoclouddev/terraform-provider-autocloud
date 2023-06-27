@@ -17,11 +17,13 @@ type BluePrintConfig struct {
 }
 
 type VariableContent struct {
-	Value          string     `json:"value" faker:"word"`
-	RequiredValues string     `json:"requiredValues" faker:"slice_len=2"`
-	DisplayName    string     `json:"displayName" faker:"word"`
-	HelperText     string     `json:"helperText" faker:"word"`
-	FormConfig     FormConfig `json:"formConfig"`
+	Value          string            `json:"value" faker:"word"`
+	RequiredValues string            `json:"requiredValues" faker:"slice_len=2"`
+	DisplayName    string            `json:"displayName" faker:"word"`
+	HelperText     string            `json:"helperText" faker:"word"`
+	Default        string            `json:"default" faker:"word"`
+	Variables      map[string]string `json:"variables"`
+	FormConfig     FormConfig        `json:"formConfig"`
 }
 type OverrideVariable struct {
 	VariableName string `json:"variableName" faker:"word"`

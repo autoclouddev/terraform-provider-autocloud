@@ -114,9 +114,14 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		},
 		//"conditional":     conditionalSchema,
 		"validation_rule": validationRulesSchema,
-		"variables": {
-			Type:     schema.TypeMap,
+		"default": {
+			Type:     schema.TypeString,
 			Optional: true,
+		},
+		"variables": {
+			Description: "A key value map of variables to be used in variable interpolation",
+			Type:        schema.TypeMap,
+			Optional:    true,
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},

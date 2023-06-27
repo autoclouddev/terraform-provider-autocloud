@@ -48,6 +48,22 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 		variableType = overrideData.FormConfig.Type
 	}
 
+	// check if there's a "default" value override, otherwise use the IacModule var default value
+	fieldDefaultValue := iacModuleVar.FieldDefaultValue
+	fieldValue := iacModuleVar.FieldValue
+	if overrideData.VariableContent.Default != "" {
+		fieldDefaultValue = overrideData.VariableContent.Default
+		fieldValue = overrideData.VariableContent.Default
+
+		// if the list is empty, populate the field options with the variable's default values
+		if len(overrideData.FormConfig.FieldOptions) == 0 && (variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE || variableType == LIST_TYPE) {
+			fieldOptions, err := ToFieldOptions(fieldValue)
+			if err == nil {
+				overrideData.FormConfig.FieldOptions = fieldOptions
+			}
+		}
+	}
+
 	newIacModuleVar := generator.FormShape{
 		ID:       iacModuleVar.ID,
 		Module:   iacModuleVar.Module,
@@ -60,8 +76,8 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 			ValidationRules: validationRules,
 		},
 		FieldDataType:       iacModuleVar.FieldDataType,
-		FieldDefaultValue:   iacModuleVar.FieldDefaultValue,
-		FieldValue:          iacModuleVar.FieldValue,
+		FieldDefaultValue:   fieldDefaultValue,
+		FieldValue:          fieldValue,
 		RequiredValues:      overrideData.RequiredValues,
 		AllowConsumerToEdit: true,
 		IsHidden:            overrideData.IsHidden,
@@ -242,4 +258,27 @@ func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 	//str, _ := json.MarshalIndent(formVariable, "", "    ")
 	//log.Printf("formVariable: %s", string(str))
 	return formVariable, nil
+}
+
+func ToFieldOptions(options string) ([]FieldOption, error) {
+	var defaultOptions []interface{} = make([]interface{}, 0)
+	var fieldOptions []FieldOption = make([]FieldOption, 0)
+	err := json.Unmarshal([]byte(options), &defaultOptions)
+	if err != nil {
+		return fieldOptions, err
+	}
+
+	fieldOptions = make([]FieldOption, len(defaultOptions))
+
+	for i, option := range defaultOptions {
+		strOption := fmt.Sprintf("%v", option)
+
+		fieldOptions[i] = FieldOption{
+			Label:   strOption,
+			Value:   strOption,
+			Checked: true,
+		}
+	}
+
+	return fieldOptions, nil
 }
