@@ -97,6 +97,7 @@ func testAccCheckOverrides(resourceName string, overideVars []string) resource.T
 		Name        string     `hcl:"name"`
 		DisplayName string     `hcl:"display_name"`
 		HelperText  string     `hcl:"helper_text"`
+		Default     string     `hcl:"default"`
 		FormConfig  FormConfig `hcl:"form_config,block"`
 	}
 

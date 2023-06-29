@@ -96,6 +96,10 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 		}
 		variables := varOverrideMap["variables"].(map[string]interface{})
 		varInterpolation := make(map[string]string)
+		for key, value := range vc.Variables {
+			val := ApplyRefenceValue(value, aliases, bp)
+			varInterpolation[key] = val
+		}
 		for key, value := range variables {
 			/*
 				We have to translate from <alias>.variables.<variable_name> to <module>.<variable_name>
@@ -145,7 +149,14 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 
 	content.DisplayName = rawSchema["display_name"].(string)
 	content.HelperText = rawSchema["helper_text"].(string)
+	content.Default = rawSchema["default"].(string)
+	content.Variables = make(map[string]string, 0)
 	content.RequiredValues = requiredValues
+
+	if val, ok := rawSchema["variables"]; ok {
+		var variablesMap = val.(map[string]interface{})
+		content.Variables = utils.ConvertMap(variablesMap)
+	}
 
 	// Note: if it has a value, then it can NOT have form options "options"
 	valueIsDefined := false
