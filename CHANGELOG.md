@@ -1,3 +1,15 @@
+# [0.13.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.1...v0.13.0-pre.2) (2023-06-29)
+
+
+### Bug Fixes
+
+* **iac:** change error message when an invalid "config" value is passed in ([0ffe28d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/0ffe28d864ac7087580853428cbe7f0c823f4a39))
+
+
+### Features
+
+* **autocloud_blueprint_config:** support terraform variable default values ([53d5154](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/53d515472142cd4f96e338a2624802594445537f))
+
 # [0.13.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0...v0.13.0-pre.1) (2023-06-23)
 
 
