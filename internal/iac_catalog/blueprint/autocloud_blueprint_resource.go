@@ -190,10 +190,7 @@ func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta 
 	var diags diag.Diagnostics
 	generator, err := GetSdkIacCatalog(d)
 	if err != nil {
-		return diag.Errorf(err.Error())
-	}
-	if !modulesBelongToConfig(generator) {
-		return diag.FromErr(fmt.Errorf("modules in file definitions do not belong to config"))
+		return diag.Errorf("Failed to get generator: %s", err.Error())
 	}
 	c := meta.(*autocloudsdk.Client)
 	log.Printf("sending data: %v ", generator)
@@ -215,6 +212,11 @@ func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	_, err := GetSdkIacCatalog(d)
+	if err != nil {
+		return diag.Errorf("Failed to get generator: %s", err.Error())
+	}
+
 	c := meta.(*autocloudsdk.Client)
 
 	// Warning or errors can be collected in a slice type
@@ -365,6 +367,9 @@ func modulesBelongToConfig(generator *generator.IacCatalog) bool {
 	return true
 }
 
+// Reads the resource schema, validate inputs and returns a IacCatalog object
+// if the inputs are invalid, it returns an error
+// use this function before creating or updating a generator
 func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
@@ -377,7 +382,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 		err := json.Unmarshal([]byte(configstr), &formShape)
 		if err != nil {
 			log.Printf("error: %v", err)
-			return nil, err
+			return nil, fmt.Errorf("Incompatible config format, are you using a valid .config attribute?")
 		}
 	}
 
@@ -400,6 +405,10 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 		FileDefinitions: fileDef,
 		GitConfig:       gc,
 		FormQuestions:   formShape,
+	}
+
+	if !modulesBelongToConfig(&generator) {
+		return nil, fmt.Errorf("modules in file definitions do not belong to config")
 	}
 
 	return &generator, nil
