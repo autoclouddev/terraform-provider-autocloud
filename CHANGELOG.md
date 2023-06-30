@@ -1,3 +1,10 @@
+# [0.13.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.2...v0.13.0-pre.3) (2023-06-30)
+
+
+### Features
+
+* **blueprint_config:** create generic variable for list types ([652e48c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/652e48cc9257aab258e396acca3d9e2762c8afce))
+
 # [0.13.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.1...v0.13.0-pre.2) (2023-06-29)
 
 
