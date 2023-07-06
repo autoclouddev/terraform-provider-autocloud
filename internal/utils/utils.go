@@ -12,6 +12,7 @@ import (
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/iac_module"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils/interpolation_utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -117,6 +118,12 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 				var variablesMap = val.(map[string]interface{})
 				fileDefinition.Variables = ConvertMap(variablesMap)
 			}
+
+			err := interpolation_utils.DetectInterpolation(fileDefinition.Destination, fileDefinition.Variables)
+			if err != nil {
+				return nil, err
+			}
+
 			if val, ok := fileDefinitionMap["modules"]; ok {
 				var data = val.([]interface{})
 				fileDefinition.Modules = ToStringSlice(data)
