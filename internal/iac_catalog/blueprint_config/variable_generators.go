@@ -244,19 +244,24 @@ func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 				}
 			}
 		}
-
-		// this is inside the if, which contains all keys of this map
-		formTypesToTerraformTypes := map[string]string{
-			"radio":    "string",
-			"checkbox": "list(string)",
-			"list":     "list(string)",
-		}
-
-		// in the frontend we allow the user to add more options if the type is a list(string)
-		if ov.FormConfig.Type == LIST_TYPE {
-			formVariable.FieldDataType = formTypesToTerraformTypes[ov.FormConfig.Type]
-		}
 	}
+
+	formTypesToTerraformTypes := map[string]string{
+		RADIO_TYPE:     "string",
+		CHECKBOX_TYPE:  "list(string)",
+		LIST_TYPE:      "list(string)",
+		MAP_TYPE:       "map(string)",
+		RAW_TYPE:       "hcl-expression",
+		SHORTTEXT_TYPE: "string",
+	}
+
+	terraformType := formTypesToTerraformTypes[ov.FormConfig.Type]
+
+	if terraformType == "" {
+		terraformType = "string"
+	}
+
+	formVariable.FieldDataType = terraformType
 
 	for i, conditional := range ov.Conditionals {
 		formVariable.Conditionals[i] = generator.ConditionalConfig{
