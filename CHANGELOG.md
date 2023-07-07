@@ -1,3 +1,10 @@
+# [0.13.0-pre.4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.3...v0.13.0-pre.4) (2023-07-07)
+
+
+### Features
+
+* **variable_interpolation:** detect when an unused variable in a template for interpolation ([98224e0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/98224e02cdb37027e29db94903963acb13c1411e))
+
 # [0.13.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.2...v0.13.0-pre.3) (2023-06-30)
 
 
