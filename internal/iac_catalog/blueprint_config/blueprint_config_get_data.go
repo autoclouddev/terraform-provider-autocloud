@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils/interpolation_utils"
 )
 
 func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig, aliases blueprint_config_references.Data) error {
@@ -110,6 +111,27 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 			//check if value is a reference
 			val := ApplyRefenceValue(value.(string), aliases, bp)
 			varInterpolation[key] = val
+		}
+
+		if len(vc.Value) > 0 {
+			err := interpolation_utils.DetectInterpolation(vc.Value, varInterpolation)
+			if err != nil {
+				return err
+			}
+		}
+
+		if len(vc.Default) > 0 {
+			err := interpolation_utils.DetectInterpolation(vc.Default, varInterpolation)
+			if err != nil {
+				return err
+			}
+		}
+		// check if the user defined variables for interpolation with an empty template
+		if len(varInterpolation) > 0 {
+			err := interpolation_utils.DetectInterpolation("", varInterpolation)
+			if err != nil {
+				return err
+			}
 		}
 
 		bp.OverrideVariables[varName] = OverrideVariable{
