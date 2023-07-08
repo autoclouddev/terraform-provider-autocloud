@@ -1,3 +1,10 @@
+# [0.13.0-pre.5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.4...v0.13.0-pre.5) (2023-07-08)
+
+
+### Features
+
+* **generic:** add generic map with required values and fix generic shortText with value ([5ba4387](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/5ba43874ed977c4d74b787e1cb9d435050bc1112))
+
 # [0.13.0-pre.4](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.3...v0.13.0-pre.4) (2023-07-07)
 
 
