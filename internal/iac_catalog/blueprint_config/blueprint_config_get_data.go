@@ -188,19 +188,15 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 
 	variableType := rawSchema["type"].(string)
 
+	content.FormConfig.Type = variableType
 	if valueExist && valueIsString && valueIsDefined {
-		if variableType == RAW_TYPE {
-			content.FormConfig.Type = RAW_TYPE
-		}
-		if variableType == EDITOR_TYPE {
-			content.FormConfig.Type = EDITOR_TYPE
-		}
-
 		aliases := blueprint_config_references.GetInstance()
 		//check if value is a reference
 		content.Value = ApplyRefenceValue(valueStr, aliases, bp)
 		return content, nil
 	}
+
+	content.Value = ""
 	// variableContent with form options
 
 	optionsFromSchema := rawSchema["options"].(*schema.Set)
