@@ -99,6 +99,21 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 		fileDefinitions = make([]generator.IacCatalogFile, 0)
 		for _, fileDefinitionsValue := range list {
 			var fileDefinitionMap = fileDefinitionsValue.(map[string]interface{})
+
+			moduleLength := len(fileDefinitionMap["modules"].([]interface{}))
+
+			if moduleLength == 0 && (fileDefinitionMap["header"].(string) != "" || fileDefinitionMap["footer"].(string) != "") {
+				return nil, errors.New("modules can not be empty when using header or footer attributes")
+			}
+
+			if moduleLength == 0 && fileDefinitionMap["content"].(string) == "" {
+				return nil, errors.New("file block should contain content or modules attributes")
+			}
+
+			if moduleLength > 0 && fileDefinitionMap["content"].(string) != "" {
+				return nil, errors.New("file block should contain content or modules attributes, but not both")
+			}
+
 			var fileDefinition = generator.IacCatalogFile{}
 
 			if val, ok := fileDefinitionMap["action"]; ok {
@@ -139,18 +154,6 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 
 			if val, ok := fileDefinitionMap["footer"]; ok {
 				fileDefinition.Footer = val.(string)
-			}
-
-			if len(fileDefinition.Modules) == 0 && (fileDefinition.Header != "" || fileDefinition.Footer != "") {
-				return nil, errors.New("modules can not be empty when using header or footer attributes")
-			}
-
-			if len(fileDefinition.Modules) == 0 && fileDefinition.Content == "" {
-				return nil, errors.New("file block should contain content or modules attributes")
-			}
-
-			if len(fileDefinition.Modules) > 0 && fileDefinition.Content != "" {
-				return nil, errors.New("file block should contain content or modules attributes, but not both")
 			}
 
 			fileDefinitions = append(fileDefinitions, fileDefinition)
