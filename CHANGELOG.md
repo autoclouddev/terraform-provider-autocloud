@@ -1,3 +1,10 @@
+# [0.13.0-pre.6](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.5...v0.13.0-pre.6) (2023-07-11)
+
+
+### Bug Fixes
+
+* **blueprint:** fix content and module guard, allow variables in interpolation ([21ceb5d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/21ceb5df37e9b6f8d54253aec26dcf6b60970673))
+
 # [0.13.0-pre.5](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.4...v0.13.0-pre.5) (2023-07-08)
 
 
