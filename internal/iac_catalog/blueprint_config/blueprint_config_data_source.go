@@ -199,7 +199,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					"values": {
 						Type:     schema.TypeList,
 						Required: true,
-						MinItems: 1,
+						MinItems: 0,
 						Elem: &schema.Schema{
 							Type: schema.TypeString,
 						},
