@@ -128,9 +128,13 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 	for _, conditional := range overrideData.Conditionals {
 		conditionalSource := conditional.Source
 
-		// if it's not a multipart id, attach the conditionl to the current question
-		if len(strings.Split(conditional.Source, ".")) == 1 {
+		sourceValue := strings.Split(conditional.Source, ".")
+		if len(sourceValue) == 1 {
+			// if it's not a multipart id, attach the conditionl to the current question
 			conditionalSource = fmt.Sprintf("%s.%s", iacModuleVar.Module, conditional.Source)
+		} else if len(sourceValue) == 3 {
+			// make sure override variables reference
+			conditionalSource = fmt.Sprintf("%s.%s", iacModuleVar.Module, sourceValue[2])
 		}
 
 		newConditional := generator.ConditionalConfig{
