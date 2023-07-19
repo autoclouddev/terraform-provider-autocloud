@@ -1,3 +1,10 @@
+# [0.13.0-pre.7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.6...v0.13.0-pre.7) (2023-07-19)
+
+
+### Bug Fixes
+
+* **iac:** conditionals are not working as expected ([681ab31](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/681ab31b4b8221c6832b566d5bcb8c15f433cac5))
+
 # [0.13.0-pre.6](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.5...v0.13.0-pre.6) (2023-07-11)
 
 
