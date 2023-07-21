@@ -1,3 +1,10 @@
+# [0.13.0-pre.8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.7...v0.13.0-pre.8) (2023-07-21)
+
+
+### Bug Fixes
+
+* **iac:** `display_order` generates error if values is empty ([831a573](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/831a573dab50b25719932b29743487cba01c6d34))
+
 # [0.13.0-pre.7](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.6...v0.13.0-pre.7) (2023-07-19)
 
 
