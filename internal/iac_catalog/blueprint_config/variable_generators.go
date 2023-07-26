@@ -174,7 +174,7 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 		}
 	}
 
-	if overrideData.InterpolationVars != nil || len(overrideData.InterpolationVars) > 0 {
+	if overrideData.InterpolationVars != nil && len(overrideData.InterpolationVars) > 0 {
 		newIacModuleVar.InterpolationVars = overrideData.InterpolationVars
 	}
 
@@ -230,6 +230,7 @@ func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 		UsedInHCL:           ov.UsedInHCL,
 		RequiredValues:      ov.RequiredValues,
 		Conditionals:        make([]generator.ConditionalConfig, len(ov.Conditionals)),
+		InterpolationVars:   ov.InterpolationVars,
 	}
 
 	if ov.FormConfig.Type == RADIO_TYPE || ov.FormConfig.Type == CHECKBOX_TYPE || ov.FormConfig.Type == LIST_TYPE {
