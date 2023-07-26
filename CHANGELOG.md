@@ -1,3 +1,10 @@
+# [0.13.0-pre.9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.8...v0.13.0-pre.9) (2023-07-26)
+
+
+### Bug Fixes
+
+* **ep-3291:** fixing interpolation vars in generic variables ([ae9d325](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/ae9d325ffbdb6e4134cf611749ba13ae0727939c))
+
 # [0.13.0-pre.8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.7...v0.13.0-pre.8) (2023-07-21)
 
 
