@@ -1,3 +1,25 @@
+# [0.13.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0...v0.13.0) (2023-07-31)
+
+
+### Bug Fixes
+
+* **blueprint:** fix content and module guard, allow variables in interpolation ([21ceb5d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/21ceb5df37e9b6f8d54253aec26dcf6b60970673))
+* **ep-3291:** fixing interpolation vars in generic variables ([ae9d325](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/ae9d325ffbdb6e4134cf611749ba13ae0727939c))
+* **generic_variable:** type in generic/global variable should always have a type ([1445dd8](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1445dd804840598f5e9f7df1c2a7ad7ef918dddd))
+* **iac:** `display_order` generates error if values is empty ([831a573](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/831a573dab50b25719932b29743487cba01c6d34))
+* **iac:** change error message when an invalid "config" value is passed in ([0ffe28d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/0ffe28d864ac7087580853428cbe7f0c823f4a39))
+* **iac:** conditionals are not working as expected ([681ab31](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/681ab31b4b8221c6832b566d5bcb8c15f433cac5))
+
+
+### Features
+
+* **autocloud_blueprint_config:** support terraform variable default values ([53d5154](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/53d515472142cd4f96e338a2624802594445537f))
+* **blueprint_config:** create generic variable for list types ([652e48c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/652e48cc9257aab258e396acca3d9e2762c8afce))
+* **generic:** add generic map with required values and fix generic shortText with value ([5ba4387](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/5ba43874ed977c4d74b787e1cb9d435050bc1112))
+* **iac:** add minimal validations ([1af2e6c](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/1af2e6c2fc3d8c102aaadb78c3de9e1fcea0b54b))
+* **iac:** support variable interpol in conditionals ([c6d679d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/c6d679db86f86ed9d78a304430356e0470fce6aa))
+* **variable_interpolation:** detect when an unused variable in a template for interpolation ([98224e0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/98224e02cdb37027e29db94903963acb13c1411e))
+
 # [0.13.0-pre.9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0-pre.8...v0.13.0-pre.9) (2023-07-26)
 
 
