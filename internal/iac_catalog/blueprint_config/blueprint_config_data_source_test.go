@@ -930,6 +930,8 @@ func createRawVariableContentSchema(content blueprint_config.VariableContent) ma
 	ud["helper_text"] = content.HelperText
 	ud["type"] = content.FormConfig.Type
 	ud["value"] = content.Value
+	ud["default"] = content.Default
+	ud["variables"] = content.Variables
 	vRules := make([]interface{}, 0)
 	for _, rule := range content.FormConfig.ValidationRules {
 		rawRule := map[string]interface{}{

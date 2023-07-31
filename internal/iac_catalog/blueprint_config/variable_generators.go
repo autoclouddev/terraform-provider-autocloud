@@ -48,6 +48,22 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 		variableType = overrideData.FormConfig.Type
 	}
 
+	// check if there's a "default" value override, otherwise use the IacModule var default value
+	fieldDefaultValue := iacModuleVar.FieldDefaultValue
+	fieldValue := iacModuleVar.FieldValue
+	if overrideData.VariableContent.Default != "" {
+		fieldDefaultValue = overrideData.VariableContent.Default
+		fieldValue = overrideData.VariableContent.Default
+
+		// if the list is empty, populate the field options with the variable's default values
+		if len(overrideData.FormConfig.FieldOptions) == 0 && (variableType == RADIO_TYPE || variableType == CHECKBOX_TYPE || variableType == LIST_TYPE) {
+			fieldOptions, err := ToFieldOptions(fieldValue)
+			if err == nil {
+				overrideData.FormConfig.FieldOptions = fieldOptions
+			}
+		}
+	}
+
 	newIacModuleVar := generator.FormShape{
 		ID:       iacModuleVar.ID,
 		Module:   iacModuleVar.Module,
@@ -60,8 +76,8 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 			ValidationRules: validationRules,
 		},
 		FieldDataType:       iacModuleVar.FieldDataType,
-		FieldDefaultValue:   iacModuleVar.FieldDefaultValue,
-		FieldValue:          iacModuleVar.FieldValue,
+		FieldDefaultValue:   fieldDefaultValue,
+		FieldValue:          fieldValue,
 		RequiredValues:      overrideData.RequiredValues,
 		AllowConsumerToEdit: true,
 		IsHidden:            overrideData.IsHidden,
@@ -112,9 +128,13 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 	for _, conditional := range overrideData.Conditionals {
 		conditionalSource := conditional.Source
 
-		// if it's not a multipart id, attach the conditionl to the current question
-		if len(strings.Split(conditional.Source, ".")) == 1 {
+		sourceValue := strings.Split(conditional.Source, ".")
+		if len(sourceValue) == 1 {
+			// if it's not a multipart id, attach the conditionl to the current question
 			conditionalSource = fmt.Sprintf("%s.%s", iacModuleVar.Module, conditional.Source)
+		} else if len(sourceValue) == 3 {
+			// make sure override variables reference
+			conditionalSource = fmt.Sprintf("%s.%s", iacModuleVar.Module, sourceValue[2])
 		}
 
 		newConditional := generator.ConditionalConfig{
@@ -154,7 +174,7 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 		}
 	}
 
-	if overrideData.InterpolationVars != nil || len(overrideData.InterpolationVars) > 0 {
+	if overrideData.InterpolationVars != nil && len(overrideData.InterpolationVars) > 0 {
 		newIacModuleVar.InterpolationVars = overrideData.InterpolationVars
 	}
 
@@ -163,7 +183,7 @@ func BuildOverridenVariable(iacModuleVar generator.FormShape, overrideData Overr
 	return newIacModuleVar
 }
 
-func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
+func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 	fieldID := fmt.Sprintf("%s.%s", GENERIC, ov.VariableName)
 
 	validationRules := make([]generator.ValidationRule, len(ov.FormConfig.ValidationRules))
@@ -177,7 +197,8 @@ func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 	}
 
 	if ov.FormConfig.Type == "" && ov.Value == "" {
-		log.Fatalf("cant initialize generic variable %s without type", ov.VariableName)
+		//return generator.FormShape{}, fmt.Errorf("cant initialize generic variable %s without  a type", ov.VariableName)
+		log.Debugf("cant initialize generic variable %s without  a type", ov.VariableName)
 	}
 
 	fieldLabel := ov.VariableName
@@ -209,6 +230,7 @@ func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 		UsedInHCL:           ov.UsedInHCL,
 		RequiredValues:      ov.RequiredValues,
 		Conditionals:        make([]generator.ConditionalConfig, len(ov.Conditionals)),
+		InterpolationVars:   ov.InterpolationVars,
 	}
 
 	if ov.FormConfig.Type == RADIO_TYPE || ov.FormConfig.Type == CHECKBOX_TYPE || ov.FormConfig.Type == LIST_TYPE {
@@ -229,6 +251,23 @@ func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 		}
 	}
 
+	formTypesToTerraformTypes := map[string]string{
+		RADIO_TYPE:     "string",
+		CHECKBOX_TYPE:  "list(string)",
+		LIST_TYPE:      "list(string)",
+		MAP_TYPE:       "map(string)",
+		RAW_TYPE:       "hcl-expression",
+		SHORTTEXT_TYPE: "string",
+	}
+
+	terraformType := formTypesToTerraformTypes[ov.FormConfig.Type]
+
+	if terraformType == "" {
+		terraformType = "string"
+	}
+
+	formVariable.FieldDataType = terraformType
+
 	for i, conditional := range ov.Conditionals {
 		formVariable.Conditionals[i] = generator.ConditionalConfig{
 			Source:         conditional.Source,
@@ -240,5 +279,28 @@ func BuildGenericVariable(ov OverrideVariable) generator.FormShape {
 	}
 	//str, _ := json.MarshalIndent(formVariable, "", "    ")
 	//log.Printf("formVariable: %s", string(str))
-	return formVariable
+	return formVariable, nil
+}
+
+func ToFieldOptions(options string) ([]FieldOption, error) {
+	var defaultOptions []interface{} = make([]interface{}, 0)
+	var fieldOptions []FieldOption = make([]FieldOption, 0)
+	err := json.Unmarshal([]byte(options), &defaultOptions)
+	if err != nil {
+		return fieldOptions, err
+	}
+
+	fieldOptions = make([]FieldOption, len(defaultOptions))
+
+	for i, option := range defaultOptions {
+		strOption := fmt.Sprintf("%v", option)
+
+		fieldOptions[i] = FieldOption{
+			Label:   strOption,
+			Value:   strOption,
+			Checked: true,
+		}
+	}
+
+	return fieldOptions, nil
 }

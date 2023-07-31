@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,27 +33,27 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Name of the blueprint.",
+				Description: "Name of the blueprint, this will be used in the autocloud app",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 			},
 			"author": {
-				Description: "author",
+				Description: "Name of the author of the blueprint",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 			},
 			"description": {
-				Description: "description",
+				Description: "What does this blueprint do?",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"instructions": {
-				Description: "instructions",
+				Description: "Use this space to instruct the user on how to use this blueprint, markdown is supported",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"labels": {
-				Description: "labels",
+				Description: "Place a valid cloud platform label here, valid options are AWS, GCP and AZURE",
 				Type:        schema.TypeList,
 				Optional:    true,
 				Elem: &schema.Schema{
@@ -60,19 +61,19 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 				},
 			},
 			"git_config": {
-				Description: "git_config",
+				Description: "THis block contains the git configuration for the destination repository",
 				Type:        schema.TypeSet,
 				MaxItems:    1,
 				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"destination_branch": {
-							Description: "destination_branch",
+							Description: "To where the Pull Request will be sent, this branch should exist in the destination repository",
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
 						"git_url_options": {
-							Description: "git_url_options",
+							Description: "A list of valid git urls remotes. We currently support only Github",
 							Type:        schema.TypeList,
 							Optional:    true,
 							Elem: &schema.Schema{
@@ -80,33 +81,33 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 							},
 						},
 						"git_url_default": {
-							Description: "git_url_default",
+							Description: "The default Github url to use when the user does not provide one",
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
 						"pull_request": {
-							Description: "pull_request",
+							Description: "Configuration of the pull request to be created",
 							Type:        schema.TypeSet,
 							Optional:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"title": {
-										Description: "title",
+										Description: "Title of the PR, it supports template using {{notation}}",
 										Type:        schema.TypeString,
 										Optional:    true,
 									},
 									"commit_message_template": {
-										Description: "commit_message_template",
+										Description: "Commit message of the PR, it supports template using {{notation}}",
 										Type:        schema.TypeString,
 										Optional:    true,
 									},
 									"body": {
-										Description: "body",
+										Description: "Body of the PR, it supports template using {{notation}}",
 										Type:        schema.TypeString,
 										Optional:    true,
 									},
 									"variables": {
-										Description: "variables",
+										Description: "A key value map of variables to be used in the templates",
 										Type:        schema.TypeMap,
 										Optional:    true,
 										Elem: &schema.Schema{
@@ -120,13 +121,13 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 				},
 			},
 			"file": {
-				Description: "file",
+				Description: "A list of files to be created in the destination repository, at least 1 is required",
 				Type:        schema.TypeSet,
 				Required:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action": {
-							Description: "action",
+							Description: "Currently we support only CREATE",
 							Type:        schema.TypeString,
 							Required:    true,
 							ValidateFunc: func(val any, key string) (warns []string, errs []error) {
@@ -138,12 +139,12 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 							},
 						},
 						"destination": {
-							Description: "destination",
+							Description: "A valid path in the destination repository, it should include the file name, it supports template using {{notation}}",
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 						},
 						"variables": {
-							Description: "variables",
+							Description: "A key value map of variables to be used in the templates",
 							Type:        schema.TypeMap,
 							Optional:    true,
 							Elem: &schema.Schema{
@@ -151,7 +152,7 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 							},
 						},
 						"modules": {
-							Description: "modules, array containing the names of the modules included in this file",
+							Description: "An array containing the names of the modules included in this file, please use the name of the module as defined in the modules block or resource.autocloud_module.<module>.name",
 							Type:        schema.TypeList,
 							Optional:    true,
 							Elem: &schema.Schema{
@@ -159,17 +160,17 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 							},
 						},
 						"content": {
-							Description: "content",
+							Description: "You can use this field to provide the content of the file, it supports template using {{notation}}, if this is set, the modules field will be ignored",
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
 						"header": {
-							Description: "header",
+							Description: "You can add a header to the file, it supports template using {{notation}}, can be used with module or content",
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
 						"footer": {
-							Description: "footer",
+							Description: "You can add a footer to the file, it supports template using {{notation}}, can be used with module or content",
 							Type:        schema.TypeString,
 							Optional:    true,
 						},
@@ -177,9 +178,9 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 				},
 			},
 			"config": {
-				Description: "instructions",
+				Description: "A valid output from data.autocloud_blueprint_config.config",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 			},
 		},
 	}
@@ -189,7 +190,7 @@ func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta 
 	var diags diag.Diagnostics
 	generator, err := GetSdkIacCatalog(d)
 	if err != nil {
-		return diag.Errorf(err.Error())
+		return diag.Errorf("Failed to get generator: %s", err.Error())
 	}
 	c := meta.(*autocloudsdk.Client)
 	log.Printf("sending data: %v ", generator)
@@ -211,6 +212,11 @@ func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	_, err := GetSdkIacCatalog(d)
+	if err != nil {
+		return diag.Errorf("Failed to get generator: %s", err.Error())
+	}
+
 	c := meta.(*autocloudsdk.Client)
 
 	// Warning or errors can be collected in a slice type
@@ -249,6 +255,7 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	files, diags := lowercaseFileDefs(generator.FileDefinitions, diags)
+
 	err = d.Set("file", files)
 	if err != nil {
 		return diag.FromErr(err)
@@ -258,6 +265,7 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	err = d.Set("config", string(formQuestions))
 	if err != nil {
 		return diag.FromErr(err)
@@ -334,6 +342,34 @@ func lowercaseFileDefs(files []generator.IacCatalogFile, diags diag.Diagnostics)
 	return out, diags
 }
 
+func modulesBelongToConfig(generator *generator.IacCatalog) bool {
+	files := generator.FileDefinitions
+	// using a map as a set
+	modulesInConfig := map[string]struct{}{}
+
+	for _, question := range generator.FormQuestions {
+		moduleName := strings.Split(question.ID, ".")[0]
+		modulesInConfig[moduleName] = struct{}{}
+	}
+	fmt.Println("modulesInConfig", modulesInConfig)
+	for _, file := range files {
+		fileModules := file.Modules
+		fmt.Println("fileModules", fileModules)
+		if len(fileModules) == 0 {
+			continue
+		}
+		for _, module := range fileModules {
+			if _, ok := modulesInConfig[module]; !ok {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// Reads the resource schema, validate inputs and returns a IacCatalog object
+// if the inputs are invalid, it returns an error
+// use this function before creating or updating a generator
 func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 	var labels = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
@@ -346,7 +382,7 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 		err := json.Unmarshal([]byte(configstr), &formShape)
 		if err != nil {
 			log.Printf("error: %v", err)
-			return nil, err
+			return nil, fmt.Errorf("Incompatible config format, are you using a valid .config attribute?")
 		}
 	}
 
@@ -369,6 +405,10 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 		FileDefinitions: fileDef,
 		GitConfig:       gc,
 		FormQuestions:   formShape,
+	}
+
+	if !modulesBelongToConfig(&generator) {
+		return nil, fmt.Errorf("modules in file definitions do not belong to config")
 	}
 
 	return &generator, nil

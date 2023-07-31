@@ -94,9 +94,9 @@ func DataSourceBlueprintConfig() *schema.Resource {
 			Optional: true,
 		},
 		"type": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE, RAW_TYPE, EDITOR_TYPE}, false),
+			Type:     schema.TypeString,
+			Optional: true,
+			//ValidateFunc: validation.StringInSlice([]string{SHORTTEXT_TYPE, RADIO_TYPE, CHECKBOX_TYPE, MAP_TYPE, RAW_TYPE, EDITOR_TYPE}, false),
 		},
 		"options": {
 			Type:     schema.TypeSet,
@@ -114,6 +114,18 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		},
 		//"conditional":     conditionalSchema,
 		"validation_rule": validationRulesSchema,
+		"default": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"variables": {
+			Description: "A key value map of variables to be used in variable interpolation",
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
 	}
 
 	conditionalSchema := &schema.Schema{
@@ -161,13 +173,6 @@ func DataSourceBlueprintConfig() *schema.Resource {
 						Required: true,
 					},
 					"conditional": conditionalSchema,
-					"variables": {
-						Type:     schema.TypeMap,
-						Optional: true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
-					},
 				}),
 			},
 		},
@@ -194,7 +199,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					"values": {
 						Type:     schema.TypeList,
 						Required: true,
-						MinItems: 1,
+						MinItems: 0,
 						Elem: &schema.Schema{
 							Type: schema.TypeString,
 						},

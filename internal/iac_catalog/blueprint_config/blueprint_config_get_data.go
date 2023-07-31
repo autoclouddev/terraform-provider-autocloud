@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils/interpolation_utils"
 )
 
 func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig, aliases blueprint_config_references.Data) error {
@@ -96,6 +97,10 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 		}
 		variables := varOverrideMap["variables"].(map[string]interface{})
 		varInterpolation := make(map[string]string)
+		for key, value := range vc.Variables {
+			val := ApplyRefenceValue(value, aliases, bp)
+			varInterpolation[key] = val
+		}
 		for key, value := range variables {
 			/*
 				We have to translate from <alias>.variables.<variable_name> to <module>.<variable_name>
@@ -106,6 +111,27 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 			//check if value is a reference
 			val := ApplyRefenceValue(value.(string), aliases, bp)
 			varInterpolation[key] = val
+		}
+
+		if len(vc.Value) > 0 {
+			err := interpolation_utils.DetectInterpolation(vc.Value, varInterpolation)
+			if err != nil {
+				return err
+			}
+		}
+
+		if len(vc.Default) > 0 {
+			err := interpolation_utils.DetectInterpolation(vc.Default, varInterpolation)
+			if err != nil {
+				return err
+			}
+		}
+		// check if the user defined variables for interpolation with an empty template
+		if len(varInterpolation) > 0 {
+			err := interpolation_utils.DetectInterpolation("", varInterpolation)
+			if err != nil {
+				return err
+			}
 		}
 
 		bp.OverrideVariables[varName] = OverrideVariable{
@@ -145,7 +171,14 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 
 	content.DisplayName = rawSchema["display_name"].(string)
 	content.HelperText = rawSchema["helper_text"].(string)
+	content.Default = rawSchema["default"].(string)
+	content.Variables = make(map[string]string, 0)
 	content.RequiredValues = requiredValues
+
+	if val, ok := rawSchema["variables"]; ok {
+		var variablesMap = val.(map[string]interface{})
+		content.Variables = utils.ConvertMap(variablesMap)
+	}
 
 	// Note: if it has a value, then it can NOT have form options "options"
 	valueIsDefined := false
@@ -155,19 +188,15 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 
 	variableType := rawSchema["type"].(string)
 
+	content.FormConfig.Type = variableType
 	if valueExist && valueIsString && valueIsDefined {
-		if variableType == RAW_TYPE {
-			content.FormConfig.Type = RAW_TYPE
-		}
-		if variableType == EDITOR_TYPE {
-			content.FormConfig.Type = EDITOR_TYPE
-		}
-
 		aliases := blueprint_config_references.GetInstance()
 		//check if value is a reference
 		content.Value = ApplyRefenceValue(valueStr, aliases, bp)
 		return content, nil
 	}
+
+	content.Value = ""
 	// variableContent with form options
 
 	optionsFromSchema := rawSchema["options"].(*schema.Set)

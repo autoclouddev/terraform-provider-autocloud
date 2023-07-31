@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/joho/godotenv v1.4.0
 	github.com/stretchr/testify v1.8.2
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.8.0
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.9.0
 )
 
 require (
@@ -80,6 +80,7 @@ require (
 	cloud.google.com/go/storage v1.28.0 // indirect
 	github.com/apex/log v1.9.0
 	github.com/aws/aws-sdk-go v1.44.147 // indirect
+	github.com/aymerick/raymond v2.0.2+incompatible
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/go-faker/faker/v4 v4.0.0-beta.4
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

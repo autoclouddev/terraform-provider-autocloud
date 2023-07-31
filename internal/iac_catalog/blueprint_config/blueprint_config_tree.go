@@ -139,7 +139,10 @@ func OverrideVariables(vars []generator.FormShape, overrides map[string]Override
 	}
 	// on this point only generics remain, no original variables
 	for _, ov := range overrides {
-		formVar := BuildGenericVariable(ov)
+		formVar, err := BuildGenericVariable(ov)
+		if err != nil {
+			return nil, err
+		}
 		vars = append(vars, formVar)
 	}
 

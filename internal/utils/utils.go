@@ -12,6 +12,7 @@ import (
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/iac_module"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils/interpolation_utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -98,6 +99,21 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 		fileDefinitions = make([]generator.IacCatalogFile, 0)
 		for _, fileDefinitionsValue := range list {
 			var fileDefinitionMap = fileDefinitionsValue.(map[string]interface{})
+
+			moduleLength := len(fileDefinitionMap["modules"].([]interface{}))
+
+			if moduleLength == 0 && (fileDefinitionMap["header"].(string) != "" || fileDefinitionMap["footer"].(string) != "") {
+				return nil, errors.New("modules can not be empty when using header or footer attributes")
+			}
+
+			if moduleLength == 0 && fileDefinitionMap["content"].(string) == "" {
+				return nil, errors.New("file block should contain content or modules attributes")
+			}
+
+			if moduleLength > 0 && fileDefinitionMap["content"].(string) != "" {
+				return nil, errors.New("file block should contain content or modules attributes, but not both")
+			}
+
 			var fileDefinition = generator.IacCatalogFile{}
 
 			if val, ok := fileDefinitionMap["action"]; ok {
@@ -117,6 +133,12 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 				var variablesMap = val.(map[string]interface{})
 				fileDefinition.Variables = ConvertMap(variablesMap)
 			}
+
+			err := interpolation_utils.DetectInterpolation(fileDefinition.Destination, fileDefinition.Variables)
+			if err != nil {
+				return nil, err
+			}
+
 			if val, ok := fileDefinitionMap["modules"]; ok {
 				var data = val.([]interface{})
 				fileDefinition.Modules = ToStringSlice(data)
@@ -132,14 +154,6 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 
 			if val, ok := fileDefinitionMap["footer"]; ok {
 				fileDefinition.Footer = val.(string)
-			}
-
-			if len(fileDefinition.Modules) == 0 && (fileDefinition.Header != "" || fileDefinition.Footer != "") {
-				return nil, errors.New("modules can not be empty when using header or footer attributes")
-			}
-
-			if len(fileDefinition.Modules) == 0 && fileDefinition.Content == "" {
-				return nil, errors.New("file block should contain content or modules attributes")
 			}
 
 			fileDefinitions = append(fileDefinitions, fileDefinition)
