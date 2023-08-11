@@ -1,0 +1,816 @@
+{
+    "id": "complete",
+    "refName": "",
+    "omitVariables": [
+      "bucket.variables.names",
+      "bucket.variables.location",
+      "bucket.variables.project_id",
+      "bucket.variables.labels",
+      "bucket.variables.public_access_prevention",
+      "kms_key.variables.project_id",
+      "kms_key.variables.labels",
+      "kms_key.variables.location"
+    ],
+    "overrideVariables": {},
+    "variables": null,
+    "displayOrder": {
+      "priority": 0,
+      "values": [
+        "generic.namespace",
+        "generic.environment",
+        "generic.name",
+        "kmskey.keyring",
+        "generic.bucket_name",
+        "generic.location",
+        "generic.project_id",
+        "generic.labels"
+      ]
+    },
+    "children": {
+
+      "kms_key": {
+        "id": "kms_config",
+        "refName": "",
+        "omitVariables": [
+          "kms.variables.set_owners_for",
+          "kms.variables.owners",
+          "kms.variables.key_algorithm",
+          "kms.variables.key_protection_level",
+          "kms.variables.key_rotation_period",
+          "kms.variables.set_decrypters_for",
+          "kms.variables.decrypters",
+          "kms.variables.prevent_destroy",
+          "kms.variables.encrypters",
+          "kms.variables.purpose",
+          "kms.variables.set_encrypters_for"
+        ],
+        "overrideVariables": {
+          "keyring": {
+            "variableName": "keyring",
+            "value": "{{namespace}}-{{environment}}-{{name}}",
+            "requiredValues": "",
+            "displayName": "KMS Keyring Name",
+            "helperText": "",
+            "default": "",
+            "variables": {
+              "environment": "global.variables.environment",
+              "name": "global.variables.name",
+              "namespace": "global.variables.namespace"
+            },
+            "formConfig": {
+              "type": "shortText",
+              "fieldOptions": null,
+              "validationRules": null
+            },
+            "conditionals": [],
+            "isHidden": false,
+            "usedInHCL": false,
+            "interpolationVars": {
+              "environment": "data_autocloud_blueprint_config.generic.environment",
+              "name": "data_autocloud_blueprint_config.generic.name",
+              "namespace": "data_autocloud_blueprint_config.generic.namespace"
+            }
+          },
+          "keys": {
+            "variableName": "keys",
+            "value": "[\"default\"]",
+            "requiredValues": "",
+            "displayName": "",
+            "helperText": "",
+            "default": "",
+            "variables": {},
+            "formConfig": {
+              "type": "raw",
+              "fieldOptions": null,
+              "validationRules": null
+            },
+            "conditionals": [],
+            "isHidden": false,
+            "usedInHCL": false,
+            "interpolationVars": {}
+          },
+          "kms.variables.labels": {
+            "variableName": "kms.variables.labels",
+            "value": "data_autocloud_blueprint_config.generic.labels",
+            "requiredValues": "",
+            "displayName": "",
+            "helperText": "",
+            "default": "",
+            "variables": {},
+            "formConfig": {
+              "type": "map",
+              "fieldOptions": null,
+              "validationRules": null
+            },
+            "conditionals": [],
+            "isHidden": false,
+            "usedInHCL": false,
+            "interpolationVars": {}
+          },
+          "kms.variables.location": {
+            "variableName": "kms.variables.location",
+            "value": "data_autocloud_blueprint_config.generic.location",
+            "requiredValues": "",
+            "displayName": "",
+            "helperText": "",
+            "default": "",
+            "variables": {},
+            "formConfig": {
+              "type": "shortText",
+              "fieldOptions": null,
+              "validationRules": null
+            },
+            "conditionals": [],
+            "isHidden": false,
+            "usedInHCL": false,
+            "interpolationVars": {}
+          },
+          "kms.variables.project_id": {
+            "variableName": "kms.variables.project_id",
+            "value": "data_autocloud_blueprint_config.generic.project_id",
+            "requiredValues": "",
+            "displayName": "",
+            "helperText": "",
+            "default": "",
+            "variables": {},
+            "formConfig": {
+              "type": "shortText",
+              "fieldOptions": null,
+              "validationRules": null
+            },
+            "conditionals": [],
+            "isHidden": false,
+            "usedInHCL": false,
+            "interpolationVars": {}
+          }
+        },
+        "variables": null,
+        "displayOrder": {
+          "priority": 0,
+          "values": null
+        },
+        "children": {
+          "kms": {
+            "id": "kms_module",
+            "refName": "kmskey",
+            "omitVariables": null,
+            "overrideVariables": null,
+            "variables": [
+              {
+                "id": "kmskey.decrypters",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.decrypters",
+                  "fieldType": "checkbox",
+                  "fieldLabel": "decrypters",
+                  "explainingText": "List of comma-separated owners for each key declared in set_decrypters_for.",
+                  "fieldOptions": [],
+                  "validationRules": null
+                },
+                "fieldDataType": "list(string)",
+                "fieldDefaultValue": "[]",
+                "fieldValue": "[]",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.encrypters",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.encrypters",
+                  "fieldType": "checkbox",
+                  "fieldLabel": "encrypters",
+                  "explainingText": "List of comma-separated owners for each key declared in set_encrypters_for.",
+                  "fieldOptions": [],
+                  "validationRules": null
+                },
+                "fieldDataType": "list(string)",
+                "fieldDefaultValue": "[]",
+                "fieldValue": "[]",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.key_algorithm",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.key_algorithm",
+                  "fieldType": "shortText",
+                  "fieldLabel": "key_algorithm",
+                  "explainingText": "The algorithm to use when creating a version based on this template. See the https://cloud.google.com/kms/docs/reference/rest/v1/CryptoKeyVersionAlgorithm for possible inputs.",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "fieldDataType": "string",
+                "fieldDefaultValue": "GOOGLE_SYMMETRIC_ENCRYPTION",
+                "fieldValue": "GOOGLE_SYMMETRIC_ENCRYPTION",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.key_protection_level",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.key_protection_level",
+                  "fieldType": "shortText",
+                  "fieldLabel": "key_protection_level",
+                  "explainingText": "The protection level to use when creating a version based on this template. Default value: \"SOFTWARE\" Possible values: [\"SOFTWARE\", \"HSM\"]",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "fieldDataType": "string",
+                "fieldDefaultValue": "SOFTWARE",
+                "fieldValue": "SOFTWARE",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.key_rotation_period",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.key_rotation_period",
+                  "fieldType": "shortText",
+                  "fieldLabel": "key_rotation_period",
+                  "explainingText": "Generate a new key every time this period passes.",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "fieldDataType": "string",
+                "fieldDefaultValue": "100000s",
+                "fieldValue": "100000s",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.keyring",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.keyring",
+                  "fieldType": "shortText",
+                  "fieldLabel": "keyring",
+                  "explainingText": "Keyring name.",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "fieldDataType": "string",
+                "fieldDefaultValue": "",
+                "fieldValue": "",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.keys",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.keys",
+                  "fieldType": "checkbox",
+                  "fieldLabel": "keys",
+                  "explainingText": "Key names.",
+                  "fieldOptions": [],
+                  "validationRules": null
+                },
+                "fieldDataType": "list(string)",
+                "fieldDefaultValue": "[]",
+                "fieldValue": "[]",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.labels",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.labels",
+                  "fieldType": "map",
+                  "fieldLabel": "labels",
+                  "explainingText": "Labels, provided as a map",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "fieldDataType": "map(string)",
+                "fieldDefaultValue": "{}",
+                "fieldValue": "{}",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.location",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.location",
+                  "fieldType": "shortText",
+                  "fieldLabel": "location",
+                  "explainingText": "Location for the keyring.",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "fieldDataType": "string",
+                "fieldDefaultValue": "",
+                "fieldValue": "",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.owners",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.owners",
+                  "fieldType": "checkbox",
+                  "fieldLabel": "owners",
+                  "explainingText": "List of comma-separated owners for each key declared in set_owners_for.",
+                  "fieldOptions": [],
+                  "validationRules": null
+                },
+                "fieldDataType": "list(string)",
+                "fieldDefaultValue": "[]",
+                "fieldValue": "[]",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.prevent_destroy",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.prevent_destroy",
+                  "fieldType": "radio",
+                  "fieldLabel": "prevent_destroy",
+                  "explainingText": "Set the prevent_destroy lifecycle attribute on keys.",
+                  "fieldOptions": [
+                    {
+                      "label": "Yes",
+                      "fieldId": "kmskey.prevent_destroy-true",
+                      "value": "true",
+                      "checked": true
+                    },
+                    {
+                      "label": "No",
+                      "fieldId": "kmskey.prevent_destroy-false",
+                      "value": "false",
+                      "checked": false
+                    }
+                  ],
+                  "validationRules": null
+                },
+                "fieldDataType": "bool",
+                "fieldDefaultValue": "true",
+                "fieldValue": "true",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.project_id",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.project_id",
+                  "fieldType": "shortText",
+                  "fieldLabel": "project_id",
+                  "explainingText": "Project id where the keyring will be created.",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "fieldDataType": "string",
+                "fieldDefaultValue": "",
+                "fieldValue": "",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.purpose",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.purpose",
+                  "fieldType": "shortText",
+                  "fieldLabel": "purpose",
+                  "explainingText": "The immutable purpose of the CryptoKey. Possible values are ENCRYPT_DECRYPT, ASYMMETRIC_SIGN, and ASYMMETRIC_DECRYPT.",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "fieldDataType": "string",
+                "fieldDefaultValue": "ENCRYPT_DECRYPT",
+                "fieldValue": "ENCRYPT_DECRYPT",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.set_decrypters_for",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.set_decrypters_for",
+                  "fieldType": "checkbox",
+                  "fieldLabel": "set_decrypters_for",
+                  "explainingText": "Name of keys for which decrypters will be set.",
+                  "fieldOptions": [],
+                  "validationRules": null
+                },
+                "fieldDataType": "list(string)",
+                "fieldDefaultValue": "[]",
+                "fieldValue": "[]",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.set_encrypters_for",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.set_encrypters_for",
+                  "fieldType": "checkbox",
+                  "fieldLabel": "set_encrypters_for",
+                  "explainingText": "Name of keys for which encrypters will be set.",
+                  "fieldOptions": [],
+                  "validationRules": null
+                },
+                "fieldDataType": "list(string)",
+                "fieldDefaultValue": "[]",
+                "fieldValue": "[]",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              },
+              {
+                "id": "kmskey.set_owners_for",
+                "module": "kmskey",
+                "moduleId": "cll4hvv32000587yidk4z0iu1",
+                "formQuestion": {
+                  "fieldId": "kmskey.set_owners_for",
+                  "fieldType": "checkbox",
+                  "fieldLabel": "set_owners_for",
+                  "explainingText": "Name of keys for which owners will be set.",
+                  "fieldOptions": [],
+                  "validationRules": null
+                },
+                "fieldDataType": "list(string)",
+                "fieldDefaultValue": "[]",
+                "fieldValue": "[]",
+                "allowConsumerToEdit": true,
+                "isHidden": false,
+                "usedInHCL": true,
+                "conditionals": null,
+                "requiredValues": "",
+                "interpolationVars": {},
+                "IsOverriden": false
+              }
+            ],
+            "displayOrder": {
+              "priority": 1000,
+              "values": []
+            },
+            "children": {}
+          },
+          "gcp": {
+            "id": "gcp_config",
+            "refName": "",
+            "omitVariables": null,
+            "overrideVariables": {
+              "labels": {
+                "variableName": "labels",
+                "value": "",
+                "requiredValues": "",
+                "displayName": "Labels",
+                "helperText": "A map of labels to apply to the deployed assets",
+                "default": "",
+                "variables": {},
+                "formConfig": {
+                  "type": "map",
+                  "fieldOptions": [],
+                  "validationRules": []
+                },
+                "conditionals": [],
+                "isHidden": false,
+                "usedInHCL": false,
+                "interpolationVars": {}
+              },
+              "location": {
+                "variableName": "location",
+                "value": "",
+                "requiredValues": "",
+                "displayName": "Location",
+                "helperText": "The location the assets will be deployed in",
+                "default": "",
+                "variables": {},
+                "formConfig": {
+                  "type": "radio",
+                  "fieldOptions": [
+                    {
+                      "label": "EU",
+                      "value": "europe",
+                      "checked": false
+                    },
+                    {
+                      "label": "US",
+                      "value": "us",
+                      "checked": true
+                    },
+                    {
+                      "label": "Asia",
+                      "value": "asia",
+                      "checked": false
+                    },
+                    {
+                      "label": "Worldwide",
+                      "value": "global",
+                      "checked": false
+                    }
+                  ],
+                  "validationRules": []
+                },
+                "conditionals": [],
+                "isHidden": false,
+                "usedInHCL": false,
+                "interpolationVars": {}
+              },
+              "project_id": {
+                "variableName": "project_id",
+                "value": "",
+                "requiredValues": "",
+                "displayName": "Project ID",
+                "helperText": "The Google Cloud project ID the assets will be deployed in",
+                "default": "",
+                "variables": {},
+                "formConfig": {
+                  "type": "shortText",
+                  "fieldOptions": [],
+                  "validationRules": [
+                    {
+                      "rule": "isRequired",
+                      "value": "",
+                      "scope": "",
+                      "errorMessage": "You must provide a Google Cloud Platform project ID to deploy the assets into."
+                    }
+                  ]
+                },
+                "conditionals": [],
+                "isHidden": false,
+                "usedInHCL": false,
+                "interpolationVars": {}
+              }
+            },
+            "variables": null,
+            "displayOrder": {
+              "priority": 0,
+              "values": null
+            },
+            "children": {
+              "global": {
+                "id": "global",
+                "refName": "",
+                "omitVariables": null,
+                "overrideVariables": {
+                  "environment": {
+                    "variableName": "environment",
+                    "value": "",
+                    "requiredValues": "",
+                    "displayName": "Environment",
+                    "helperText": "The environment the assets will be deployed in",
+                    "default": "",
+                    "variables": {},
+                    "formConfig": {
+                      "type": "radio",
+                      "fieldOptions": [
+                        {
+                          "label": "Nonprod",
+                          "value": "nonprod",
+                          "checked": true
+                        },
+                        {
+                          "label": "Production",
+                          "value": "production",
+                          "checked": false
+                        }
+                      ],
+                      "validationRules": []
+                    },
+                    "conditionals": [],
+                    "isHidden": false,
+                    "usedInHCL": false,
+                    "interpolationVars": {}
+                  },
+                  "name": {
+                    "variableName": "name",
+                    "value": "",
+                    "requiredValues": "",
+                    "displayName": "Name",
+                    "helperText": "The name of the encrypted cloud storage bucket",
+                    "default": "",
+                    "variables": {},
+                    "formConfig": {
+                      "type": "shortText",
+                      "fieldOptions": [],
+                      "validationRules": [
+                        {
+                          "rule": "isRequired",
+                          "value": "",
+                          "scope": "",
+                          "errorMessage": "You must provide a name for the encrypted S3 bucket"
+                        }
+                      ]
+                    },
+                    "conditionals": [],
+                    "isHidden": false,
+                    "usedInHCL": false,
+                    "interpolationVars": {}
+                  },
+                  "namespace": {
+                    "variableName": "namespace",
+                    "value": "autocloud",
+                    "requiredValues": "",
+                    "displayName": "Namespace",
+                    "helperText": "The organization namespace the assets will be deployed in",
+                    "default": "",
+                    "variables": {},
+                    "formConfig": {
+                      "type": "shortText",
+                      "fieldOptions": null,
+                      "validationRules": null
+                    },
+                    "conditionals": [],
+                    "isHidden": false,
+                    "usedInHCL": false,
+                    "interpolationVars": {}
+                  }
+                },
+                "variables": null,
+                "displayOrder": {
+                  "priority": 0,
+                  "values": null
+                },
+                "children": null
+              }
+            }
+          },
+          "global": {
+            "id": "global",
+            "refName": "",
+            "omitVariables": null,
+            "overrideVariables": {
+              "environment": {
+                "variableName": "environment",
+                "value": "",
+                "requiredValues": "",
+                "displayName": "Environment",
+                "helperText": "The environment the assets will be deployed in",
+                "default": "",
+                "variables": {},
+                "formConfig": {
+                  "type": "radio",
+                  "fieldOptions": [
+                    {
+                      "label": "Nonprod",
+                      "value": "nonprod",
+                      "checked": true
+                    },
+                    {
+                      "label": "Production",
+                      "value": "production",
+                      "checked": false
+                    }
+                  ],
+                  "validationRules": []
+                },
+                "conditionals": [],
+                "isHidden": false,
+                "usedInHCL": false,
+                "interpolationVars": {}
+              },
+              "name": {
+                "variableName": "name",
+                "value": "",
+                "requiredValues": "",
+                "displayName": "Name",
+                "helperText": "The name of the encrypted cloud storage bucket",
+                "default": "",
+                "variables": {},
+                "formConfig": {
+                  "type": "shortText",
+                  "fieldOptions": [],
+                  "validationRules": [
+                    {
+                      "rule": "isRequired",
+                      "value": "",
+                      "scope": "",
+                      "errorMessage": "You must provide a name for the encrypted S3 bucket"
+                    }
+                  ]
+                },
+                "conditionals": [],
+                "isHidden": false,
+                "usedInHCL": false,
+                "interpolationVars": {}
+              },
+              "namespace": {
+                "variableName": "namespace",
+                "value": "autocloud",
+                "requiredValues": "",
+                "displayName": "Namespace",
+                "helperText": "The organization namespace the assets will be deployed in",
+                "default": "",
+                "variables": {},
+                "formConfig": {
+                  "type": "shortText",
+                  "fieldOptions": null,
+                  "validationRules": null
+                },
+                "conditionals": [],
+                "isHidden": false,
+                "usedInHCL": false,
+                "interpolationVars": {}
+              }
+            },
+            "variables": null,
+            "displayOrder": {
+              "priority": 0,
+              "values": null
+            },
+            "children": null
+          }
+        }
+      }
+    }
+  }

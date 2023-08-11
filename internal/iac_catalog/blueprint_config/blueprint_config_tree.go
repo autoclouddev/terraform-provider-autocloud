@@ -1,19 +1,6 @@
 package blueprint_config
 
-import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"sort"
-	"strings"
-
-	"github.com/apex/log"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/logger"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
-)
-
+/*
 func GetFormShape(root BluePrintConfig) ([]generator.FormShape, error) {
 	var log = logger.Create(log.Fields{"fn": "GetFormShape()"})
 	str, _ := json.MarshalIndent(root, "", "    ")
@@ -305,3 +292,4 @@ func GetVariableReferenceID(variableKey string, bp *BluePrintConfig) (string, er
 	}
 	return "", errors.New("Invalid Key")
 }
+*/
