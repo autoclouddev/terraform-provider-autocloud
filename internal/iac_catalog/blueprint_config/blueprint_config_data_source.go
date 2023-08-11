@@ -248,10 +248,11 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	// new form variables (as JSON)
-	formVariables, err := GetFormShape(*blueprintConfig)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// formVariables, err := GetFormShape(*blueprintConfig)
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	formVariables := []generator.FormShape{}
 	prioritiesDuplicated, _ := getDisplayOrderDuplicated(*blueprintConfig)
 	if len(prioritiesDuplicated) > 0 {
 		diags = append(diags, diag.Diagnostic{
@@ -269,7 +270,8 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	jsonFormShape, err := utils.ToJsonString(formVariables)
+	processedVars := Transverse(blueprintConfig)
+	jsonFormShape, err := utils.ToJsonString(processedVars)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -388,10 +390,11 @@ func hasError(errors []error) error {
 }
 
 func getDisplayOrderDuplicated(root BluePrintConfig) (string, error) {
-	order, err := postDisplayOrderTransversal(&root)
-	if err != nil {
-		return "", err
-	}
+	// order, err := postDisplayOrderTransversal(&root)
+	// if err != nil {
+	// 	return "", err
+	// }
+	order := []DisplayOrder{}
 	var displayOrderByPriority = make(map[int][]string, 0)
 	var prioritiesDuplicatedMessage = ""
 	// we build a map of displayOrder by priority

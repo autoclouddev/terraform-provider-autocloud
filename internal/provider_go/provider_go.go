@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	autocloudsdk "gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk"
-	blueprintconfiglow "gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_low"
 )
 
 type pluginProviderServer struct {
@@ -160,8 +159,8 @@ func WithFlagGate(experimental bool) func() tfprotov5.ProviderServer {
 	if experimental {
 		// in here we include the resources we want to add to dataSourceSchema and router
 
-		dataSourceSchemas["autocloud_blueprint_config"] = blueprintconfiglow.GetBlueprintConfigLowLevelSchema()
-		dataSourceRouter["autocloud_blueprint_config"] = blueprintconfiglow.NewDataSourceBlueprintConfig
+		//dataSourceSchemas["autocloud_blueprint_config"] = blueprintconfiglow.GetBlueprintConfigLowLevelSchema()
+		//dataSourceRouter["autocloud_blueprint_config"] = blueprintconfiglow.NewDataSourceBlueprintConfig
 	}
 	// PluginProviderServer returns the implementation of an interface for a lower
 	// level usage of the Provider to Terraform protocol.

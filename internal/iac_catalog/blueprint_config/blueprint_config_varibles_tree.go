@@ -98,3 +98,16 @@ func findChildReferenceName(referenceName string, aliases blueprint_config_refer
 	}
 	return findModuleNameInBlueprint(child, varName)
 }
+
+func GetVariableName(variableName string) string {
+
+	parts := strings.Split(variableName, ".")
+	if utils.HasReference(variableName) {
+		return parts[0] + "." + parts[2]
+	}
+	// if len(parts) == 2 {
+	// 	return parts[1]
+	// }
+	// return strings.Split(variableName, ".")[2]
+	return variableName
+}
