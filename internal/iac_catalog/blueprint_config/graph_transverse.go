@@ -37,6 +37,8 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 			node.Children[childName] = child
 			delete(node.OverrideVariables, overrideName)
 		}
+		// if len(parts) != 3 or != 1 { //print warning
+		// if len(parts) == 1 {  pass this override to all children
 	}
 
 	removedOmitsIndexes := make([]int, 0)
@@ -54,11 +56,13 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 			node.Children[childName] = child
 			removedOmitsIndexes = append(removedOmitsIndexes, idx)
 		}
+		// if len(parts) != 3 or != 1 { //print warning
+
 	}
 	node.OmitVariables = removeIndexesFromOmits(node.OmitVariables, removedOmitsIndexes)
 
-	for _, child := range node.Children {
-		child := child // memory aliasing
+	for _, childName := range node.ChildrenOrder {
+		child := node.Children[childName]
 		bottomUpTraversal(&child, node)
 	}
 
@@ -70,12 +74,12 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 
 	//Merge variables with existing ones in node.Variables
 	for _, variable := range finalVariables {
-		//varIdx, found := findVariableIndex(parent.Variables, variable.ID)
-		varIdx, found := findIndex(parent.Variables, func(v generator.FormShape) bool {
-			currentVarName := strings.Split(v.ID, ".")[1]
-			varName := strings.Split(variable.ID, ".")[1]
-			return currentVarName == varName
-		})
+		varIdx, found := findVariableIndex(parent.Variables, variable.ID)
+		// varIdx, found := findIndex(parent.Variables, func(v generator.FormShape) bool {
+		// 	currentVarName := strings.Split(v.ID, ".")[1]
+		// 	varName := strings.Split(variable.ID, ".")[1]
+		// 	return currentVarName == varName
+		// })
 		if found {
 			// Merge variables if found
 			existingVariable := parent.Variables[varIdx]
@@ -94,15 +98,17 @@ func processNodeWithParent(node BluePrintConfig) []generator.FormShape {
 	finalVariables := node.Variables
 
 	for overrideVariableName, overrideVariable := range node.OverrideVariables {
-		//if variableIdx, found := findVariableIndex2(node.Variables, overrideVariableName); found {
-		if variableIdx, found := findIndex(node.Variables, func(v generator.FormShape) bool {
-			localVarName := strings.Split(v.ID, ".")[1]
-			return localVarName == overrideVariableName
-		}); found {
+		if variableIdexes, found := findVariableIndex2(node.Variables, overrideVariableName); found {
+			// if variableIdx, found := findIndex(node.Variables, func(v generator.FormShape) bool {
+			// 	localVarName := strings.Split(v.ID, ".")[1]
+			// 	return localVarName == overrideVariableName
+			// }); found {
 			// Apply overrides using BuildOverridenVariable function
-			variable := node.Variables[variableIdx]
-			variable = BuildOverridenVariable(variable, overrideVariable)
-			finalVariables[variableIdx] = variable
+			for _, variableIdx := range variableIdexes {
+				variable := node.Variables[variableIdx]
+				variable = BuildOverridenVariable(variable, overrideVariable)
+				finalVariables[variableIdx] = variable
+			}
 		} else {
 			// Generate new variable using BuildGenericVariable function
 
@@ -118,16 +124,19 @@ func processNodeWithParent(node BluePrintConfig) []generator.FormShape {
 
 	// Exclude variables specified in omitVariables
 	for _, omitVariableID := range node.OmitVariables {
-		//if variableIdx, found := findVariableIndex2(finalVariables, omitVariableID); found {
-		if variableIdx, found := findIndex(node.Variables, func(v generator.FormShape) bool {
-			localVarName := strings.Split(v.ID, ".")[1]
-			return localVarName == omitVariableID
-		}); found {
-			finalVariables[variableIdx].IsHidden = true
-			finalVariables[variableIdx].UsedInHCL = false
-			if finalVariables[variableIdx].IsOverriden {
-				finalVariables[variableIdx].UsedInHCL = true
+		if variableIdexes, found := findVariableIndex2(finalVariables, omitVariableID); found {
+			//if variableIdx, found := findIndex(node.Variables, func(v generator.FormShape) bool {
+			// 	localVarName := strings.Split(v.ID, ".")[1]
+			// 	return localVarName == omitVariableID
+			// }); found {
+			for _, variableIdx := range variableIdexes {
+				finalVariables[variableIdx].IsHidden = true
+				finalVariables[variableIdx].UsedInHCL = false
+				if finalVariables[variableIdx].IsOverriden {
+					finalVariables[variableIdx].UsedInHCL = true
+				}
 			}
+
 			// if the blueprint config overrides an omitted variable, then it's an admitted var as we have to modify its behavior
 		}
 	}
@@ -144,32 +153,59 @@ func findIndex(variables []generator.FormShape, condition func(generator.FormSha
 	return -1, false
 }
 
+// TODO: remove this function
 func findVariableIndex(variables []generator.FormShape, id string) (int, bool) {
-	varName := strings.Split(id, ".")[1]
+	//varName := strings.Split(id, ".")[1]
 	for idx, variable := range variables {
-		currentVarName := strings.Split(variable.ID, ".")[1]
-		if currentVarName == varName {
+		//currentVarName := strings.Split(variable.ID, ".")[1]
+		if variable.ID == id {
 			return idx, true
 		}
 	}
 	return -1, false
 }
 
-func findVariableIndex2(variables []generator.FormShape, overrideVariableName string) (int, bool) {
+// TODO: remove this function
+func findVariableIndex2(variables []generator.FormShape, overrideVariableName string) ([]int, bool) {
+	foundIndexes := make([]int, 0)
 	for idx, variable := range variables {
 		localVarName := strings.Split(variable.ID, ".")[1]
 		if localVarName == overrideVariableName {
-			return idx, true
+			foundIndexes = append(foundIndexes, idx)
+			//return idx, true
 		}
 	}
-	return -1, false
+	if len(foundIndexes) > 0 {
+		return foundIndexes, true
+	}
+	return []int{}, false
 }
 
 func mergeVariables(existing, newVariable generator.FormShape) generator.FormShape {
-	// Implement logic to merge existing and newVariable, e.g., combine attributes
-	// Return the merged variable
-	mergedVariable := existing
-	return mergedVariable
+	// Merge the fields from newVariable into existing
+	existing.ID = newVariable.ID
+	existing.Module = newVariable.Module
+	existing.ModuleID = newVariable.ModuleID
+	existing.FormQuestion = newVariable.FormQuestion
+	existing.FieldDataType = newVariable.FieldDataType
+	existing.FieldDefaultValue = newVariable.FieldDefaultValue
+	existing.FieldValue = newVariable.FieldValue
+	existing.AllowConsumerToEdit = newVariable.AllowConsumerToEdit
+	existing.IsHidden = newVariable.IsHidden
+	existing.UsedInHCL = newVariable.UsedInHCL
+	existing.Conditionals = newVariable.Conditionals
+	existing.RequiredValues = newVariable.RequiredValues
+
+	// Merge InterpolationVars from newVariable into existing
+	if existing.InterpolationVars == nil {
+		existing.InterpolationVars = make(map[string]string)
+	}
+	for key, value := range newVariable.InterpolationVars {
+		existing.InterpolationVars[key] = value
+	}
+
+	existing.IsOverriden = newVariable.IsOverriden
+	return existing
 }
 
 func updateVariable(variables []generator.FormShape, updatedVariable generator.FormShape) []generator.FormShape {
@@ -200,4 +236,77 @@ func removeElementAtIndex(s []string, idx int) []string {
 
 	// Remove the element at idx by re-slicing the slice
 	return append(s[:idx], s[idx+1:]...)
+}
+
+func BFS(node *BluePrintConfig) {
+	queue := make([]*BluePrintConfig, 0)
+	queue = append(queue, node)
+
+	for len(queue) > 0 {
+		// Pop the first element from the queue
+		currentNode := queue[0]
+		queue = queue[1:]
+
+		// Process the current node
+		fmt.Println(currentNode.DisplayOrder)
+
+		// Add the children of the current node to the queue
+		for _, child := range currentNode.Children {
+			queue = append(queue, &child)
+		}
+	}
+}
+
+func DFS(node *BluePrintConfig) {
+	stack := make([]*BluePrintConfig, 0)
+	stack = append(stack, node)
+
+	for len(stack) > 0 {
+		// Pop the last element from the stack
+		currentNode := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		// Process the current node
+		fmt.Println(currentNode.DisplayOrder)
+
+		// Add the children of the current node to the stack
+		for _, child := range currentNode.Children {
+			stack = append(stack, &child)
+		}
+	}
+}
+
+// func processDisplayOrder(bp *BluePrintConfig) {
+// 	variables := bp.DisplayOrder.Values
+// 	for idx, variable := range variables {
+// 		parts := strings.Split(variable, ".")
+// 		if len(parts) == 1 {
+// 			// get all module names from all children
+// 			moduleNames := getModuleNamesFromBlueprint(bp) // check which ones to sort first
+// 			//remove idx from variables
+// 			//add moduleNames + variable to variables
+// 		}
+// 	}
+// }
+
+func getModuleNamesFromBlueprint(bp *BluePrintConfig) []string {
+	moduleNames := make([]string, 0)
+	for _, child := range bp.Children {
+		moduleNames = getModuleNamesFromFormShape(child.Variables)
+	}
+	return moduleNames
+}
+
+func getModuleNamesFromFormShape(formShape []generator.FormShape) []string {
+	moduleNamesSet := make(map[string]bool)
+	moduleNames := make([]string, 0)
+	for _, variable := range formShape {
+		moduleName := strings.Split(variable.ID, ".")[0]
+		moduleNamesSet[moduleName] = true
+	}
+
+	for moduleName := range moduleNamesSet {
+		moduleNames = append(moduleNames, moduleName)
+	}
+	return moduleNames
 }

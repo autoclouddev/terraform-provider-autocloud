@@ -100,7 +100,6 @@ func findChildReferenceName(referenceName string, aliases blueprint_config_refer
 }
 
 func GetVariableName(variableName string) string {
-
 	parts := strings.Split(variableName, ".")
 	if utils.HasReference(variableName) {
 		return parts[0] + "." + parts[2]
