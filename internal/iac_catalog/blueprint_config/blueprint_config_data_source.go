@@ -162,6 +162,13 @@ func DataSourceBlueprintConfig() *schema.Resource {
 				Type: schema.TypeString,
 			},
 		},
+		"source_order": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional: true,
+		},
 		"omit_variables": setOfStringSchema,
 		"variable": {
 			Type:     schema.TypeList,
@@ -310,6 +317,16 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	var cerrors []error // collect data errors
 	if v, ok := d.GetOk("source"); ok {
 		cerrors = append(cerrors, GetBlueprintConfigSources(v, &bp, *aliasToModuleNameMap))
+	}
+
+	if v, ok := d.GetOk("source_order"); ok {
+		order := v.([]interface{})
+		orderChildren := make([]string, len(order))
+
+		for i, optionValue := range order {
+			orderChildren[i] = optionValue.(string)
+		}
+		bp.ChildrenOrder = orderChildren
 	}
 
 	// get omit_variables

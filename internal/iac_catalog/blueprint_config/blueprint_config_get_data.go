@@ -32,7 +32,6 @@ func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig, aliases bluep
 
 		bp.Children[strKey] = bc
 	}
-
 	return nil
 }
 
