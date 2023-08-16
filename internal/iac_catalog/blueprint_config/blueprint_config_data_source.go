@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"strings"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -233,6 +231,7 @@ func DataSourceBlueprintConfig() *schema.Resource {
 	}
 }
 
+// main function to read context from terraform
 func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	blueprintConfig, err := GetBlueprintConfigFromSchema(d)
@@ -240,54 +239,35 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	pretty, err := utils.PrettyStruct(blueprintConfig)
+	formattedBlueprint, err := utils.PrettyStruct(blueprintConfig)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Println("INPUT BLUEPRINTCONFIG->", pretty)
+	log.Println("INPUT BLUEPRINTCONFIG->", formattedBlueprint)
 
-	// Save references
-	aliases := blueprint_config_references.GetInstance()
-
-	err = d.Set("references", aliases.ToString())
+	err = d.Set("blueprint_config", formattedBlueprint)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	// new form variables (as JSON)
-	// formVariables, err := GetFormShape(*blueprintConfig)
+	//formVariables := []generator.FormShape{}
+	// err = validateConditionals(formVariables)
 	// if err != nil {
 	// 	return diag.FromErr(err)
 	// }
-	formVariables := []generator.FormShape{}
-	prioritiesDuplicated, _ := getDisplayOrderDuplicated(*blueprintConfig)
-	if len(prioritiesDuplicated) > 0 {
-		diags = append(diags, diag.Diagnostic{
-			Detail:   prioritiesDuplicated,
-			Severity: diag.Warning,
-			Summary:  "Display order priorities duplicated",
-		})
-	}
-	err = validateConditionals(formVariables)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	vars := GetVariablesInBlueprint(formVariables)
-	err = d.Set("variables", vars)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+
+	// here will apply overrides, omits and will order the questions by display_order definitions
 	processedVars := Transverse(blueprintConfig)
-	jsonFormShape, err := utils.ToJsonString(processedVars)
+	formattedFormVariables, err := utils.ToJsonString(processedVars)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = d.Set("config", jsonFormShape)
+	err = d.Set("config", formattedFormVariables)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("blueprint_config", pretty)
+	variablesMap := CreateMapFromFormQuestions(processedVars)
+	err = d.Set("variables", variablesMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -296,33 +276,30 @@ func dataSourceBlueprintConfigRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-// maps tf declaration to object
+// Bridges the gap between golang structs and terraform schema
 func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, error) {
-	bp := BluePrintConfig{}
 	id, err := gonanoid.New()
 	if err != nil {
 		return nil, err
 	}
-	//if id is not set, anyways the id is always generated, it is not saved in the statefile between executions
-	if len(d.Id()) == 0 {
-		bp.Id = id
-	} else {
-		bp.Id = d.Id()
+	bp := BluePrintConfig{
+		Id:                id,
+		Variables:         make([]generator.FormShape, 0),
+		OmitVariables:     make([]string, 0),
+		OverrideVariables: make(map[string]OverrideVariable, 0),
+		Children:          make(map[string]*BluePrintConfig, 0),
+		ChildrenOrder:     make([]string, 0),
 	}
-
-	bp.OverrideVariables = make(map[string]OverrideVariable, 0)
-	aliasToModuleNameMap := blueprint_config_references.GetInstance()
 
 	// get sources
 	var cerrors []error // collect data errors
 	if v, ok := d.GetOk("source"); ok {
-		cerrors = append(cerrors, GetBlueprintConfigSources(v, &bp, *aliasToModuleNameMap))
+		cerrors = append(cerrors, GetBlueprintConfigSources(v, &bp))
 	}
-
+	// tmp approach to keep order of sources
 	if v, ok := d.GetOk("source_order"); ok {
 		order := v.([]interface{})
 		orderChildren := make([]string, len(order))
-
 		for i, optionValue := range order {
 			orderChildren[i] = optionValue.(string)
 		}
@@ -332,7 +309,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	// get omit_variables
 	if v, ok := d.GetOk("omit_variables"); ok {
 		log.Printf("omit_vars get.ok is ok, %v\n", v)
-		cerrors = append(cerrors, GetBlueprintConfigOmitVariables(v.(*schema.Set).List(), &bp, *aliasToModuleNameMap))
+		cerrors = append(cerrors, GetBlueprintConfigOmitVariables(v.(*schema.Set).List(), &bp))
 		log.Printf("the [%v] are the omitted vars", bp.OmitVariables)
 	} else {
 		log.Printf("omit_vars get.ok not ok, no variables were added\n")
@@ -341,7 +318,22 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	// get display_order
 	if v, ok := d.GetOk("display_order"); ok {
 		log.Printf("display_order get.ok is ok, %v\n", v)
-		cerrors = append(cerrors, GetBlueprintConfigDisplayOrder(v, &bp, *aliasToModuleNameMap))
+		bp.DisplayOrder = DisplayOrder{
+			Priority: 0,
+			Values:   []string{},
+		}
+		displayOrder := v.([]interface{})
+		if len(displayOrder) > 1 {
+			validDisplayOrder := displayOrder[0].(map[string]interface{})
+			bp.DisplayOrder.Priority = validDisplayOrder["priority"].(int)
+			for _, value := range validDisplayOrder["values"].([]interface{}) {
+				strValue := value.(string)
+				bp.DisplayOrder.Values = append(bp.DisplayOrder.Values, strValue)
+			}
+		} else {
+			return nil, errors.New("display_order should only be defined once")
+		}
+
 		log.Printf("the %v is the displayOrder", bp.DisplayOrder)
 	} else {
 		log.Printf("display_order get.ok not ok\n")
@@ -367,7 +359,7 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 	return &bp, nil
 }
 
-func GetVariablesInBlueprint(formVariables []generator.FormShape) map[string]string {
+func CreateMapFromFormQuestions(formVariables []generator.FormShape) map[string]string {
 	var outputVars = make(map[string]string)
 	for _, form := range formVariables {
 		questionName := strings.Split(form.ID, ".")
@@ -377,25 +369,25 @@ func GetVariablesInBlueprint(formVariables []generator.FormShape) map[string]str
 	return outputVars
 }
 
-func validateConditionals(variables []generator.FormShape) error {
-	// vars to map
-	var varsMap = make(map[string]generator.FormShape, len(variables))
-	for _, variable := range variables {
-		varsMap[variable.ID] = variable
-	}
+// func validateConditionals(variables []generator.FormShape) error {
+// 	// vars to map
+// 	var varsMap = make(map[string]generator.FormShape, len(variables))
+// 	for _, variable := range variables {
+// 		varsMap[variable.ID] = variable
+// 	}
 
-	// validate conditionals
-	for _, variable := range variables {
-		for _, conditional := range variable.Conditionals {
-			dependencyVariable, dependecyExist := varsMap[conditional.Source]
-			if dependecyExist && dependencyVariable.FormQuestion.FieldType != RADIO_TYPE {
-				return fmt.Errorf("the conditional's source variable can only be of 'radio' type [variable: %v, source variable: %v, source variable type: %v]", variable.ID, conditional.Source, dependencyVariable.FormQuestion.FieldType)
-			}
-		}
-	}
+// 	// validate conditionals
+// 	for _, variable := range variables {
+// 		for _, conditional := range variable.Conditionals {
+// 			dependencyVariable, dependecyExist := varsMap[conditional.Source]
+// 			if dependecyExist && dependencyVariable.FormQuestion.FieldType != RADIO_TYPE {
+// 				return fmt.Errorf("the conditional's source variable can only be of 'radio' type [variable: %v, source variable: %v, source variable type: %v]", variable.ID, conditional.Source, dependencyVariable.FormQuestion.FieldType)
+// 			}
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func hasError(errors []error) error {
 	for _, err := range errors {
@@ -404,33 +396,4 @@ func hasError(errors []error) error {
 		}
 	}
 	return nil
-}
-
-func getDisplayOrderDuplicated(root BluePrintConfig) (string, error) {
-	// order, err := postDisplayOrderTransversal(&root)
-	// if err != nil {
-	// 	return "", err
-	// }
-	order := []DisplayOrder{}
-	var displayOrderByPriority = make(map[int][]string, 0)
-	var prioritiesDuplicatedMessage = ""
-	// we build a map of displayOrder by priority
-	for _, displayOrder := range order {
-		priority := displayOrder.Priority
-		if len(displayOrder.Values) > 0 {
-			// to do more pretty the message
-			formatMessage := "\n%+v"
-			if len(displayOrderByPriority[priority]) > 0 {
-				formatMessage = "\n%+v\n"
-			}
-			displayOrderByPriority[priority] = append(displayOrderByPriority[priority], fmt.Sprintf(formatMessage, displayOrder))
-		}
-	}
-	// then we add to the duplicated list those which has more than one entry
-	for _, displayOrders := range displayOrderByPriority {
-		if len(displayOrders) > 1 {
-			prioritiesDuplicatedMessage = fmt.Sprintf("%v\n%v", prioritiesDuplicatedMessage, displayOrders)
-		}
-	}
-	return prioritiesDuplicatedMessage, nil
 }

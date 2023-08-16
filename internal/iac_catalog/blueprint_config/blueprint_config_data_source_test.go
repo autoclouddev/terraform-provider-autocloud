@@ -15,16 +15,6 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
 )
 
-func findBlueprintConfigById(configs []blueprint_config.BluePrintConfig, id string) blueprint_config.BluePrintConfig {
-	for _, v := range configs {
-		if v.Id == id {
-			return v
-		}
-	}
-
-	return blueprint_config.BluePrintConfig{}
-}
-
 func TestAccBlueprintConfig_sourceValidation(t *testing.T) {
 	var blueprintConfig blueprint_config.BluePrintConfig
 	resourceName := "data.autocloud_blueprint_config.test"
