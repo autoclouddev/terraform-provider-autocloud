@@ -14,7 +14,7 @@ import (
 )
 
 func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig, aliases blueprint_config_references.Data) error {
-	bp.Children = make(map[string]BluePrintConfig, 0)
+	bp.Children = make(map[string]*BluePrintConfig, 0)
 	sources := v.(map[string]interface{})
 	for key, value := range sources {
 		strKey := fmt.Sprintf("%v", key)
@@ -30,7 +30,7 @@ func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig, aliases bluep
 		aliasKey := fmt.Sprintf("%s#%s", strKey, bp.Id)
 		aliases.SetValue(aliasKey, bc.Id)
 
-		bp.Children[strKey] = bc
+		bp.Children[strKey] = &bc
 	}
 	return nil
 }
