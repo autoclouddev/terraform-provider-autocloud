@@ -68,13 +68,13 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 	}
 	node.OmitVariables = removeIndexesFromOmits(node.OmitVariables, removedOmitsIndexes)
 
-	for _, childName := range node.ChildrenOrder {
+	for childName := range node.Children {
 		child := node.Children[childName]
 		bottomUpTraversal(child, node)
 	}
 
 	// Apply overrides and omits from parent to current node
-	finalVariables := processNodeWithParent(*node)
+	finalVariables := processCurrentNode(*node)
 	if finalVariables == nil {
 		fmt.Println("finalVariables is nil, node id:", node.Id)
 	}
@@ -92,7 +92,15 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 		if found {
 			// Merge variables if found
 			existingVariable := parent.Variables[varIdx]
-			mergedVariable := mergeVariables(existingVariable, variable)
+			originalVariable := existingVariable
+			newVariableData := variable
+			// If existing variable is not overridden or it has less hops from its original node to the root, use it as original variable, the existing variable was processed before
+			// it is important to check this, it avoids keeping track of the order of children in the graph
+			if !existingVariable.IsOverriden || existingVariable.HopsFromNode > originalVariable.HopsFromNode {
+				originalVariable = variable
+				newVariableData = existingVariable
+			}
+			mergedVariable := mergeVariables(originalVariable, newVariableData)
 			parent.Variables = updateVariable(parent.Variables, mergedVariable)
 		} else {
 			// Add new variable if not found
@@ -102,7 +110,7 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 	return parent.Variables
 }
 
-func processNodeWithParent(node BluePrintConfig) []generator.FormShape {
+func processCurrentNode(node BluePrintConfig) []generator.FormShape {
 	finalVariables := node.Variables
 
 	for overrideVariableName, overrideVariable := range node.OverrideVariables {
@@ -138,6 +146,11 @@ func processNodeWithParent(node BluePrintConfig) []generator.FormShape {
 		}
 	}
 
+	//increment Hops in node
+	for idx := range finalVariables {
+		finalVariables[idx].HopsFromNode++
+	}
+
 	return finalVariables
 }
 
@@ -164,8 +177,8 @@ func findVariableIndexes(variables []generator.FormShape, overrideVariableName s
 	return []int{}, false
 }
 
+// Merge the fields from newVariable into existing
 func mergeVariables(existing, newVariable generator.FormShape) generator.FormShape {
-	// Merge the fields from newVariable into existing
 	existing.ID = newVariable.ID
 	existing.Module = newVariable.Module
 	existing.ModuleID = newVariable.ModuleID

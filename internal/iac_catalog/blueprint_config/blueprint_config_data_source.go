@@ -160,13 +160,6 @@ func DataSourceBlueprintConfig() *schema.Resource {
 				Type: schema.TypeString,
 			},
 		},
-		"source_order": {
-			Type: schema.TypeList,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-			Optional: true,
-		},
 		"omit_variables": setOfStringSchema,
 		"variable": {
 			Type:     schema.TypeList,
@@ -211,10 +204,6 @@ func DataSourceBlueprintConfig() *schema.Resource {
 					},
 				},
 			},
-		},
-		"references": {
-			Type:     schema.TypeString,
-			Computed: true,
 		},
 		"variables": {
 			Type:     schema.TypeMap,
@@ -288,22 +277,12 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 		OmitVariables:     make([]string, 0),
 		OverrideVariables: make(map[string]OverrideVariable, 0),
 		Children:          make(map[string]*BluePrintConfig, 0),
-		ChildrenOrder:     make([]string, 0),
 	}
 
 	// get sources
 	var cerrors []error // collect data errors
 	if v, ok := d.GetOk("source"); ok {
 		cerrors = append(cerrors, GetBlueprintConfigSources(v, &bp))
-	}
-	// tmp approach to keep order of sources
-	if v, ok := d.GetOk("source_order"); ok {
-		order := v.([]interface{})
-		orderChildren := make([]string, len(order))
-		for i, optionValue := range order {
-			orderChildren[i] = optionValue.(string)
-		}
-		bp.ChildrenOrder = orderChildren
 	}
 
 	// get omit_variables
@@ -323,14 +302,14 @@ func GetBlueprintConfigFromSchema(d *schema.ResourceData) (*BluePrintConfig, err
 			Values:   []string{},
 		}
 		displayOrder := v.([]interface{})
-		if len(displayOrder) > 1 {
+		if len(displayOrder) == 1 {
 			validDisplayOrder := displayOrder[0].(map[string]interface{})
 			bp.DisplayOrder.Priority = validDisplayOrder["priority"].(int)
 			for _, value := range validDisplayOrder["values"].([]interface{}) {
 				strValue := value.(string)
 				bp.DisplayOrder.Values = append(bp.DisplayOrder.Values, strValue)
 			}
-		} else {
+		} else if len(displayOrder) > 1 {
 			return nil, errors.New("display_order should only be defined once")
 		}
 
