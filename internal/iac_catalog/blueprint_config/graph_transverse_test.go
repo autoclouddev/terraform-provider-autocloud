@@ -63,26 +63,29 @@ func writeFile(path string, content []byte) {
 }
 
 func TestFindPathsToNodesWithZeroOutdegree(t *testing.T) {
+	createMockResult := false
 	blueprint := loadBlueprintFromJsonFile("./fullExample.json")
 	variables := blueprint_config.Transverse(&blueprint)
-	jsonGraph, _ := json.MarshalIndent(blueprint, "", "  ")
+	jsonGraph, _ := json.MarshalIndent(&blueprint, "", "  ")
 	writeFile("./graphAfterPrrocess.json", jsonGraph)
-	jsonString, _ := json.MarshalIndent(variables, "", "  ")
-	fmt.Println(string(jsonString))
-	//writeFile("./result.json", jsonString)
-	expectedOutput := loadResultFile("./result.json")
-	fmt.Println("result")
-	for _, variable := range variables {
-		fmt.Printf("%s,", variable.ID)
+	if createMockResult {
+		jsonString, _ := json.MarshalIndent(variables, "", "  ")
+		writeFile("./result.json", jsonString)
+	} else {
+		expectedQuestions := loadResultFile("./result.json")
+		for i, question := range variables {
+			expected := expectedQuestions[i]
+			if question.ID != expected.ID {
+				t.Errorf("Expected %s but got %s", expected.ID, question.ID)
+			}
+		}
 	}
-	fmt.Println("expected")
-	for _, variable := range expectedOutput {
-		fmt.Printf("%s,", variable.ID)
-	}
-
 }
 
-func TestGetDisplayOrder(t *testing.T) {
+func TestGetDisplayOrders(t *testing.T) {
 	blueprint := loadBlueprintFromJsonFile("./fullExample.json")
-	blueprint_config.BFS(&blueprint)
+	blueprint_config.Transverse(&blueprint)
+	result := blueprint_config.GetAllDisplayOrdersByBFS(&blueprint)
+	jsonResult, _ := json.MarshalIndent(result, "", "  ")
+	fmt.Println(string(jsonResult))
 }
