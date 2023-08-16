@@ -8,18 +8,28 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 )
 
+// entry point for the transverse algorithm
 func Transverse(root *BluePrintConfig) []generator.FormShape {
 	emptyParent := BluePrintConfig{}
 	root.Variables = bottomUpTraversal(root, &emptyParent)
-	fmt.Println("parent variables:", emptyParent.Variables)
-	return root.Variables
+	variables := root.Variables
+	result := GetAllDisplayOrdersByBFS(root)
+	sortedVariables := orderVariables(variables, result)
+	return sortedVariables
 }
 
+// bottomUpTraversal traverses the BluePrintConfig tree in a bottom-up manner,
+// applying overrides, omits, and merging variables from child nodes to parent nodes.
+// it passes omits and overrides to children nodes if they are not applied to the current node.
+// variables are processed in the node they are defined in.
+// It returns a slice of FormShape variables representing the processed variables.
 func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generator.FormShape {
 	if node.Id == "" {
 		return []generator.FormShape{}
 	}
 
+	// Apply overrides for child nodes' variables to their respective nodes.
+	// Remove these overrides from the current node's OverrideVariables map.
 	for overrideName, overrideVariable := range node.OverrideVariables {
 		parts := strings.Split(overrideName, ".")
 		if len(parts) == 3 {
@@ -37,10 +47,9 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 			node.Children[childName] = child
 			delete(node.OverrideVariables, overrideName)
 		}
-		// if len(parts) != 3 or != 1 { //print warning
-		// if len(parts) == 1 {  pass this override to all children
 	}
 
+	// Handle omitted variables for child nodes and update node's OmitVariables accordingly.
 	removedOmitsIndexes := make([]int, 0)
 	for idx, ommitName := range node.OmitVariables {
 		parts := strings.Split(ommitName, ".")
@@ -56,30 +65,30 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 			node.Children[childName] = child
 			removedOmitsIndexes = append(removedOmitsIndexes, idx)
 		}
-		// if len(parts) != 3 or != 1 { //print warning
-
 	}
 	node.OmitVariables = removeIndexesFromOmits(node.OmitVariables, removedOmitsIndexes)
 
 	for _, childName := range node.ChildrenOrder {
 		child := node.Children[childName]
-		bottomUpTraversal(&child, node)
+		bottomUpTraversal(child, node)
 	}
 
 	// Apply overrides and omits from parent to current node
 	finalVariables := processNodeWithParent(*node)
+	if finalVariables == nil {
+		fmt.Println("finalVariables is nil, node id:", node.Id)
+	}
 	// here is where we should deal with ordering
-
-	//TBD: sort variables by order
+	if node.Variables == nil {
+		fmt.Println("node variables is nil, node id:", node.Id)
+	}
+	node.Variables = make([]generator.FormShape, 0)
+	node.Variables = make([]generator.FormShape, len(finalVariables))
+	copy(node.Variables, finalVariables)
 
 	//Merge variables with existing ones in node.Variables
 	for _, variable := range finalVariables {
 		varIdx, found := findVariableIndex(parent.Variables, variable.ID)
-		// varIdx, found := findIndex(parent.Variables, func(v generator.FormShape) bool {
-		// 	currentVarName := strings.Split(v.ID, ".")[1]
-		// 	varName := strings.Split(variable.ID, ".")[1]
-		// 	return currentVarName == varName
-		// })
 		if found {
 			// Merge variables if found
 			existingVariable := parent.Variables[varIdx]
@@ -90,7 +99,6 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 			parent.Variables = append(parent.Variables, variable)
 		}
 	}
-
 	return parent.Variables
 }
 
@@ -98,11 +106,7 @@ func processNodeWithParent(node BluePrintConfig) []generator.FormShape {
 	finalVariables := node.Variables
 
 	for overrideVariableName, overrideVariable := range node.OverrideVariables {
-		if variableIdexes, found := findVariableIndex2(node.Variables, overrideVariableName); found {
-			// if variableIdx, found := findIndex(node.Variables, func(v generator.FormShape) bool {
-			// 	localVarName := strings.Split(v.ID, ".")[1]
-			// 	return localVarName == overrideVariableName
-			// }); found {
+		if variableIdexes, found := findVariableIndexes(node.Variables, overrideVariableName); found {
 			// Apply overrides using BuildOverridenVariable function
 			for _, variableIdx := range variableIdexes {
 				variable := node.Variables[variableIdx]
@@ -111,7 +115,6 @@ func processNodeWithParent(node BluePrintConfig) []generator.FormShape {
 			}
 		} else {
 			// Generate new variable using BuildGenericVariable function
-
 			overrideVariable.VariableName = overrideVariableName
 			newVariable, err := BuildGenericVariable(overrideVariable)
 			if err != nil {
@@ -124,11 +127,7 @@ func processNodeWithParent(node BluePrintConfig) []generator.FormShape {
 
 	// Exclude variables specified in omitVariables
 	for _, omitVariableID := range node.OmitVariables {
-		if variableIdexes, found := findVariableIndex2(finalVariables, omitVariableID); found {
-			//if variableIdx, found := findIndex(node.Variables, func(v generator.FormShape) bool {
-			// 	localVarName := strings.Split(v.ID, ".")[1]
-			// 	return localVarName == omitVariableID
-			// }); found {
+		if variableIdexes, found := findVariableIndexes(finalVariables, omitVariableID); found {
 			for _, variableIdx := range variableIdexes {
 				finalVariables[variableIdx].IsHidden = true
 				finalVariables[variableIdx].UsedInHCL = false
@@ -136,28 +135,14 @@ func processNodeWithParent(node BluePrintConfig) []generator.FormShape {
 					finalVariables[variableIdx].UsedInHCL = true
 				}
 			}
-
-			// if the blueprint config overrides an omitted variable, then it's an admitted var as we have to modify its behavior
 		}
 	}
 
 	return finalVariables
 }
 
-func findIndex(variables []generator.FormShape, condition func(generator.FormShape) bool) (int, bool) {
-	for idx, variable := range variables {
-		if condition(variable) {
-			return idx, true
-		}
-	}
-	return -1, false
-}
-
-// TODO: remove this function
 func findVariableIndex(variables []generator.FormShape, id string) (int, bool) {
-	//varName := strings.Split(id, ".")[1]
 	for idx, variable := range variables {
-		//currentVarName := strings.Split(variable.ID, ".")[1]
 		if variable.ID == id {
 			return idx, true
 		}
@@ -165,14 +150,12 @@ func findVariableIndex(variables []generator.FormShape, id string) (int, bool) {
 	return -1, false
 }
 
-// TODO: remove this function
-func findVariableIndex2(variables []generator.FormShape, overrideVariableName string) ([]int, bool) {
+func findVariableIndexes(variables []generator.FormShape, overrideVariableName string) ([]int, bool) {
 	foundIndexes := make([]int, 0)
 	for idx, variable := range variables {
 		localVarName := strings.Split(variable.ID, ".")[1]
 		if localVarName == overrideVariableName {
 			foundIndexes = append(foundIndexes, idx)
-			//return idx, true
 		}
 	}
 	if len(foundIndexes) > 0 {
@@ -238,7 +221,8 @@ func removeElementAtIndex(s []string, idx int) []string {
 	return append(s[:idx], s[idx+1:]...)
 }
 
-func BFS(node *BluePrintConfig) {
+func GetAllDisplayOrdersByBFS(node *BluePrintConfig) []DisplayOrder {
+	result := make([]DisplayOrder, 0)
 	queue := make([]*BluePrintConfig, 0)
 	queue = append(queue, node)
 
@@ -248,13 +232,16 @@ func BFS(node *BluePrintConfig) {
 		queue = queue[1:]
 
 		// Process the current node
-		fmt.Println(currentNode.DisplayOrder)
+		processedDisplayOrder := processDisplayOrder(currentNode)
+		result = append(result, processedDisplayOrder)
+		//fmt.Println(processedDisplayOrder)
 
 		// Add the children of the current node to the queue
 		for _, child := range currentNode.Children {
-			queue = append(queue, &child)
+			queue = append(queue, child)
 		}
 	}
+	return result
 }
 
 func DFS(node *BluePrintConfig) {
@@ -271,42 +258,100 @@ func DFS(node *BluePrintConfig) {
 
 		// Add the children of the current node to the stack
 		for _, child := range currentNode.Children {
-			stack = append(stack, &child)
+			stack = append(stack, child)
 		}
 	}
 }
 
-// func processDisplayOrder(bp *BluePrintConfig) {
-// 	variables := bp.DisplayOrder.Values
-// 	for idx, variable := range variables {
-// 		parts := strings.Split(variable, ".")
-// 		if len(parts) == 1 {
-// 			// get all module names from all children
-// 			moduleNames := getModuleNamesFromBlueprint(bp) // check which ones to sort first
-// 			//remove idx from variables
-// 			//add moduleNames + variable to variables
-// 		}
-// 	}
-// }
-
-func getModuleNamesFromBlueprint(bp *BluePrintConfig) []string {
-	moduleNames := make([]string, 0)
-	for _, child := range bp.Children {
-		moduleNames = getModuleNamesFromFormShape(child.Variables)
+func processDisplayOrder(bp *BluePrintConfig) DisplayOrder {
+	variables := bp.DisplayOrder.Values
+	priority := bp.DisplayOrder.Priority
+	newVariables := make([]string, 0)
+	for _, variable := range variables {
+		parts := strings.Split(variable, ".")
+		if len(parts) == 3 { //children.variables.variable
+			childName := parts[0]
+			variableName := parts[2]
+			// find the child with the name childName
+			childIdxes, found := findVariableIndexes(bp.Children[childName].Variables, variableName)
+			if found {
+				for _, childIdx := range childIdxes {
+					varname := bp.Children[childName].Variables[childIdx].ID
+					newVariables = append(newVariables, varname)
+				}
+			}
+		}
+		if len(parts) == 1 {
+			for childName := range bp.Children {
+				variableName := parts[0]
+				// find the child with the name childName
+				childIdxes, found := findVariableIndexes(bp.Children[childName].Variables, variableName)
+				if found {
+					for _, childIdx := range childIdxes {
+						varname := bp.Children[childName].Variables[childIdx].ID
+						newVariables = append(newVariables, varname)
+					}
+				}
+			}
+		}
 	}
-	return moduleNames
+
+	return DisplayOrder{
+		Values:   newVariables,
+		Priority: priority,
+	}
 }
 
-func getModuleNamesFromFormShape(formShape []generator.FormShape) []string {
-	moduleNamesSet := make(map[string]bool)
-	moduleNames := make([]string, 0)
-	for _, variable := range formShape {
-		moduleName := strings.Split(variable.ID, ".")[0]
-		moduleNamesSet[moduleName] = true
+func orderVariables(variables []generator.FormShape, displayOrder []DisplayOrder) []generator.FormShape {
+	displayOrderDataWithValues := make([]DisplayOrder, 0)
+	for _, displayOrderData := range displayOrder {
+		if len(displayOrderData.Values) > 0 {
+			displayOrderDataWithValues = append(displayOrderDataWithValues, displayOrderData)
+		}
+	}
+	// Sort the displayOrderDataWithValues by priority, highest priority first
+	sort.Slice(displayOrderDataWithValues, func(i, j int) bool {
+		return displayOrderDataWithValues[i].Priority > displayOrderDataWithValues[j].Priority
+	})
+
+	//order variables alphanumerically
+	sort.Slice(variables, func(i, j int) bool {
+		return variables[i].ID < variables[j].ID
+	})
+
+	// Order the variables according to the displayOrderDataWithValues
+	sortedVariables := make([]generator.FormShape, 0)
+	for _, displayOrderData := range displayOrderDataWithValues {
+		sortedVariables = sortVariablesByIDOrder(variables, displayOrderData.Values)
 	}
 
-	for moduleName := range moduleNamesSet {
-		moduleNames = append(moduleNames, moduleName)
+	return sortedVariables
+}
+
+func sortVariablesByIDOrder(variables []generator.FormShape, idOrder []string) []generator.FormShape {
+	idIndex := make(map[string]int)
+
+	// Create a map to store the indexes of IDs in the order list
+	for idx, id := range idOrder {
+		idIndex[id] = idx
 	}
-	return moduleNames
+
+	// Separate the variables to be sorted from the rest
+	var variablesToSort []generator.FormShape
+	var otherVariables []generator.FormShape
+	for _, variable := range variables {
+		if _, found := idIndex[variable.ID]; found {
+			variablesToSort = append(variablesToSort, variable)
+		} else {
+			otherVariables = append(otherVariables, variable)
+		}
+	}
+
+	// Sort the variables to be sorted based on the given IDs order
+	sort.SliceStable(variablesToSort, func(i, j int) bool {
+		return idIndex[variablesToSort[i].ID] < idIndex[variablesToSort[j].ID]
+	})
+
+	// Merge the sorted variables with the rest of the variables
+	return append(variablesToSort, otherVariables...)
 }
