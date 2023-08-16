@@ -13,7 +13,7 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils/interpolation_utils"
 )
 
-func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig, aliases blueprint_config_references.Data) error {
+func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig) error {
 	bp.Children = make(map[string]*BluePrintConfig, 0)
 	sources := v.(map[string]interface{})
 	for key, value := range sources {
@@ -27,15 +27,12 @@ func GetBlueprintConfigSources(v interface{}, bp *BluePrintConfig, aliases bluep
 		if err != nil {
 			return errors.New("invalid conversion to BluePrintConfig")
 		}
-		aliasKey := fmt.Sprintf("%s#%s", strKey, bp.Id)
-		aliases.SetValue(aliasKey, bc.Id)
-
 		bp.Children[strKey] = &bc
 	}
 	return nil
 }
 
-func GetBlueprintConfigOmitVariables(v interface{}, bp *BluePrintConfig, aliases blueprint_config_references.Data) error {
+func GetBlueprintConfigOmitVariables(v interface{}, bp *BluePrintConfig) error {
 	omit_variables := v.([]interface{})
 	omit := make([]string, len(omit_variables))
 	for i, optionValue := range omit_variables {
