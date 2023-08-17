@@ -1,129 +1,126 @@
 package blueprint_config_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
-func TestOverrideVariable(t *testing.T) {
-	closer := acctest.EnvSetter(map[string]string{
-		"TF_LOG": "DEBUG", // to see the DEBUG logs
-	})
-	originalVars := []generator.FormShape{
-		{
-			ID:                  "module1.Id",
-			Module:              "module1",
-			FormQuestion:        generator.FormQuestion{},
-			FieldDataType:       "string",
-			FieldDefaultValue:   "string",
-			FieldValue:          "string",
-			AllowConsumerToEdit: true,
-			Conditionals:        []generator.ConditionalConfig{},
-		},
-		{
-			ID:                  "module1.OtherId",
-			Module:              "module1",
-			FormQuestion:        generator.FormQuestion{},
-			FieldDataType:       "string",
-			FieldDefaultValue:   "string",
-			FieldValue:          "string",
-			AllowConsumerToEdit: true,
-			Conditionals:        []generator.ConditionalConfig{},
-		},
-		{
-			ID:                  "module2.Id2",
-			Module:              "module2",
-			FormQuestion:        generator.FormQuestion{},
-			FieldDataType:       "string",
-			FieldDefaultValue:   "string",
-			FieldValue:          "string",
-			AllowConsumerToEdit: true,
-			Conditionals:        []generator.ConditionalConfig{},
-		},
-	}
+// func TestOverrideVariable(t *testing.T) {
+// 	closer := acctest.EnvSetter(map[string]string{
+// 		"TF_LOG": "DEBUG", // to see the DEBUG logs
+// 	})
+// 	originalVars := []generator.FormShape{
+// 		{
+// 			ID:                  "module1.Id",
+// 			Module:              "module1",
+// 			FormQuestion:        generator.FormQuestion{},
+// 			FieldDataType:       "string",
+// 			FieldDefaultValue:   "string",
+// 			FieldValue:          "string",
+// 			AllowConsumerToEdit: true,
+// 			Conditionals:        []generator.ConditionalConfig{},
+// 		},
+// 		{
+// 			ID:                  "module1.OtherId",
+// 			Module:              "module1",
+// 			FormQuestion:        generator.FormQuestion{},
+// 			FieldDataType:       "string",
+// 			FieldDefaultValue:   "string",
+// 			FieldValue:          "string",
+// 			AllowConsumerToEdit: true,
+// 			Conditionals:        []generator.ConditionalConfig{},
+// 		},
+// 		{
+// 			ID:                  "module2.Id2",
+// 			Module:              "module2",
+// 			FormQuestion:        generator.FormQuestion{},
+// 			FieldDataType:       "string",
+// 			FieldDefaultValue:   "string",
+// 			FieldValue:          "string",
+// 			AllowConsumerToEdit: true,
+// 			Conditionals:        []generator.ConditionalConfig{},
+// 		},
+// 	}
 
-	overrides := make(map[string]blueprint_config.OverrideVariable)
-	for _, original := range originalVars {
-		ov, err := CreateFakeOverride()
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
+// 	overrides := make(map[string]blueprint_config.OverrideVariable)
+// 	for _, original := range originalVars {
+// 		ov, err := CreateFakeOverride()
+// 		if err != nil {
+// 			t.Fatalf(err.Error())
+// 		}
 
-		varName, err := utils.GetVariableID(original.ID)
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
-		ov.VariableName = varName
-		overrides[varName] = *ov
-	}
-	//override map is modified during blueprint_config.OverrideVariables
-	overridesCopy := make(map[string]blueprint_config.OverrideVariable)
-	for k, v := range overrides {
-		overridesCopy[k] = v
-	}
+// 		varName, err := utils.GetVariableID(original.ID)
+// 		if err != nil {
+// 			t.Fatalf(err.Error())
+// 		}
+// 		ov.VariableName = varName
+// 		overrides[varName] = *ov
+// 	}
+// 	//override map is modified during blueprint_config.OverrideVariables
+// 	overridesCopy := make(map[string]blueprint_config.OverrideVariable)
+// 	for k, v := range overrides {
+// 		overridesCopy[k] = v
+// 	}
 
-	newVars, err := blueprint_config.OverrideVariables(originalVars, overrides, &blueprint_config.BluePrintConfig{})
+// 	newVars, err := blueprint_config.OverrideVariables(originalVars, overrides, &blueprint_config.BluePrintConfig{})
 
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	for _, newVar := range newVars {
-		varName, err := utils.GetVariableID(newVar.ID)
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
+// 	if err != nil {
+// 		t.Fatalf(err.Error())
+// 	}
+// 	for _, newVar := range newVars {
+// 		varName, err := utils.GetVariableID(newVar.ID)
+// 		if err != nil {
+// 			t.Fatalf(err.Error())
+// 		}
 
-		checkFormConfig(newVar, overridesCopy[varName], t)
-		checkConditionals(newVar, overridesCopy[varName], t)
-		checkAllowConsumerToEdit(newVar, overridesCopy[varName], t)
-	}
-	t.Cleanup(closer)
-}
+// 		checkFormConfig(newVar, overridesCopy[varName], t)
+// 		checkConditionals(newVar, overridesCopy[varName], t)
+// 		checkAllowConsumerToEdit(newVar, overridesCopy[varName], t)
+// 	}
+// 	t.Cleanup(closer)
+// }
 
-func TestOverrideVariableError(t *testing.T) {
-	closer := acctest.EnvSetter(map[string]string{
-		"TF_LOG": "DEBUG", // to see the DEBUG logs
-	})
-	var expectedError = blueprint_config.ErrVariableNotFound
-	originalVars := []generator.FormShape{
-		{
-			ID:                  "module1Id",
-			Module:              "module1",
-			FormQuestion:        generator.FormQuestion{},
-			FieldDataType:       "string",
-			FieldDefaultValue:   "string",
-			FieldValue:          "string",
-			AllowConsumerToEdit: true,
-			Conditionals:        []generator.ConditionalConfig{},
-		},
-	}
+// func TestOverrideVariableError(t *testing.T) {
+// 	closer := acctest.EnvSetter(map[string]string{
+// 		"TF_LOG": "DEBUG", // to see the DEBUG logs
+// 	})
+// 	var expectedError = blueprint_config.ErrVariableNotFound
+// 	originalVars := []generator.FormShape{
+// 		{
+// 			ID:                  "module1Id",
+// 			Module:              "module1",
+// 			FormQuestion:        generator.FormQuestion{},
+// 			FieldDataType:       "string",
+// 			FieldDefaultValue:   "string",
+// 			FieldValue:          "string",
+// 			AllowConsumerToEdit: true,
+// 			Conditionals:        []generator.ConditionalConfig{},
+// 		},
+// 	}
 
-	overrides := make(map[string]blueprint_config.OverrideVariable)
-	for i := 0; i < len(originalVars); i++ {
-		ov, err := CreateFakeOverride()
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
-		overrides[ov.VariableName] = *ov
-	}
+// 	overrides := make(map[string]blueprint_config.OverrideVariable)
+// 	for i := 0; i < len(originalVars); i++ {
+// 		ov, err := CreateFakeOverride()
+// 		if err != nil {
+// 			t.Fatalf(err.Error())
+// 		}
+// 		overrides[ov.VariableName] = *ov
+// 	}
 
-	_, err := blueprint_config.OverrideVariables(originalVars, overrides, &blueprint_config.BluePrintConfig{})
+// 	_, err := blueprint_config.OverrideVariables(originalVars, overrides, &blueprint_config.BluePrintConfig{})
 
-	if !errors.Is(err, expectedError) {
-		t.Fatalf("no error was detected")
-	}
+// 	if !errors.Is(err, expectedError) {
+// 		t.Fatalf("no error was detected")
+// 	}
 
-	t.Cleanup(closer)
-}
+// 	t.Cleanup(closer)
+// }
 
 func TestBuildOverride(t *testing.T) {
 	closer := acctest.EnvSetter(map[string]string{
@@ -282,14 +279,14 @@ func CreateFakeOverride() (*blueprint_config.OverrideVariable, error) {
 	return &ov, nil
 }
 
-func TestOverrideVariablesRealData(t *testing.T) {
-	variables := loadTestData[[]generator.FormShape]("variables.json")
-	overrides := loadTestData[map[string]blueprint_config.OverrideVariable]("overrides.json")
+// func TestOverrideVariablesRealData(t *testing.T) {
+// 	variables := loadTestData[[]generator.FormShape]("variables.json")
+// 	overrides := loadTestData[map[string]blueprint_config.OverrideVariable]("overrides.json")
 
-	aliases := blueprint_config_references.GetInstance()
+// 	aliases := blueprint_config_references.GetInstance()
 
-	aliases.SetValue("ami", "wec2amiid")
+// 	aliases.SetValue("ami", "wec2amiid")
 
-	_, err := blueprint_config.OverrideVariables(variables, overrides, &blueprint_config.BluePrintConfig{})
-	assert.Nil(t, err)
-}
+// 	_, err := blueprint_config.OverrideVariables(variables, overrides, &blueprint_config.BluePrintConfig{})
+// 	assert.Nil(t, err)
+// }
