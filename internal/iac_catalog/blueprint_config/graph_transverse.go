@@ -316,20 +316,23 @@ func processDisplayOrder(bp *BluePrintConfig) DisplayOrder {
 }
 
 func orderVariables(variables []generator.FormShape, displayOrder []DisplayOrder) []generator.FormShape {
+	//order variables alphanumerically
+	sort.Slice(variables, func(i, j int) bool {
+		return variables[i].ID < variables[j].ID
+	})
+
 	displayOrderDataWithValues := make([]DisplayOrder, 0)
 	for _, displayOrderData := range displayOrder {
 		if len(displayOrderData.Values) > 0 {
 			displayOrderDataWithValues = append(displayOrderDataWithValues, displayOrderData)
 		}
 	}
+	if len(displayOrderDataWithValues) == 0 {
+		return variables
+	}
 	// Sort the displayOrderDataWithValues by priority, highest priority first
 	sort.Slice(displayOrderDataWithValues, func(i, j int) bool {
 		return displayOrderDataWithValues[i].Priority > displayOrderDataWithValues[j].Priority
-	})
-
-	//order variables alphanumerically
-	sort.Slice(variables, func(i, j int) bool {
-		return variables[i].ID < variables[j].ID
 	})
 
 	// Order the variables according to the displayOrderDataWithValues
