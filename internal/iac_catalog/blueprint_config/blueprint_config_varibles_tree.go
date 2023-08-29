@@ -50,7 +50,7 @@ func findModuleNameInBlueprint(bp *BluePrintConfig, varName string) string {
 	}
 	for _, c := range bp.Children {
 		c := c
-		moduleName := findVariableNameInBlueprintVariables(&c, varName)
+		moduleName := findVariableNameInBlueprintVariables(c, varName)
 		if len(moduleName) > 0 {
 			return moduleName
 		}
@@ -89,7 +89,7 @@ func findChildReferenceName(referenceName string, aliases blueprint_config_refer
 	for _, chi := range bp.Children {
 		chi := chi
 		if chi.Id == childrenId {
-			child = &chi
+			child = chi
 			break
 		}
 	}
@@ -97,4 +97,16 @@ func findChildReferenceName(referenceName string, aliases blueprint_config_refer
 		return ""
 	}
 	return findModuleNameInBlueprint(child, varName)
+}
+
+func GetVariableName(variableName string) string {
+	parts := strings.Split(variableName, ".")
+	if utils.HasReference(variableName) {
+		return parts[0] + "." + parts[2]
+	}
+	// if len(parts) == 2 {
+	// 	return parts[1]
+	// }
+	// return strings.Split(variableName, ".")[2]
+	return variableName
 }

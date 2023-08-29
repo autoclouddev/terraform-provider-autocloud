@@ -13,7 +13,7 @@ type BluePrintConfig struct {
 	OverrideVariables map[string]OverrideVariable `json:"overrideVariables"`
 	Variables         []generator.FormShape       `json:"variables"`
 	DisplayOrder      DisplayOrder                `json:"displayOrder"`
-	Children          []BluePrintConfig           `json:"children"`
+	Children          map[string]*BluePrintConfig `json:"children"`
 }
 
 type VariableContent struct {

@@ -31,19 +31,16 @@ func loadTestData[T any](testCase string) (out T) {
 func TestGetBlueprintConfigSources(t *testing.T) {
 	bp := blueprint_config.BluePrintConfig{}
 	bp.Id = "sources"
-	aliases := blueprint_config_references.GetInstance()
 	testData := loadTestData[interface{}]("sources.json")
-	err := blueprint_config.GetBlueprintConfigSources(testData, &bp, *aliases)
+	err := blueprint_config.GetBlueprintConfigSources(testData, &bp)
 	assert.Nil(t, err)
 }
 
 func TestGetBlueprintConfigOmitVariable(t *testing.T) {
 	bp := blueprint_config.BluePrintConfig{}
 	bp.Id = "omit_variables"
-	aliases := blueprint_config_references.GetInstance()
 	testData := loadTestData[interface{}]("omit_variables.json")
-	aliases.SetValue("ec2", "ec2_instance")
-	err := blueprint_config.GetBlueprintConfigOmitVariables(testData, &bp, *aliases)
+	err := blueprint_config.GetBlueprintConfigOmitVariables(testData, &bp)
 	assert.Nil(t, err)
 }
 
