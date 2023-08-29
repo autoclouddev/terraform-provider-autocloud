@@ -1,3 +1,21 @@
+# [0.14.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.1-pre.1...v0.14.0-pre.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* **blueprint:** fix transversal with order ([27a2db1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/27a2db18f78519b777923791f37fd094b5c6321a))
+
+
+### Features
+
+* **blueprint:** change children array to support pointers ([aee5974](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/aee5974ae44db53c311d9548d00f68638c0a7752))
+* **blueprint:** clean implementation of blueprint_config ([b5e8bb2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b5e8bb23203b2dca82de4a6e16ebb234d9294f60))
+* **blueprint:** clean transverse algorithm ([20d664d](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/20d664d652b49aac3060accb685076c69a5b3a6b))
+* **blueprint:** remove old tree transverse data ([b7b0379](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b7b03791385da94f66e636ec8af1a0bbc976ddb4))
+* **blueprint:** remove the support for childOrder to keep track of processed variables in the recursion stack ([0919431](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/09194310557656c578d0f21b7c6273d82638ad51))
+* **module:** delete legacy data.autocloud_module ([e399713](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e3997138a0f9594efc2eb6717ccb8bfee8266a90))
+* **state:** clean transverse algorithm ([49717b9](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/49717b9254564ead22e8db2d944fa4fcea7c56cd))
+
 ## [0.13.1-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0...v0.13.1-pre.1) (2023-08-29)
 
 
