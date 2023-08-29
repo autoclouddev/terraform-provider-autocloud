@@ -1,3 +1,10 @@
+## [0.13.1-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0...v0.13.1-pre.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* **ep-3213:** iac empty file content and default create action ([11c05ab](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/11c05abb157e92cac2d9c47a4c04f1a98b575789))
+
 # [0.13.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.12.0...v0.13.0) (2023-07-31)
 
 
