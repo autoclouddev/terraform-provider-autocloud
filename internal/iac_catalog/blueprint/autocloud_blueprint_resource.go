@@ -129,7 +129,7 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 						"action": {
 							Description: "Currently we support only CREATE",
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							ValidateFunc: func(val any, key string) (warns []string, errs []error) {
 								isValidAction := true //Contains([]string{"CREATE", "EDIT", "HCLEDIT"}, val.(string))
 								if !isValidAction {
@@ -188,7 +188,9 @@ func ResourceAutocloudBlueprint() *schema.Resource {
 
 func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
-	generator, err := GetSdkIacCatalog(d)
+	generator, err, warnings := GetSdkIacCatalog(d)
+	utils.AppendDiagnosticsWarnings(&diags, warnings)
+
 	if err != nil {
 		return diag.Errorf("Failed to get generator: %s", err.Error())
 	}
@@ -212,15 +214,14 @@ func autocloudBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	_, err := GetSdkIacCatalog(d)
+	var diags diag.Diagnostics
+	_, err, getSdkIacCatalogWarnings := GetSdkIacCatalog(d)
+
 	if err != nil {
 		return diag.Errorf("Failed to get generator: %s", err.Error())
 	}
 
 	c := meta.(*autocloudsdk.Client)
-
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
 
 	generatorID := d.Id()
 
@@ -270,13 +271,15 @@ func autocloudBlueprintRead(ctx context.Context, d *schema.ResourceData, meta an
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	utils.AppendDiagnosticsWarnings(&diags, getSdkIacCatalogWarnings)
 	return diags
 }
 
 func autocloudBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*autocloudsdk.Client)
 
-	updatedGen, err := GetSdkIacCatalog(d)
+	updatedGen, err, _ := GetSdkIacCatalog(d)
 	if err != nil {
 		return diag.Errorf(err.Error())
 	}
@@ -370,8 +373,9 @@ func modulesBelongToConfig(generator *generator.IacCatalog) bool {
 // Reads the resource schema, validate inputs and returns a IacCatalog object
 // if the inputs are invalid, it returns an error
 // use this function before creating or updating a generator
-func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
+func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error, []string) {
 	var labels = []string{}
+	var warnings = []string{}
 	if labelValues, isLabelValuesOk := d.GetOk("labels"); isLabelValuesOk {
 		list := labelValues.([]interface{})
 		labels = utils.ToStringSlice(list)
@@ -382,15 +386,16 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 		err := json.Unmarshal([]byte(configstr), &formShape)
 		if err != nil {
 			log.Printf("error: %v", err)
-			return nil, fmt.Errorf("Incompatible config format, are you using a valid .config attribute?")
+			return nil, fmt.Errorf("Incompatible config format, are you using a valid .config attribute?"), warnings
 		}
 	}
 
 	gc := utils.GetSdkIacCatalogGitConfig(d)
 
-	fileDef, err := utils.GetSdkIacCatalogFileDefinitions(d)
+	fileDef, err, warns := utils.GetSdkIacCatalogFileDefinitions(d)
+	warnings = append(warnings, warns...)
 	if err != nil {
-		return nil, err
+		return nil, err, warnings
 	}
 
 	// TODO: convert tree to array
@@ -408,8 +413,8 @@ func GetSdkIacCatalog(d *schema.ResourceData) (*generator.IacCatalog, error) {
 	}
 
 	if !modulesBelongToConfig(&generator) {
-		return nil, fmt.Errorf("modules in file definitions do not belong to config")
+		return nil, fmt.Errorf("modules in file definitions do not belong to config"), warnings
 	}
 
-	return &generator, nil
+	return &generator, nil, warnings
 }
