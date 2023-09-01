@@ -1,3 +1,10 @@
+# [0.14.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.14.0-pre.1...v0.14.0-pre.2) (2023-09-01)
+
+
+### Features
+
+* **module:** calculate blueprint confing in apply time ([e5770a0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/e5770a0f7ee358b0d6be410b894b3e36daadc778))
+
 # [0.14.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.1-pre.1...v0.14.0-pre.1) (2023-08-29)
 
 
