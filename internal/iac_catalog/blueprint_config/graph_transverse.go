@@ -86,21 +86,20 @@ func bottomUpTraversal(node *BluePrintConfig, parent *BluePrintConfig) []generat
 	node.Variables = make([]generator.FormShape, len(finalVariables))
 	copy(node.Variables, finalVariables)
 
-	//Merge variables with existing ones in node.Variables
+	//Merge variables with existing ones in parent.Variables
 	for _, variable := range finalVariables {
 		varIdx, found := findVariableIndex(parent.Variables, variable.ID)
 		if found {
 			// Merge variables if found
-			existingVariable := parent.Variables[varIdx]
-			originalVariable := existingVariable
-			newVariableData := variable
-			// If existing variable is not overridden or it has less hops from its original node to the root, use it as original variable, the existing variable was processed before
+			parentVariable := parent.Variables[varIdx]
+			//originalVariable := parentVariable
+			updatedVariable := variable
+			// If existing variable  has less hops from its original node to the root, use it as original variable, the existing variable was processed before
 			// it is important to check this, it avoids keeping track of the order of children in the graph
-			if !existingVariable.IsOverriden || existingVariable.HopsFromNode > originalVariable.HopsFromNode {
-				originalVariable = variable
-				newVariableData = existingVariable
+			if parentVariable.HopsFromNode < updatedVariable.HopsFromNode {
+				parentVariable, updatedVariable = updatedVariable, parentVariable
 			}
-			mergedVariable := mergeVariables(originalVariable, newVariableData)
+			mergedVariable := mergeVariables(parentVariable, updatedVariable)
 			parent.Variables = updateVariable(parent.Variables, mergedVariable)
 		} else {
 			// Add new variable if not found
@@ -191,6 +190,7 @@ func mergeVariables(existing, newVariable generator.FormShape) generator.FormSha
 	existing.UsedInHCL = newVariable.UsedInHCL
 	existing.Conditionals = newVariable.Conditionals
 	existing.RequiredValues = newVariable.RequiredValues
+	existing.HopsFromNode = newVariable.HopsFromNode
 
 	// Merge InterpolationVars from newVariable into existing
 	if existing.InterpolationVars == nil {
