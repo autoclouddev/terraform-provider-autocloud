@@ -214,6 +214,8 @@ func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 		}
 	}
 
+	canEditMap := ov.FormConfig.Type == MAP_TYPE && len(fieldValue) != 0
+
 	formVariable := generator.FormShape{
 		ID:         fieldID,
 		Module:     GENERIC,
@@ -225,7 +227,7 @@ func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 			FieldLabel:      fieldLabel,
 			ExplainingText:  ov.HelperText,
 		},
-		AllowConsumerToEdit: len(fieldValue) == 0,
+		AllowConsumerToEdit: len(fieldValue) == 0 || canEditMap,
 		IsHidden:            ov.IsHidden,
 		UsedInHCL:           ov.UsedInHCL,
 		RequiredValues:      ov.RequiredValues,
