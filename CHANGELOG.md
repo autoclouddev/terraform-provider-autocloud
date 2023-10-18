@@ -1,3 +1,10 @@
+# [0.14.0-pre.3](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.14.0-pre.2...v0.14.0-pre.3) (2023-10-18)
+
+
+### Bug Fixes
+
+* **blueprint:** keep the node closer to the root when transversing the graph ([fd19d9a](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/fd19d9a8e32780467a225db4d4100f205e265f77))
+
 # [0.14.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.14.0-pre.1...v0.14.0-pre.2) (2023-09-01)
 
 
