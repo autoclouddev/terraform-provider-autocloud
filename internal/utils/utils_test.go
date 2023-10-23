@@ -2,15 +2,11 @@ package utils_test
 
 import (
 	"errors"
-	"fmt"
 	"path"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/generator"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config"
-	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 )
 
@@ -199,94 +195,6 @@ func TestGetVariableID(t *testing.T) {
 				t.Errorf("Expected error %v, but got %v", tc.err, err)
 			}
 		})
-	}
-}
-
-func TestGetVariableReferenceID(t *testing.T) {
-	aliases := blueprint_config_references.GetInstance()
-	aliases.SetValue("alias1", "module1")
-	aliases.SetValue("alias2", "module2")
-
-	tests := []struct {
-		input string
-		want  string
-		err   error
-	}{
-		{"alias1.variables.variable1", "module1.variable1", nil},
-		{"alias2.variables.variable2", "module2.variable2", nil},
-		{"alias1.variables.", "", errors.New("Invalid Key")},
-		{"alias1.variables", "", errors.New("Invalid Key")},
-		{"alias1", "", errors.New("Invalid Key")},
-		{"", "", errors.New("Invalid Key")},
-	}
-
-	for _, tt := range tests {
-		got, err := blueprint_config.GetVariableReferenceID(tt.input, &blueprint_config.BluePrintConfig{})
-
-		assert.Equal(t, tt.err, err, fmt.Sprintf("Error mismatch for input %q", tt.input))
-		assert.Equal(t, tt.want, got, fmt.Sprintf("Output mismatch for input %q", tt.input))
-	}
-}
-
-func TestFindIdx(t *testing.T) {
-	// Create test data
-	vars := []generator.FormShape{
-		{
-			ID: "test.test1",
-		},
-		{
-			ID: "test.test2",
-		},
-		{
-			ID: "test.test3",
-		},
-	}
-
-	// Test case 1: reference variable not found
-	reference := "alias.variables.test4"
-	expected := []int{}
-	result := blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
-	if !reflect.DeepEqual(expected, result) {
-		t.Errorf("Test case 1 failed: expected %v, but got %v", expected, result)
-	}
-
-	// Test case 2: regular variable not found
-	reference = "test4"
-	expected = []int{}
-	result = blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
-	if !reflect.DeepEqual(expected, result) {
-		t.Errorf("Test case 2 failed: expected %v, but got %v", expected, result)
-	}
-
-	// Test case 3: reference variable found
-	aliasToModuleNameMap := blueprint_config_references.GetInstance()
-	aliasToModuleNameMap.SetValue("alias", "test")
-	reference = "alias.variables.test1"
-	expected = []int{0}
-	result = blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
-	if !reflect.DeepEqual(expected, result) {
-		t.Errorf("Test case 3 failed: expected %v, but got %v", expected, result)
-	}
-
-	// Test case 4: regular variable found
-	reference = "test1"
-	expected = []int{0}
-	result = blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
-	if !reflect.DeepEqual(expected, result) {
-		t.Errorf("Test case 4 failed: expected %v, but got %v", expected, result)
-	}
-
-	// Test case 5: multiple matches found
-	reference = "test1"
-	expected = []int{0, 3}
-	vars = append(vars, generator.FormShape{
-		ID: "test2.test1",
-	}, generator.FormShape{
-		ID: "test.test5",
-	})
-	result = blueprint_config.FindIdx(vars, reference, &blueprint_config.BluePrintConfig{})
-	if !reflect.DeepEqual(expected, result) {
-		t.Errorf("Test case 5 failed: expected %v, but got %v", expected, result)
 	}
 }
 

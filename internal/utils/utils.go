@@ -14,6 +14,7 @@ import (
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/service/iac_module"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils/interpolation_utils"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -92,8 +93,9 @@ func GetSdkIacCatalogModules(d *schema.ResourceData) []autocloudsdk.IacCatalogMo
 	return iacModules
 }
 
-func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCatalogFile, error) {
+func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCatalogFile, error, []string) {
 	var fileDefinitions []generator.IacCatalogFile
+	var warnings = []string{}
 	if fileDefinitionsValues, ok := d.GetOk("file"); ok {
 		list := fileDefinitionsValues.(*schema.Set).List()
 		fileDefinitions = make([]generator.IacCatalogFile, 0)
@@ -102,17 +104,17 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 
 			moduleLength := len(fileDefinitionMap["modules"].([]interface{}))
 
-			if moduleLength == 0 && (fileDefinitionMap["header"].(string) != "" || fileDefinitionMap["footer"].(string) != "") {
-				return nil, errors.New("modules can not be empty when using header or footer attributes")
-			}
+			// if moduleLength == 0 && (fileDefinitionMap["header"].(string) != "" || fileDefinitionMap["footer"].(string) != "") {
+			// 	return nil, errors.New("modules can not be empty when using header or footer attributes")
+			// }
 
-			if moduleLength == 0 && fileDefinitionMap["content"].(string) == "" {
-				return nil, errors.New("file block should contain content or modules attributes")
-			}
+			// if moduleLength == 0 && fileDefinitionMap["content"].(string) == "" {
+			// 	return nil, errors.New("file block should contain content or modules attributes")
+			// }
 
-			if moduleLength > 0 && fileDefinitionMap["content"].(string) != "" {
-				return nil, errors.New("file block should contain content or modules attributes, but not both")
-			}
+			// if moduleLength > 0 && fileDefinitionMap["content"].(string) != "" {
+			// 	return nil, errors.New("file block should contain content or modules attributes, but not both")
+			// }
 
 			var fileDefinition = generator.IacCatalogFile{}
 
@@ -120,9 +122,9 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 				fileDefinition.Action = val.(string)
 			}
 
-			// prevent empty values
+			// EP-3286 - This argument should be optional and default to CREATE to reduce verbosity in blueprint definitions.
 			if fileDefinition.Action == "" {
-				continue
+				fileDefinition.Action = "CREATE"
 			}
 
 			if val, ok := fileDefinitionMap["destination"]; ok {
@@ -136,7 +138,7 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 
 			err := interpolation_utils.DetectInterpolation(fileDefinition.Destination, fileDefinition.Variables)
 			if err != nil {
-				return nil, err
+				return nil, err, warnings
 			}
 
 			if val, ok := fileDefinitionMap["modules"]; ok {
@@ -156,11 +158,15 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 				fileDefinition.Footer = val.(string)
 			}
 
+			if moduleLength == 0 && fileDefinition.Content == "" {
+				warnings = append(warnings, fmt.Sprintf("The file '%s' will be empty", fileDefinition.Destination))
+			}
+
 			fileDefinitions = append(fileDefinitions, fileDefinition)
 		}
 	}
 
-	return fileDefinitions, nil
+	return fileDefinitions, nil, warnings
 }
 
 func GetSdkIacCatalogGitConfigPR(pullRequestConfigValues interface{}) generator.IacCatalogGitConfigPR {
@@ -395,4 +401,13 @@ func LoadData[T any](testCase string) (out T, err error) {
 		return testData, errors.New("error loading file")
 	}
 	return testData, nil
+}
+
+func AppendDiagnosticsWarnings(diags *diag.Diagnostics, warnings []string) {
+	for _, warning := range warnings {
+		*diags = append(*diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  warning,
+		})
+	}
 }
