@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk/converter"
+
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/iac_catalog/blueprint_config_references"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils"
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/utils/interpolation_utils"
@@ -157,6 +159,23 @@ func GetBlueprintConfigOverrideVariables(v interface{}, bp *BluePrintConfig) err
 	return nil
 }
 
+func getCorrectJsonFromHCL(valueStr string) (string, error) {
+	isReference := len(strings.Split(valueStr, ".")) == 3
+	isOutput := strings.Contains(valueStr, ".outputs.")
+	if !isReference && !isOutput {
+		// convert from hcl to json and send the json
+		varname := "value"
+		hclstring := "value = " + valueStr
+
+		jsonString, err := converter.ConvertFromHCLToJSON(hclstring, varname)
+		if err != nil {
+			return "", fmt.Errorf("value provided can't be parsed correctly, if you want to use HCL output please use \"type = raw\"")
+		}
+		valueStr = jsonString
+	}
+	return valueStr, nil
+}
+
 func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConfig) (*VariableContent, error) {
 	content := &VariableContent{}
 	var requiredValues string
@@ -183,6 +202,14 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 	valueIsDefined = valueStr != "" // NOTE: if the value is empty, we consider it as 'not defined'
 
 	variableType := rawSchema["type"].(string)
+
+	if valueExist && valueIsString && valueIsDefined {
+		val, err := getCorrectJsonFromHCL(valueStr)
+		if err != nil {
+			return nil, err
+		}
+		valueStr = val
+	}
 
 	content.FormConfig.Type = variableType
 	if valueExist && valueIsString && valueIsDefined {
@@ -222,9 +249,15 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 
 			for _, option := range optionSchema.List() {
 				options := option.(map[string]interface{})
+				optionVal := options["value"].(string)
+				valueStr, err := getCorrectJsonFromHCL(optionVal)
+				if err != nil {
+					return nil, err
+				}
+
 				fieldOption := FieldOption{
 					Label:   options["label"].(string),
-					Value:   options["value"].(string),
+					Value:   valueStr,
 					Checked: options["checked"].(bool),
 				}
 				content.FormConfig.FieldOptions = append(content.FormConfig.FieldOptions, fieldOption)

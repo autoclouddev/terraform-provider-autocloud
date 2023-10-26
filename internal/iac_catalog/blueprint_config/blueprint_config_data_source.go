@@ -4,9 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -66,6 +70,50 @@ func DataSourceBlueprintConfig() *schema.Resource {
 				"value": {
 					Type:     schema.TypeString,
 					Required: true,
+					ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+						input := v.(string)
+
+						isReference := len(strings.Split(input, ".")) == 3
+						if isReference {
+							return diag.Diagnostics{}
+						}
+
+						isOutput := strings.Contains(input, ".outputs.")
+						if isOutput {
+							return diag.Diagnostics{}
+						}
+
+						var diags diag.Diagnostics
+						// this is needed to test if is a valid hcl code
+						inputasHcl := "value = " + input
+
+						hclInput, parsingDiag := hclsyntax.ParseConfig([]byte(inputasHcl), "", hcl.Pos{Line: 1, Column: 1})
+						diag := diag.Diagnostic{
+							Severity: diag.Error,
+							Summary:  "Input should be a valid hcl code",
+							Detail:   fmt.Sprintf("%q is not a valid hcl code, please make sure you are calling it within Heredoc references, ex: value = <<-HCL %s\nHCL ", input, input),
+						}
+						if parsingDiag.HasErrors() {
+							diags = append(diags, diag)
+							return diags
+						}
+						att, err := hclInput.Body.JustAttributes()
+						if err != nil {
+							diags = append(diags, diag)
+							return diags
+						}
+						for _, a := range att {
+							_, err := a.Expr.Value(nil)
+							if err != nil {
+								diag.Summary = "Input should be a valid terraform data type"
+								diag.Detail = fmt.Sprintf("%q is not a valid terraform data type, variables not allowed. Tip: Are you passing an unquoted string?   ", input)
+								diags = append(diags, diag)
+								return diags
+							}
+						}
+
+						return diags
+					},
 				},
 				"checked": {
 					Type:     schema.TypeBool,
@@ -90,6 +138,50 @@ func DataSourceBlueprintConfig() *schema.Resource {
 		"value": {
 			Type:     schema.TypeString,
 			Optional: true,
+			ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+				input := v.(string)
+
+				isReference := len(strings.Split(input, ".")) == 3
+				if isReference {
+					return diag.Diagnostics{}
+				}
+
+				isOutput := strings.Contains(input, ".outputs.")
+				if isOutput {
+					return diag.Diagnostics{}
+				}
+
+				var diags diag.Diagnostics
+				// this is needed to test if is a valid hcl code
+				inputasHcl := "value = " + input
+
+				hclInput, parsingDiag := hclsyntax.ParseConfig([]byte(inputasHcl), "", hcl.Pos{Line: 1, Column: 1})
+				diag := diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Input should be a valid hcl code",
+					Detail:   fmt.Sprintf("%q is not a valid hcl code, please make sure you are calling it within Heredoc references, ex: value = <<-HCL %s\nHCL ", input, input),
+				}
+				if parsingDiag.HasErrors() {
+					diags = append(diags, diag)
+					return diags
+				}
+				att, err := hclInput.Body.JustAttributes()
+				if err != nil {
+					diags = append(diags, diag)
+					return diags
+				}
+				for _, a := range att {
+					_, err := a.Expr.Value(nil)
+					if err != nil {
+						diag.Summary = "Input should be a valid terraform data type"
+						diag.Detail = fmt.Sprintf("%q is not a valid terraform data type, variables not allowed. Tip: Are you passing an unquoted string?   ", input)
+						diags = append(diags, diag)
+						return diags
+					}
+				}
+
+				return diags
+			},
 		},
 		"type": {
 			Type:     schema.TypeString,
