@@ -1,3 +1,10 @@
+# [0.15.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.14.0...v0.15.0-pre.1) (2023-10-26)
+
+
+### Features
+
+* add value support to work with json ([b90181f](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/b90181f0081183dc52253a509d6313b4a532dd7b))
+
 # [0.14.0](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.13.0...v0.14.0) (2023-10-23)
 
 
