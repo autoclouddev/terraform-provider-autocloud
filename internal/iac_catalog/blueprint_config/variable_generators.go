@@ -249,6 +249,9 @@ func BuildGenericVariable(ov OverrideVariable) (generator.FormShape, error) {
 					Value:   option.Value,
 					Checked: option.Checked,
 				}
+				if option.Checked {
+					formVariable.FieldValue = option.Value
+				}
 			}
 		}
 	}

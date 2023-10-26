@@ -102,7 +102,7 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 		for _, fileDefinitionsValue := range list {
 			var fileDefinitionMap = fileDefinitionsValue.(map[string]interface{})
 
-			moduleLength := len(fileDefinitionMap["modules"].([]interface{}))
+			//moduleLength := len(fileDefinitionMap["modules"].([]interface{}))
 
 			// if moduleLength == 0 && (fileDefinitionMap["header"].(string) != "" || fileDefinitionMap["footer"].(string) != "") {
 			// 	return nil, errors.New("modules can not be empty when using header or footer attributes")
@@ -158,9 +158,9 @@ func GetSdkIacCatalogFileDefinitions(d *schema.ResourceData) ([]generator.IacCat
 				fileDefinition.Footer = val.(string)
 			}
 
-			if moduleLength == 0 && fileDefinition.Content == "" {
-				warnings = append(warnings, fmt.Sprintf("The file '%s' will be empty", fileDefinition.Destination))
-			}
+			// if moduleLength == 0 && fileDefinition.Content == "" {
+			// 	//warnings = append(warnings, fmt.Sprintf("The file '%s' will be empty", fileDefinition.Destination))
+			// }
 
 			fileDefinitions = append(fileDefinitions, fileDefinition)
 		}
