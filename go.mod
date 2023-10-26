@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.4
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.13.0
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.14.0
 )
 
 require (
@@ -42,7 +42,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320 // indirect
+	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.4.10 // indirect
