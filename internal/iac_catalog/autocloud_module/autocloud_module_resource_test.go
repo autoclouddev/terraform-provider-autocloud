@@ -1,6 +1,9 @@
 package autocloud_module_test
 
 import (
+	"errors"
+	"os"
+	"strings"
 	"testing"
 
 	"gitlab.com/auto-cloud/infrastructure/public/terraform-provider/internal/acctest"
@@ -55,6 +58,30 @@ func TestAccAutocloudModule(t *testing.T) {
 					resource.TestCheckResourceAttrSet(
 						"autocloud_module.s3_bucket", "blueprint_config"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccAutocloudModuleError(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck: func() {
+			os.Setenv("AUTOCLOUD_TOKEN", "badtoken")
+			os.Setenv("AUTOCLOUD_API", "http://localhost:8080/api/v.0.0.1")
+		},
+		ProviderFactories: acctest.ProviderFactories,
+		ErrorCheck: func(err error) error {
+			if err == nil {
+				return errors.New("expected error but got none")
+			}
+			if strings.Contains(err.Error(), "Error: Not authorized") {
+				return nil
+			}
+			return nil
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAutocloudModule,
 			},
 		},
 	})
