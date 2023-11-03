@@ -30,7 +30,7 @@ require (
 )
 
 //uncomment the following line when working with local setup
-replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../terraform-provider-sdk/
+//replace gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk => ../terraform-provider-sdk/
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect

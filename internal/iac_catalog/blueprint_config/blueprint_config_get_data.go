@@ -204,11 +204,13 @@ func BuildVariableFromSchema(rawSchema map[string]interface{}, bp *BluePrintConf
 	variableType := rawSchema["type"].(string)
 
 	if valueExist && valueIsString && valueIsDefined {
-		val, err := getCorrectJsonFromHCL(valueStr)
-		if err != nil {
-			return nil, err
+		if variableType != "raw" {
+			val, err := getCorrectJsonFromHCL(valueStr)
+			if err != nil {
+				return nil, err
+			}
+			valueStr = val
 		}
-		valueStr = val
 	}
 
 	content.FormConfig.Type = variableType
@@ -311,9 +313,15 @@ func getConditionals(varOverrideMap *schema.Set, bp *BluePrintConfig) ([]Conditi
 		if err != nil {
 			return nil, err
 		}
+
+		codition, err := getCorrectJsonFromHCL(conditionalMap["condition"].(string))
+		if err != nil {
+			return nil, err
+		}
+
 		c := ConditionalConfig{
 			Source:          conditionalMap["source"].(string),
-			Condition:       conditionalMap["condition"].(string),
+			Condition:       codition,
 			VariableContent: *vc,
 		}
 
