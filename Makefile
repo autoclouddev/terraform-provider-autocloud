@@ -4,19 +4,25 @@ NAMESPACE=autoclouddev
 NAME=autocloud
 BINARY=terraform-provider-${NAME}
 CITIZEN_ARCHIVE_NAME=${NAMESPACE}-${NAME}
-OS_ARCH=darwin_amd64
-## uncomment the following line if you are working locally
-#VERSION=0.2
 # provider source = autocloud.io/autocloud/iac
 default: install
 
-build:
-	go build -o ${BINARY}
-	chmod +x ${BINARY}
+install-amd:
+	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/darwin_amd64
+	GOOS=darwin GOARCH=amd64 go build -o ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/0.2/darwin_amd64/${BINARY}
 
-install:build
-	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+install-arm:
+	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/darwin_arm64
+	GOOS=darwin GOARCH=arm64 go build -o ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/0.2/darwin_arm64/${BINARY}
+
+
+# use $ make install-dev to install the provider in your local machine, after this you will be able to call it with
+#   autocloud = {
+#       source  = "autocloud.io/autoclouddev/autocloud"
+#       version = "0.2.0"
+#     }
+
+install-dev:install-amd install-arm
 
 test:
 	go test -i $(TEST) || exit 1

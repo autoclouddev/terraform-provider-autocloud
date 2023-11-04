@@ -9,12 +9,12 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.4
-	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.14.0
+	gitlab.com/auto-cloud/infrastructure/public/terraform-provider-sdk v0.15.0
 )
 
 require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/autoclouddev/terraform-config-inspect v0.0.0-20231018181046-b752e29b5ea4 // indirect
+	github.com/autoclouddev/terraform-config-inspect v0.0.0-20231030191142-8a4f6f2e3dbe // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
