@@ -1,3 +1,11 @@
+# [0.15.0-pre.2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.15.0-pre.1...v0.15.0-pre.2) (2023-11-04)
+
+
+### Bug Fixes
+
+* **conditionals:** allow conditional to modify variable values ([4948d4b](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/4948d4b2dca07815188e25ff4dd4fcf3a50172dc))
+* detect invalid token ([fbdf9d2](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/commit/fbdf9d22f5a398b2e526130d10e4917b49944f8c))
+
 # [0.15.0-pre.1](https://gitlab.com/auto-cloud/infrastructure/public/terraform-provider/compare/v0.14.0...v0.15.0-pre.1) (2023-10-26)
 
 
